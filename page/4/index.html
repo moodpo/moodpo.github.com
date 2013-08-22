@@ -1,0 +1,837 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>Page 4 | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content">
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-13T05:56:26.000Z"><a href="/My-Work/struts-2-data-transfer-and-type-conversion-mechanism-2.html">Mar 13 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-data-transfer-and-type-conversion-mechanism-2.html">Struts 2 的数据转移和类型转换机制(二)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>本节将讲述Struts2内建的类型转换器的具体细节。通过配置，Struts2框架能够处理几乎所有你可能需要的类型转换。</p>
+<h3>1.内建的类型转换器</h3>
+<h4>1.1 立即可用的类型转换器</h4>
+<p>Struts2框架自带了对HTTP本地字符串和以下列出的Java类型之间转换的内建支持。</p>
+<pre><code><figure class="highlight"><pre>■ <span class="typename">String</span>—有时候字符串就是字符串。
+■ <span class="typename">boolean</span>/<span class="typename">Boolean</span>—true和false字符串可以被转换为<span class="typename">Boolean</span>的原始类型和对象类型。
+■ char/<span class="typename">Character</span>—原始类型或者对象类型。
+■ int/<span class="typename">Integer</span>, float/Float, long/Long, double/Double—原始类型或者对象类型
+■ Date—当前Locale的SHORT格式的字符串版本 (例如，<span class="number">12</span>/<span class="number">10</span>/<span class="number">97</span>)。
+■ <span class="keyword">array</span>—每一个字符串元素必须能够转换为数组的类型。
+■ List—默认情况下使用<span class="typename">String</span>填充。
+■ <span class="keyword">Map</span>—默认情况下使用<span class="typename">String</span>填充。
+</pre></figure></code></pre>
+<p>当框架定位到一个给定的OGNL表达式指向的Java属性时，它会查找这个类型的转换器。如果这个类型在前面的列表中，你不需要任何事情，等着接收数据即可。</p>
+<h4>1.2 使用OGNL表达式从表单字段名映射到属性</h4>
+<p>下面将按照上述类型转换器列表讲述每一个内建的类型转换器如何在两端建立对等的内容。</p>
+<p><strong>1.原始类型和包装类</strong></p>
+<p>指向ValueStack上特定属性的OGNL表达式例子：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h4</span>&gt;</span>Complete and submit the form to create your own portfolio.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"Register"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.username"</span> <span class="attribute">label</span>=<span class="value">"Username"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:password</span> <span class="attribute">name</span>=<span class="value">"user.password"</span> <span class="attribute">label</span>=<span class="value">"Password"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.portfolioName"</span> <span class="attribute">label</span>=<span class="value">"Enter a name "</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.age"</span> <span class="attribute">label</span>=<span class="value">"Enter your age as a double "</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.birthday"</span> <span class="attribute">label</span>=<span class="value">"Enter birthday. (mm/dd/yy)"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:submit</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+</pre></figure></code></pre>
+<p>以下是公开的User对象的JavaBean属性：</p>
+<pre><code><figure class="highlight"><pre>private <span class="keyword">User</span> <span class="keyword">user</span>;
+public <span class="keyword">User</span> getUser() {
+    return <span class="keyword">user</span>;
+}
+public void setUser(<span class="keyword">User</span> <span class="keyword">user</span>) {
+    this.<span class="keyword">user</span> = <span class="keyword">user</span>;
+}
+</pre></figure></code></pre>
+<p>而User对象也公开了相应的属性：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="id">User</span> {</span>
+    <span class="keyword">private</span> String username;
+    <span class="keyword">private</span> String password;
+    <span class="keyword">private</span> String portfolioName;
+    <span class="keyword">private</span> Double age;
+    <span class="keyword">private</span> Date birthday;
+    <span class="keyword">public</span> String getPassword() {
+        <span class="keyword">return</span> password;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setPassword(String password) {
+        <span class="keyword">this</span><span class="variable">.password</span> = password;
+    }
+    ......
+}
+</pre></figure></code></pre>
+<p>注意类型转换和验证之间的区别，以及类型转换错误和验证错误之间的区别。验证代码用来从动作的业务逻辑的视角验证数据是否是数据类型的一个合法实例，它通过validation拦截器或者workflow拦截器对validate()方法的调用而触发。类型转换在将HTTP字符串值绑定到Java类型时发生，如在param拦截器转移请求数据时发生。</p>
+<p>类型转换错误导致用户会被返回到输入页面，并展示一个默认的错误信息告知用户，你可以自定义类型转换问题的错误报告，将在以后章节学习。</p>
+<p><strong>2.处理多值请求参数</strong></p>
+<p>多个参数值可以被映射到传入请求中的一个参数名，一个表单有多种方式在一个参数名下提交多个值，也有多种方法将它们映射到Java端的类型，这意味着使用OGNL有很多种方式。Struts2提供了丰富的支持以便将多值的请求参数转移到Java端各种面向集合的数据类型，从数组到真正的Collection。下面将通过展示两端的示例说明怎样使用它。</p>
+<p><strong>3.数组</strong></p>
+<p>为数据转移指向数组属性(使用索引和不使用索引)：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"ArraysDataTransferTest"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"ages"</span> <span class="attribute">label</span>=<span class="value">"Ages"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"ages"</span> <span class="attribute">label</span>=<span class="value">"Ages"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"ages"</span> <span class="attribute">label</span>=<span class="value">"Ages"</span>/&gt;</span>
+
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"names[0]"</span> <span class="attribute">label</span>=<span class="value">"names"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"names[1]"</span> <span class="attribute">label</span>=<span class="value">"names"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"names[2]"</span> <span class="attribute">label</span>=<span class="value">"names"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:submit</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+</pre></figure></code></pre>
+<p>OGNL输入字段名指向的数组属性：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">private</span> Double[] ages ;
+<span class="keyword">public</span> Double[] getAges() {
+    <span class="keyword">return</span> ages;
+}
+<span class="keyword">public</span> <span class="keyword">void</span> setAges(Double[] ages) {
+    <span class="keyword">this</span><span class="variable">.ages</span> = ages;
+}
+<span class="keyword">private</span> String[] names = new String[<span class="number">10</span>];
+<span class="keyword">public</span> String[] getNames() {
+    <span class="keyword">return</span> names;
+}
+<span class="keyword">public</span> <span class="keyword">void</span> setNames(String[] names) {
+    <span class="keyword">this</span><span class="variable">.names</span> = names;
+}
+</pre></figure></code></pre>
+<p>注意这些属性不需要带索引参数的获取方法和设置方法，OGNL处理所有与索引相关的细节，我们只需通过一对获取方法和设置方法公开数组。</p>
+<p>请求转发的结果页面代码：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h5</span>&gt;</span>Congratulations! You have transferred and converted data to and from Arrays.<span class="tag">&lt;/<span class="title">h5</span>&gt;</span>
+<span class="tag">&lt;<span class="title">h3</span>&gt;</span>Age number 3 = <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"ages[2]"</span> /&gt;</span> <span class="tag">&lt;/<span class="title">h3</span>&gt;</span>
+<span class="tag">&lt;<span class="title">h3</span>&gt;</span>Name number 3 = <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"names[2]"</span> /&gt;</span> <span class="tag">&lt;/<span class="title">h3</span>&gt;</span>
+</pre></figure></code></pre>
+<p><strong>3.List</strong></p>
+<p>使用List与使用数组几乎完全相同，仅有的不同是在Java 5之前List不支持类型指定，List没有类型的特性对Struts 2的类型转换机制有着重要的影响。对List来说，没有方法能够自动发现内部元素的类型。使用List时用两种选择，为元素指定类型或者接受默认类型(String)。接受默认行为时页面代码和使用数组相同，不同的是在Java端，没有类型说明，List中元素都会是String类型。</p>
+<p>有些时候，除了使用String，你会想为List中的元素指定类型。这种情况下，我们只需告知OGNL某个给定属性我们希望的元素类型，这使用一个简单的属性文件实现。</p>
+<p>为了给动作对象上的List属性指定元素类型，我们根据下图中的命名约定创建一个文件。</p>
+<p><img src="/media/2013/03/344633058.png" alt="List指定类型命名约定.png" title="List指定类型命名约定.png"></p>
+<p>文件名约定是：动作名+-+conversion+属性文件扩展名，其中conversion是类型转换用的文件名后缀。之后把这个文件放在Java包中这个类的旁边。文件的内容约定如下图：</p>
+<p><img src="/media/2013/03/879049580.png" alt="List指定类型内容约定.png" title="List指定类型内容约定.png"></p>
+<p>文件内容约定是：Element+_+List类型属性的名字=元素类型(如：Element-weights=java.lang.Double)，这样List属性会像数组属性一样工作，每一个独立元素都会被转换为指定的元素类型。例如页面可以这样写：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[0]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[1]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[2]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>当然也可以不使用索引，这取决于你的偏好，在Java端，动作对象上的属性没有变化。需要记住的一点就是在给List或者其他Collection指定类型时注意不要预先初始化List。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">private</span> <span class="keyword">List</span> weights;
+<span class="keyword">public</span> <span class="keyword">List</span> getWeights() {
+    <span class="keyword">return</span> weights;
+}
+<span class="keyword">public</span> void setWeights(<span class="keyword">List</span> weight) {
+    <span class="keyword">this</span>.weights = weight;
+}
+</pre></figure></code></pre>
+<p>下面是一个更全的功能的示例</p>
+<pre><code><figure class="highlight"><pre>页面代码：
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"users[0].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"users[1].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"users[2].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+
+动作属性代码：
+private List users ;
+public List getUsers(){
+    return users;
+}
+public void setUsers ( List users ) {
+    this.users=users;
+}
+
+指定类型的属性文件内容：
+Element_users=manning.utils.User
+</pre></figure></code></pre>
+<p><strong>5.Map</strong></p>
+<p>Map使用关键字而非索引来关联到它的值，使用关键字的特性对Struts2类型转换过程有两点含义。一是引用它们的OGNL表达式语法与List不同；而是与为Map属性指定类型相关。对Map来说，可以为关键字对象指定类型，如果不指定默认是String。</p>
+<p>首先看一下页面代码，Java端代码和List的相同：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames.mary"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames.jane"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames.hellen"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames['beth']"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames['sharon']"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames['martha']"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>现在在看一下指定类型的示例：</p>
+<pre><code><figure class="highlight"><pre>指定类型属性文件内容
+Element_myUsers=manning.utils.User
+
+页面代码：
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers['chad'].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers['jimmy'].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers['elephant'].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers.chad.birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers.jimmy.birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers.elephant.birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+
+Java端代码：
+private Map myUsers ;
+public Map getMyUsers(){
+    return myUsers;
+}
+public void setMyUsers ( Map myUsers ) {
+    this.myUsers=myUsers;
+}
+</pre></figure></code></pre>
+<p>前面已经说了，除了为元素指定类型，使用Map属性时也可以为关键字对象指定类型。与值一样，OGNL也会把参数的名字当作应该尝试转换为指定类型的字符串。假如我们想使用Integer作为关键字的myUsers版本。应该在属性文件内这样写：</p>
+<pre><code><figure class="highlight"><pre><span class="setting">Key_myOrderedUsers=<span class="value">java.lang.Integer</span></span>
+<span class="setting">Element_myOrderedUsers=<span class="value">manning.utils.User</span></span>
+</pre></figure></code></pre>
+<p>以下是提交表单页面：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myOrderedUsers['1'].birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myOrderedUsers['2'].birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myOrderedUsers['3'].birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>最后，如果使用Java5或更高版本，可以使用泛型来类型化Collection和Map，在类型转换时Struts2可以使用这些信息，使得属性文件配置不再必要。</p>
+<h3>2.自定义类型转换</h3>
+<p>虽然内建的类型转换器功能强大且涵盖面广，但有时我们还是需要构建自定义的类型转化器。你可以指定一个转换逻辑将任何字符串翻译为任何Java类型。唯一需要做的就是创建字符串语法和对应的Java类，之后是使用一个类型转换器把他们连接起来。</p>
+<h4>2.1 实现类型转换器</h4>
+<p>类型转换器是OGNL的一部分，因此类型转换器必须实现ognl.TypeConverter接口。一般情况下，OGNL的类型转换器能实现任何两种数据类型之间的转换。在Web应用程序领域，我们只需实现所有Java类型和HTTP字符串之间的转换即可。</p>
+<p>Struts2提供了一个方便的基类：org.apache.struts2.util.StrutsTypeConverter作为自定义类型转换器的扩展点。下面代码是这个类所定义的抽象方法：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="built_in">Object</span> convertFromString(Map context, String[] values,Class toClass);
+<span class="keyword">public</span> <span class="keyword">abstract</span> String convertToString(Map context, <span class="built_in">Object</span> o);
+</pre></figure></code></pre>
+<p>第一个方法经请求转换为Java对象，第二个方法将Java对象转换为请求字符串。当你编写一个自定义的转换器时，你只需继承这个类并将自己的逻辑填充到这两个方法中即可。</p>
+<h4>2.2 在字符串和Java对象间转换</h4>
+<p><img src="/media/2013/03/2746878052.png" alt="自定义类型转换逻辑.png" title="自定义类型转换逻辑.png"></p>
+<p>以下代码实现了上图所示的转换规则：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CircleTypeConverter</span> <span class="keyword">extends</span> <span class="title">StrutsTypeConverter</span> {</span>
+    <span class="keyword">public</span> Object convertFromString(Map context, String[] values,Class toClass) {
+        String userString = values[<span class="number">0</span>];
+        Circle newCircle = parseCircle ( userString );
+        <span class="keyword">return</span> newCircle;
+    }
+    <span class="keyword">public</span> String convertToString(Map context, Object o) {
+        Circle circle = (Circle) o;
+        String userString = <span class="string">"C:r"</span> + circle.getRadius();
+        <span class="keyword">return</span> userString;
+    }
+    <span class="keyword">private</span> Circle parseCircle( String userString ) <span class="keyword">throws</span> TypeConversionException {
+        Circle circle = <span class="keyword">null</span>;
+        <span class="keyword">int</span> radiusIndex = userString.indexOf(<span class="string">'r'</span>) + <span class="number">1</span>;
+        <span class="keyword">if</span> (!userString.startsWith( <span class="string">"C:r"</span>) )
+            <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException ( <span class="string">"Invalid Syntax"</span>);
+        <span class="keyword">int</span> radius;
+        <span class="keyword">try</span> {
+            radius = Integer.parseInt( userString.substring( radiusIndex ) );
+        } <span class="keyword">catch</span> ( NumberFormatException e ) {
+            <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException ( <span class="string">"Invalid Value for Radius"</span>); 
+        }
+        circle = <span class="keyword">new</span> Circle();
+        circle.setRadius( radius );
+        <span class="keyword">return</span> circle;
+    }
+}
+</pre></figure></code></pre>
+<h4>2.3 配置框架使用自定义转换器</h4>
+<p>构造了自定义转换器之后，必须让框架知道什么时候、在哪里使用它。这里有两种选择，可以配置转换器用在一个给定动作的局部或者全局。前者将只告诉框架在处理特定动作的特定属性时才使用转换器，而后者在应用程序的任何地方，每次通过OGNL设置或者取得一个特定属性时都会使用它。</p>
+<p><strong>1.属性专用</strong></p>
+<p>与前面Map和List指定元素类型相同，在同样的文件中再添加以下内容：</p>
+<pre><code><figure class="highlight"><pre><span class="setting">circle=<span class="value">manning.utils.CircleTypeConverter</span></span>
+</pre></figure></code></pre>
+<p>这一行简单的内容将属性名circle和类型转换器关联起来。现在当OGNL想给Circle属性设置值时，它会自动使用我们定义的类型转换器。</p>
+<p><strong>2.全局类型转化</strong></p>
+<p>我们可以指定所有的Circle类型的属性都使用我们的转换器，这个过程和之前局部指定仅有一点不同：在定义全局类型转换器时，不使用动作名+-+conversion+属性文件扩展名的约定文件，而是使用xwork-conversion.properties，并且文件内容修改为如下：</p>
+<pre><code><figure class="highlight"><pre>manning<span class="variable">.utils</span><span class="variable">.Circle</span>=manning<span class="variable">.utils</span><span class="variable">.CircleTypeConverter</span>
+</pre></figure></code></pre>
+<p>此外，还需将xwork-conversion.properties文件放在类路径下，例如在WEB-INF/classess/中。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-13T02:59:50.000Z"><a href="/My-Work/struts-2-tags-1.html">Mar 13 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-tags-1.html">Struts 2 标签（一）</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>在讲解Struts2标签库之前，本节将首先关注数据通过Struts2标签API离开框架的环境下的OGNL表达式语言。我们会浏览OGNL表达式的语法，并研究它可以取出数据的位置，尤其要深入研究ValueStack和ActionContext。</p>
+<h3>1.入门</h3>
+<p>当一个请求到达框架时，Struts2首先要做的事情是创建存储请求的所有重要数据的对象。应用程序的特定领域数据(使用标签最常访问的数据)会存储在ValueStack中，而另一些更基础的数据也必须存储起来，所有的这些数据连通ValueStack都存储在一个叫做ActionContext的对象中。</p>
+<h4>1.1 ActionContext和OGNL</h4>
+<p>实际上，OGNL表达式可以根据任何一系列对象求值，而ValueStack只是这些对象中的一个，默认的那个。OGNL可用来求值的更宽泛的一系列对象叫做ActionContext。ActionContex包含了框架的请求处理过程可以访问的所有数据，包含内容从应用程序数据到会话作用域或者应用程序作用域的映射。默认情况下OGNL解析会选择ValueStack，但你可以指定其他的对象的名字，例如会话作用域。</p>
+<p>下图展示了ActionContext和它包含的对象，可以把OGNL解析指向其中的任何对象：</p>
+<p><img src="/media/2013/03/3539674110.png" alt="ActionContex包含的对象.png" title="ActionContex包含的对象.png"></p>
+<ul>
+<li>parameters:当前请求中请求参数的映射</li>
+<li>request:请求作用域的属性的映射</li>
+<li>session:会话作用域的属性的映射</li>
+<li>application:应用程序作用域的属性的映射</li>
+<li>attr:按照page、request、session、application作用域的顺序，返回第一个出现的属性</li>
+<li>ValueStack:包含当前请求的应用程序特定领域的所有数据</li>
+</ul>
+<p>每一个OGNL表达式的解析都需要一个根对象，有了它才能开始引用的解析。现在让我们看看如何选择ActionContext中的对象让OGNL基于此对象解析。</p>
+<p><strong>为OGNL选择根对象</strong></p>
+<p>OGNL表达式可以以一个特殊的语法开始，从上下中命名一个解析表达式所根据的对象：</p>
+<pre><code><figure class="highlight"><pre><span class="id">#session</span><span class="attr_selector">['user']</span>
+</pre></figure></code></pre>
+<p>OGNL表达式通过表达式语言的#操作符主动命名ActionContext中的会话映射。#操作符告诉OGNL表达式使用位于上下文中的命名对象作为初始对象解析表达式的剩余部分。</p>
+<h4>1.2 虚拟对象ValueStack</h4>
+<p>当Struts2接收到一个请求时，它立即创佳一个ActionContext、一个ValueStack和一个动作对象。作为应用程序数据的承载者，动作被马上放在ValueStack中，以便框架可以通过OGNL访问它的属性。</p>
+<p>ValueStack只有一个微妙的地方，当OGNL表达式根据ValueStack解析时，它装作一个对象。这个虚拟对象包含放在上面的所有对象的所有属性。如果相同的属性出现多次，栈下面对象的属性会被栈上层的同名属性覆盖。</p>
+<p><img src="/media/2013/03/1296015878.png" alt="ValueStack是OGNL表达式默认解析对象.png" title="ValueStack是OGNL表达式默认解析对象.png"></p>
+<p>如上图所示，一个给定属性的引用的解析指向栈中最高位置出现的属性。以name为例，ValueStack总会返回对象栈中出现在最顶层的name属性。在上述的情况下，动作对象有一个name属性，但由于上层模型对象也有一个name属性，所以动作对象中的name属性永远不能被访问到。</p>
+<h3>2. Struts2标签概要</h3>
+<p>Struts2标签API通过使用条件呈现以继承ValueStack上应用程序的域模型数据，提供了动态创建健壮的网页功能。这些标签可分为4类：数据标签、流程控制标签、UI标签和其他标签。现在我们先不看UI标签，先研究另外3种标签。</p>
+<h4>2.1 Struts 2标签API语法</h4>
+<p>Struts2标签定义在比任何具体的视图层技术更高的层。使用这些标签与调用API一样简单，标签API指定了标签公开的属性和参数。标签API的接口已经全部在(JSP、Velocity和FreeMarker)中实现。</p>
+<p><strong>1.JSP语法</strong></p>
+<p>Struts2标签的JSP版本与其他JSP标签一样。异侠是property标签的简单语法：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"name"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>其他唯一需要说明的是，在使用Struts 2标签之前，在页面的开始部分必须声明包含property标签库的声明：</p>
+<pre><code><figure class="highlight"><pre>&lt;<span class="variable">%@</span> page contentType=<span class="string">"text/html; charset=UTF-8"</span> <span class="variable">%&gt;</span>
+&lt;<span class="variable">%@</span> taglib prefix=<span class="string">"s"</span> uri=<span class="string">"/struts-tags"</span> <span class="variable">%&gt;</span>
+</pre></figure></code></pre>
+<h4>2.2 使用OGNL设置标签属性</h4>
+<p>向标签的属性设置值时，这个属性期望一个字符串字面值，还是一个指向ValueStack上有具体类型的值的OGNL表达式呢？下面我们就讲解这个问题。</p>
+<p>在JSP页面中，所有的内容都是字符串，我们应该很熟悉使用某种转义字符序列来强制这些属性作为表达式解析而不是字符串字面值解析，例如EL表达式的写法${expression}的写法。但是这样会导致标签的边界难于阅读，导出都是EL表达式。为了让OGNL在标签中使用更加直观、可读性更强，Struts2会假定每一个属性都期望得到什么类型的数据，尤其在处理标签的属性时，会区分谁的类型是String，谁的类型不是String。</p>
+<p><strong>1.字符串和字符串类型的属性</strong></p>
+<p>如果一个属性的类型是String，那么在真实的JSP页面中，写入属性的值会被作为字符串字面值解析。如果一个属性不是String类型，那么属性中写入的值会被当作OGNL表达式解析。</p>
+<p>例如下面两个标签，value的值会默认作为OGNL表达式解析，而default的值则会作为字符串解析。</p>
+<pre><code><figure class="highlight"><pre>nonExistingProperty on the ValueStack = <span class="xml"><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"nonExistingProperty"</span> /&gt;</span>
+nonExistingProperty on the ValueStack = <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"nonExistingProperty"</span> <span class="attribute">default</span>=<span class="value">"doesNotExist"</span> /&gt;</span></span>
+</pre></figure></code></pre>
+<p><strong>2.强制使用OGNL解析</strong></p>
+<p>但是，假如前面的例子，我们想使用一个来源于ValueStack的String属性作为标签的default属性值。这时候就需要强制使用OGNL解析的方式了，写法如下，有些像EL表达式，但不同的是使用%:</p>
+<pre><code><figure class="highlight"><pre>nonExistingProperty on the ValueStack =<span class="xml"><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"nonExistingProperty"</span> <span class="attribute">default</span>=<span class="value">"%{myDefaultString}"</span> /&gt;</span></span>
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-12T05:56:20.000Z"><a href="/My-Work/struts-2-data-transfer-and-type-conversion-mechanism-1.html">Mar 12 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-data-transfer-and-type-conversion-mechanism-1.html">Struts 2 的数据转移和类型转换机制(一)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>在实际的开发中的大部分情况，Struts2框剪已经非常好的自动完成了数据转移和类型转换任务。然而若想进一步提高我们的能力，花一点时间和精力来学习数据转移和类型转换究竟是如何工作的将是必要的。也许你已经学会了在简单的情况下如何利用自动数据转移，然而在面临更加复杂的Java端类型(例如Map和List)时，将怎样编写代码呢？本节内容正是要解答上述疑问的。</p>
+<h3>1.数据转移和类型转换：Web应用程序领域的常见任务</h3>
+<p>Web应用程序领域的一个常见任务是从基于字符床的HTTP向Java语言的不同类型移动和转换数据。将字符床解析为double或者float，捕获坏数据抛出的异常，这些任务没有一点意思。更糟的是，这些任务实际上是纯基础设施。</p>
+<p>数据转移和类型转换实际上发生在请求处理周期的两端。几乎Web应用程序中的每一个请求都会发生这个过程，它是这个领域与生俱来的部分。大部分时候我们会将这个责任交给框架，然而有些时候我们会想扩展或者配置这个自动化支持。Struts2类型转换机制功能强大并且特别容易扩展。</p>
+<h4>1.1 OGNL和Struts2</h4>
+<p>我们还没有解释所有这些数据如何从HTTP请求到Java语言，以及如何再通过JSP标签回到HTML。下面的内容将阐明这个神秘的过程。</p>
+<h5>1.1.1 OGNL是什么</h5>
+<p>OGNL是Object-Graph Navigation Language(对象图导航语言)的简称。这听起来有些让人恐惧，似乎我们在学校里学的还不够，它听起来太学术味了。OGNL是一种强大的技术，它被集成在Struts2框架中用来帮助实现数据转移和类型转换。从开发人员基于Struts2框架构建应用程序的角度看，OGNL包含两件事：表达式语言和类型转换器。</p>
+<p><strong>1.表达式语言</strong></p>
+<p>我们已经在表单输入字段的name属性和JSP标签中使用过OGNL表达式语言了。这这两个地方，我们使用OGNL表达式将Java端的数据属性和基于文本的视图层中的字符串绑定起来。</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h5</span>&gt;</span>Congratulations! You have created <span class="tag">&lt;/<span class="title">h5</span>&gt;</span>
+<span class="tag">&lt;<span class="title">h3</span>&gt;</span>The <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"portfolioName"</span> /&gt;</span> Portfolio<span class="tag">&lt;/<span class="title">h3</span>&gt;</span>
+</pre></figure></code></pre>
+<p>OGNL表达式语言是value属性双引号之间的片段，Struts2 property标签从对象的属性中取值，然后将它写入到HTML中代替这个标签，这是表达式语言的要点。表达式语言允许我们使用简单的语法来引用Java环境中存在的对象。</p>
+<p>注：OGNL转义序列%{表达式}可用来告诉框架什么时候把表达式当成OGNL表达式而不是作为字符串面值解析；在默认情况下，框架敬爱那个自动把字符串当作OGNL表达式求值。</p>
+<p><strong>2.类型转换</strong></p>
+<p>基于字符串的HTML世界和框架的本地Java类型之间移动数据时类型转换是如何发生的呢？除了表达式语言，我们也一直在使用OGNL类型转换器。数据转移时类型转换必定发生，即使是两端类型(是字符串时)相同，这仅仅意味着类型转换比较容易。</p>
+<h6>1.1.2 OGNL如何融入框架</h6>
+<p>数据进入和离开框架时，数据在不同的区域间移动时，OGNL如何帮助绑定和转换数据呢？下图展示了整个过程。</p>
+<p><img src="/media/2013/03/272061022.png" alt="数据转移和类型转换过程.png" title="数据转移和类型转换过程.png"></p>
+<p><strong>1.数据进入</strong></p>
+<p>用户输入名字和年龄，并提交了表单，数据的旅程就开始了。当数据进入框架后，它作为一个HttpServletRequest对象公开给Java语言。Struts2经请求参数作为名/值对存储，名和值都是String类型。接下来框架开始处理这些参数的数据转移以及类型转换。</p>
+<p>如图所示，在开始时，Struts2就会将动作对象置于叫做ValueStack的对象上，而User对象作为动作的组件的JavaBean属性也被公开出来。而另一方面，当用户发出请求时，params拦截器会把请求对象中的数据转移到ValueStack上。于是，用户提交的数据属性和Struts2公开的属性就会在ValueStack上出现重复。此时神奇的事情发生了，接下来就是见证奇迹的时刻：</p>
+<p>ValueStack是一个Struts2结构，它呈现了一堆对象属性的聚合。如果有重复属性存在，那么栈中最高的对象的属性会是由ValueStack代表的虚拟对象公开的属性。在上述情况下，由于Struts2公开属性在前，而用户提交数据在后，在栈中用户提交的数据更高，于是数据就自动找到了转移到Struts2公开的对象的属性上的道路。</p>
+<p>在使用OGNL表达式定位到目标属性之后，可以通过使用正确的值调用属性的set方法把数据移动到这个属性上。这是类型转换就开始工作了。我们需要把字符串转换为OGNL指向的age属性的Java类型。OGNL会咨询它可用的类型转换器的集合一确定是否他们中某个可以处理这个特定的转换。</p>
+<p><strong>2.数据流出</strong></p>
+<p>与数据进入相反，在动作完成自身的业务、调用业务逻辑、做数据操作后，某个最终结果会触发，它会向用户呈现一个新的应用程序试图。在这个过程中，数据对象会一直保留在ValueStack上。当结果开始自己的呈现过程时，它也通过标签中的OGNL表达式语言访问ValueStack，从其中取得数据。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-11T05:54:01.000Z"><a href="/My-Work/struts-2-interceptor-2.html">Mar 11 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-interceptor-2.html">Struts 2 拦截器(二)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p><img src="/media/2013/03/2759728019.jpg" alt="拦截器.jpg" title="拦截器.jpg"></p>
+<h3>1.声明拦截器</h3>
+<p>XML是声明拦截器的唯一选择，注解机制现在还不支持声明拦截器。</p>
+<h4>1.1 声明独立的拦截器和拦截器栈</h4>
+<p>通常，拦截器声明包含声明可用的拦截器并把它们与应该触发的动作关联起来。像所有框架组件的声明一样，拦截器的声明必须在package元素内部。以下是struts-default.xml文件中struts-default包的各个拦截器的声明：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"struts-default"</span> <span class="attribute">abstract</span>=<span class="value">"true"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptors</span>&gt;</span>
+         ......
+        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"execAndWait"</span> <span class="attribute">class</span>=<span class="value">"org.apache.struts2.interceptor.ExecuteAndWaitInterceptor"</span>/&gt;</span>
+        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"exception"</span> <span class="attribute">class</span>=<span class="value">"com.opensymphony.xwork2.interceptor.ExceptionMappingInterceptor"</span>/&gt;</span>
+        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"fileUpload"</span> <span class="attribute">class</span>=<span class="value">"org.apache.struts2.interceptor.FileUploadInterceptor"</span>/&gt;</span>
+         ......
+
+        <span class="tag">&lt;<span class="title">interceptor-stack</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"exception"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"alias"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"servletConfig"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"i18n"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"prepare"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"chain"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"debugging"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"scopedModelDriven"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"modelDriven"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"fileUpload"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"checkbox"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"multiselect"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"staticParams"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"actionMappingParams"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"params"</span>&gt;</span>
+                    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeParams"</span>&gt;</span>dojo\..*,</span><span class="keyword">^struts</span><span class="xml">\..*<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+                <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"conversionError"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"validation"</span>&gt;</span>
+                    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+                <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
+                    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+                <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+            <span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
+
+            <span class="tag">&lt;<span class="title">default-interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>/&gt;</span>
+    <span class="tag">&lt;/<span class="title">interceptors</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">package</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>interceptors元素包含这个包内所有的interceptor和interceptor-stack的声明。每个interceptor元素声明了一个可以在包内使用的拦截器。这些声明实际上没有创建一个拦截器或者把这个拦截器与任何动作关联，它们只是把一个名字映射到一个类。struts-default包声明了几个栈，其中中最重要的是defaultStack。</p>
+<p>interceptor-stack元素的内容是一系列interceptor-ref元素，这些引用必须都指向interceptor元素创建的某个逻辑名，interceptor-ref元素也可以传入参数来配置引用创建的拦截器实例。</p>
+<p>最后，一个包可以定义一组默认的拦截器，default-interceptor-ref定义的拦截器组会与这个包内没有显示声明自己的拦截器的所有动作关联，它只指向一个逻辑名，这里是defaultStack。</p>
+<p><strong>XML文档结构</strong></p>
+<p>声明使用的XML文档必须遵守特定的顺序规则，这可以通过DTD查看：</p>
+<pre><code><figure class="highlight"><pre>&lt;!ELEMENT struts ((<span class="keyword">package</span>|<span class="keyword">include</span>|bean|constant)*, unknown-handler-stack?)&gt;
+&lt;!ELEMENT <span class="package"><span class="keyword">package</span> (<span class="title">result</span>-<span class="title">types</span>?, <span class="title">interceptors</span>?, <span class="title">default</span>-<span class="title">interceptor</span>-<span class="title">ref</span>?, <span class="title">default</span>-<span class="title">action</span>-<span class="title">ref</span>?, <span class="title">default</span>-<span class="title">class</span>-<span class="title">ref</span>?, <span class="title">global</span>-<span class="title">results</span>?, <span class="title">global</span>-<span class="title">exception</span>-<span class="title">mappings</span>?, <span class="title">action</span>*)&gt;
+</pre></figure></code></pre>
+<p>上述语句指出，struts-default.xml文件以struts元素开始，这个元素能够包含4种不同的元素类型的0个或者多个实例。与struts的元素不同，package元素的内容必须遵照特定的顺序。另外，所有包含在一个package元素中的元素，出action元素外，都只能出现一次。interceptors元素必须只出现一次或者一次也不出现，并且不需出现在result-types元素之后，并且在default-interceptor-ref元素之前。</p>
+<h4>1.2 将拦截器映射到动作组件</h4>
+<p>可以使用interceptor-ref元素完成拦截器和动作的关联，以下代码片段显示了如何将一系列拦截器和一个特定的动作关联起来：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"MyAction"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.MyAction"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"timer"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"logger"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+    <span class="comment">&lt;!-- 需要再次声明使用defaultStack --&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">result</span>&gt;</span>/success.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+</pre></figure></code></pre>
+<p>首先，这个动作命名了拦截器，但没有提及在struts-default包中声明的defaultStack。正因如此，这个动作必须在一个扩展了struts-default的包中。其次，虽然没有定义任何interceptor-ref的动作会继承默认的拦截器，但是只要动作声明了自己的拦截器，它就失去了自己的默认值，并且为了使用defaultStack就必须显式指出。</p>
+<h4>1.3 设置、覆盖拦截器参数</h4>
+<p>很多拦截器可以被参数化。如果一个拦截器接受参数，那么interceptor-ref元素是向它们传入参数的地方。比如之前所说的workflow拦截器被参数化以忽略对动作的某些方法名的访问：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+</pre></figure></code></pre>
+<p>如果我们想重用包含了defaultStack的拦截器栈，但是我们想改变excludeMethods参数的值要怎么办呢？很简单，代码如下：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"MyAction"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.MyAction"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"workflow.excludeMethods"</span>&gt;</span>dosomething<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">result</span>&gt;</span>/success.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+</pre></figure></code></pre>
+<h3>2.构建自定义拦截器</h3>
+<p>除了安排栈的顺序和在调试中学习解决顺序问题需要多加留意外，编写拦截器其实很容易。</p>
+<h4>2.1 实现Interceptor接口</h4>
+<p>在编写一个拦截器时需要实现com.opensymphony.xwork2.interceptor.Interceptor接口。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Interceptor</span> <span class="keyword">extends</span> <span class="title">Serializable</span> {</span>
+    <span class="keyword">public</span> <span class="keyword">void</span> destroy();
+    <span class="keyword">public</span> <span class="keyword">void</span> init();
+    <span class="keyword">public</span> String intercept(ActionInvocation actionInvocation) <span class="keyword">throws</span> Exception;
+}
+</pre></figure></code></pre>
+<p>可以看到，这个简单的接口只定义了3个方法，前两个方法是典型的生命周期方法，真正的业务逻辑发生在intercept()方法中。</p>
+<h4>2.2 声明拦截器并构建新的默认栈</h4>
+<p>在定义完拦截器类后，需要将这个拦截器应用在动作上，所以可以构建一个自定栈，它的大致写法如下：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"demo4Secure"</span> <span class="attribute">namespace</span>=<span class="value">"/secure"</span> <span class="attribute">extends</span>=<span class="value">"struts-default"</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">interceptors</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"yourInterceptor"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.utils.YourInterceptor"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor</span>&gt;</span>
+
+        <span class="tag">&lt;<span class="title">interceptor-stack</span> <span class="attribute">name</span>=<span class="value">"myStack"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"yourInterceptor"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">interceptors</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">default-interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"myStack"</span>&gt;</span><span class="tag">&lt;/<span class="title">default-interceptor-ref</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"yourAction"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.action.YourAction"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">result</span>&gt;</span>/success.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+
+<span class="tag">&lt;/<span class="title">package</span>&gt;</span>
+</pre></figure></code></pre>
+<p>首先，我们必须使用一个interceptors元素来包含所有的interceptor和interceptor-stack的声明。我们必须使用一个interceptor元素将Java类映射到一个逻辑名(yourInterceptor)。其次，我们构建了一个新栈，这个栈使用defaultStack并且把新拦截器追加到它的上面(当然根据业务的不同，也可以放在下面)。最后，我们把myStack声明为这个包的默认拦截器栈。以上这样做的好处是拦截器与动作代码完全分离，并且实现了可重用。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-10T05:48:55.000Z"><a href="/My-Work/struts-2-interceptor-1.html">Mar 10 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-interceptor-1.html">Struts 2 拦截器(一)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>从开发人员日常工作的角度来看，动作组件可能是框架的核心和灵魂，然而在后台工作的默默无闻的拦截器却可以说是真正的英雄——拦截器负责完成了框架的大部分处理工作。</p>
+<h3>1.拦截请求的意义</h3>
+<h4>1.1 清理MVC</h4>
+<p>拦截器消除了动作组件中的横切任务。日志记录功能是典型的横切任务，它不是某一个动作所特有的，而是横向关联所有动作。作为软件工程师，我们会把这个任务提到更高的层面，让它处在任何需要日志记录的请求上(或者说之前)，达到将MVC关注点分离的目的。</p>
+<p>拦截器承担的另一些任务被称为预处理或者后加工。预处理任务的一个很好的示例就是常见的数据转移，它通过params拦截器实现。</p>
+<p>在Struts2中没有一个动作被单独调用，动作调用是一个分层的过程，总是包含一系列的拦截器在动作执行之前或者之后执行。框架不直接调用动作的execute()方法，而是创建一个叫做ActionInvocation的对象，它封装了动作的一系列被配置的动作执行之前之后触发的拦截器。下图展示了ActionInvocation类封装的完整的动作执行过程。</p>
+<p><img src="/media/2013/03/3358556227.png" alt="ActionInvocation 流程.png" title="ActionInvocation 流程.png"></p>
+<p>拦截器的强大功能之一是改变调用工作流。有时候某个拦截器会决定动作不应该执行，此时，拦截器可以自己返回一个控制字符串，从而终止工作流。以workflow拦截器为例，这个拦截器做两件事情。首先，如果动作实现了Validateable接口，那么调用动作的validate()方法。其次，检查动作上是否出现了错误信息。如果出现了错误信息，它返回控制字符串并终止后续执行。</p>
+<h4>1.2 拦截器的好处</h4>
+<p>使用拦截器分层让软件更整洁，并增加了可读性和可测试性，也提高了灵活性。从这种灵活性中得到的两个主要益处是可重用和可配置。</p>
+<p>每一个人都想重用软件，想达到可重用很简单，只需将想重用的逻辑隔离到清晰分割的单元。把这些逻辑隔离到拦截器之后，我们可以把它们放在任何地方，应用到所有动作类上。例如我们通常通过继承defaultstack获得的代码重用。</p>
+<p>除代码重用之外，拦截器分层的能力还给我们带来了另外一些非常重要的好处。我们能够很容易的配置它们的顺序和数量。</p>
+<h3>2.拦截器的工作原理</h3>
+<h4>2.1 总指挥 ActionInvocation</h4>
+<p>ActionInvocation封装了与特定动作执行相关的所有处理细节，所以知道ActionInvocation做什么就等于知道Struts2如何处理请求。当框架收到一个请求时，它首先必须决定这个URL映射到哪个动作，这个动作的一个实例会被加入到一个新创建的ActionInvocation示例中。接着，框架咨询声明性架构(通过xml或者Java注解)，以发现哪些拦截器应该触发，指向这些拦截器的引用将被加入到ActionInvocation中。</p>
+<h4>2.2 如何触发拦截器</h4>
+<p>框架创建了ActionInvocation，并填充了需要的所有对象和信息，通过调用ActionInvocation公开的invoke()方法开始动作的执行，此时拦截器栈中的第一个拦截器开始调用过程。ActionInvation负责跟踪执行过程达到的状态，并把控制交给栈中合适的拦截器。ActionInvation通过调用拦截器的intercept()方法将控制转交给拦截器。后续拦截器继续执行，最终执行动作。这些都是通过递归调用ActionInvocation的invoke()方法实现。</p>
+<ol>
+<li>调用ActionInvocation对象的invoke()方法</li>
+<li>开始调用第一个拦截器</li>
+<li>调用拦截器的intercept()方法，并把ActionInvocation实例作为参数传递</li>
+<li>拦截器调用传递的参数即ActionInvocation实例的invoke()方法</li>
+<li>开始调用第二个拦截器
+......
+N. 栈中没有拦截器开始触发动作</li>
+</ol>
+<p>在此过程中，ActionInvocation在内部管理处理状态，它总是能知道现在处在栈的哪里。</p>
+<p>拦截器有一个三阶段的、有条件的执行周期，如下所述：</p>
+<ol>
+<li>做一些预处理</li>
+<li>通过调用invoke()方法将控制转移给后续的拦截器，最后直到动作；或者通过返回一个控制字符串终端执行</li>
+<li>做一些后加工</li>
+</ol>
+<h3>3.Struts2 内置的拦截器</h3>
+<p>Struts2框架自带了一系列功能强大的内置拦截器，它们提供了你想从Web框架得到的大部分功能。除了defaultStack这个拦截器栈，框架还自带了很多拦截器和已经预先配置好的拦截器栈。</p>
+<h4>3.1工具拦截器</h4>
+<p>这些拦截器提供了辅助开发、调优及解决问题的简单工具。</p>
+<h5>3.1.1 timer拦截器</h5>
+<p>这个简单的拦截器只记录执行花费的时间，在拦截器栈中的位置决定了它实际测量什么时间。</p>
+<h5>3.1.2 logger拦截器</h5>
+<p>这个拦截器提供了一个简单的日志记录机制，记录了在预处理事的进入声明以及在后加工时的退出声明。</p>
+<h4>3.2 数据转移拦截器</h4>
+<h5>3.2.1 params拦截器(defaultStack)</h5>
+<p>这个熟悉的拦截器将请求参数转移到通过ValueStack公开的属性(包括ModelDriven动作通过域模型对象提供的属性)上。params拦截器不知道这些数据最终会去哪里，它只是把数据转移到在ValueStack上发现的第一个匹配的属相上。</p>
+<p>动作总是在请求处理周期开始时被放到ValueStack上。ModelDriven动作则被modelDriven拦截器放在ValueStack上。</p>
+<h5>3.2.2 static-params拦截器(defaultStack)</h5>
+<p>这个拦截器也将参数转移到ValueStack公开的属性上，不同的是参数来源于声明性框架(XML)的动作元素中。</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"Upload"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.action.Upload"</span>&gt;</span>
+    <span class="comment">&lt;!-- 上传路径 --&gt;</span>
+    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"storePath"</span>&gt;</span>E:\temp\<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">result</span>&gt;</span>/Uploaded.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">result</span> <span class="attribute">name</span>=<span class="value">"input"</span>&gt;</span>/UploadForm.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+</pre></figure></code></pre>
+<p>注意一点，defaultStack中static-params拦截器在params拦截器之前触发，这意味着请求参数会覆盖XML中param元素的值。</p>
+<h5>3.2.3 autowiring拦截器</h5>
+<p>这个拦截器为使用Spring管理应用程序资源提供了一个集成点。复习Spring的时候再说吧。</p>
+<h5>3.2.4 servlet-config拦截器(defaultStack)</h5>
+<p>这个拦截器将来源于Servlet API的各种对象注入到动作中，动作只需实现必要的接口即可。以下的接口可以用来取得与Servlet环境相关的不同对象。</p>
+<pre><code><figure class="highlight"><pre>ServletContextAware设置ServletContext
+ServletRequestAware设置HttpServletRequest
+ServletResponseAware设置HttpServletResponse
+ParameterAware设置<span class="keyword">Map</span>类型的请求参数
+RequestAware设置<span class="keyword">Map</span>类型的请求属性
+SessionAware设置<span class="keyword">Map</span>类型的会话属性
+ApplicationAware设置<span class="keyword">Map</span>类型的应用程序领域属性
+PrincipalAware设置Principal对象(安全相关)
+</pre></figure></code></pre>
+<p>每一个接口包含一个方法——当前资源的设置方法。最佳实践建议避免使用Servlet API对象，因为他们会将动作代码绑定到Servlet API.</p>
+<h5>3.2.5 fileUpload拦截器(defaultStack)</h5>
+<p>fileUpload拦截器将文件和元数据从多重请求转换为常规的请求参数，以便能够将它们像普通参数一样设置到动作上。</p>
+<h4>3.3 工作流拦截器</h4>
+<p>工作流拦截器提供改变请求处理的工作流的机会，这里的工作流是指贯穿拦截器、动作、结果，最后又回到拦截器的处理路径。工作流拦截器检查处理的状态，有条件的干涉、改变正常路径。</p>
+<h5>3.3.1 workflow拦截器(defaultStack)</h5>
+<p>确实有一个拦截器就叫workflow。它与动作协作，提供数据验证以及验证错误发生时改变后续工作流的功能。workflow拦截器还引入了另一个重要的拦截器概念——使用params调整拦截器的执行。workflow拦截器可以使用以下几个参数：</p>
+<pre><code><figure class="highlight"><pre><span class="function"><span class="title">alwaysInvokeValidate</span><span class="params">(true或者false,默认是true，意味着<span class="function_name">validate</span>()方法会被调用)</span>
+<span class="title">inputResultName</span><span class="params">(验证失败时选择的结果的名字，默认值是<span class="variable">Action</span>.<span class="variable">INPUT</span>)</span>
+<span class="title">excludeMethods</span><span class="params">(workflow拦截器不应执行的方法名，这样可以略过一个特定入口方法的验证检查)</span>
+</pre></figure></code></pre>
+<p>这些内容在defaultStack中进行了配置，如下来源于struts-default.xml的代码片段：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
+    ......
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
+</pre></figure></code></pre>
+<p>这样配置将排除input,back,cancel,browse方法上的validate()验证。</p>
+<h5>3.3.2 validation拦截器(defaultStack)</h5>
+<p>validation拦截器是Struts2验证框架的一部分，提供了声明性的方式验证你的数据。不用编写验证代码，验证框架让你使用XML或者Java注解描述数据的验证规则。</p>
+<p>注意：validation拦截器在workflow拦截器之前触发。</p>
+<h5>3.3.3 prepare拦截器(defaultStack)</h5>
+<p>prepare拦截器提供了一种向动作追加额外工作流处理的通用入口点。当prepare拦截器执行时，它在动作上查找prepare()方法(首先查找是否实现了Preparable接口)，它允许执行任何类型的预处理。</p>
+<p>prepare拦截器也很灵活，例如它可以在一个动作上为不同的执行方法定义特别的预备方法。以下是预备方法的命名约定：</p>
+<pre><code><figure class="highlight"><pre>动作方法名    预处理方法<span class="number">1</span>                  预处理方法<span class="number">2</span> 
+<span class="function"><span class="title">input</span><span class="params">()</span>        <span class="title">prepareInput</span><span class="params">()</span>          <span class="title">prepareDoInput</span><span class="params">()</span> 
+<span class="title">update</span><span class="params">()</span>     <span class="title">prepareUpdate</span><span class="params">()</span>       <span class="title">prepareDoUpdate</span><span class="params">()</span>
+</pre></figure></code></pre>
+<h5>3.3.4 modelDriven(defaultStack)</h5>
+<p>modelDriven拦截器通过调用getModel()方法改变执行的工作流，并将模型对象放在ValueStack上从请求接受参数。在不使用这个拦截器的情况下，参数会被params拦截器直接转移到动作对象上。</p>
+<h4>3.4 其他拦截器</h4>
+<h5>3.4.1 exception拦截器(defaultStack)</h5>
+<p>exception拦截器在defaultStack中出现在第一位，也应该在任何你创建的自定义栈中出现在第一位。exception拦截器捕获异常，并根据类型将它们映射到用户自定义的错误页面。它的位置在栈的顶端，这样可以保证它能够捕获动作调用所有阶段可能生成的所有异常，而在后加工阶段又会最后一个触发，因此能够捕获所有的异常。当捕获异常时，exception拦截器会创建一个ExceptionHolder对象，并将其放在ValueStack的最顶端，ExceptionHolder是一个异常的包装器，它把跟踪栈和异常作为JavaBean属性公开出来，可以在错误页面中通过标签访问这些属性。</p>
+<h5>3.4.2 token拦截器和token-session拦截器</h5>
+<p>token和token-session拦截器可以作为避免表单重复提交系统的一部分。token拦截器用来向被拦截器检查的请求传入一个令牌，如果唯一的令牌再次来到拦截器，那么这个请求被视为重复的。</p>
+<h5>3.4.3 scoped-modelDriven拦截器(defaultStack)</h5>
+<p>这个拦截器为动作的模型对象提供跨请求的向导式的持久性，它增加了modelDriven拦截器的功能，允许你将模型对象存储到绘画作用域中。</p>
+<h5>3.4.4 execAndWait拦截器</h5>
+<p>当一个请求需要执行很长时间时，最好能给用户一些反馈，execAndWait拦截器可帮助用户避免急躁。</p>
+<h4>3.5 内置的拦截器栈</h4>
+<p>大部分可能会用到的其他内置拦截器栈都是defaultStack的简化版本，这些较小的栈是为了成为模块化的构建单元，用来构建更大的栈。</p>
+<p>一般情况下推荐使用defaultStack，在某些情况下，多余的拦截器并不会那么影响性能，况且混乱的组织拦截器可能会迅速增加调试的复杂度，因此还是使用内置的最容易的途径——defaultStack吧。</p>
+<blockquote>
+<p>Struts2不仅非常灵活，而且它也代表着更多的开箱即用。</p>
+</blockquote>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+
+<nav id="pagination">
+  
+    <a href="/page/3/" class="prev">Prev</a>
+  
+  
+    <a href="/page/5/" class="next">Next</a>
+  
+  <div class="clearfix"></div>
+</nav></div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/My-Work/after-install-ubuntu-1304.html">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/My-Work/java-programmers-in-the-eyes-of-javascript.html">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/My-Life/june-youth-future.html">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/My-Work/how-install-apache-24-and-php-54.html">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/My-Life/reasons-to-date-a-geek-boy.html">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>

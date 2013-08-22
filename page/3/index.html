@@ -1,0 +1,2991 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>Page 3 | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content">
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-18T06:24:59.000Z"><a href="/My-Work/struts-2-validation-2.html">Mar 18 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-validation-2.html">Struts 2 的验证框架(二)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>前一节中我们介绍了Struts2的验证框架及怎样自定义验证器，本节将介绍一些使用验证框架的高级主题。一些高级主题只研究了验证机制的细微差别，而另一些高级主题则展示了如何将验证框架应用到一些更特殊的Struts 2开发模式。这些内容将涵盖验证器的继承，将验证映射到域模型对象而不是动作，验证器失败时短路跳出验证等。</p>
+<h3>1. 在域对象级别验证</h3>
+<p>在域对象级别是指动作把整个User对象作为JavaBean属性公开出来。在域对象级别验证，首先需要做的是定义元数据，以下是User-validation.xml文件的全部内容：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="doctype">&lt;!DOCTYPE validators PUBLIC "-//OpenSymphony Group//XWork Validator </span><span class="number">1.0</span><span class="xml"></span><span class="number">.2</span><span class="xml">//EN"
+       "http://www.opensymphony.com/xwork/xwork-validator-</span><span class="number">1.0</span><span class="xml"></span><span class="number">.2</span><span class="xml">.dtd"&gt;
+<span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"password"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">10</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">6</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password should be </span><span class="number">6</span><span class="xml">-</span><span class="number">10</span><span class="xml"> characters.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"passwordintegrity"</span>&gt;</span>
+          <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"specialCharacters"</span>&gt;</span>$!@#?<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+          <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password must contain one letter, one number, and one of the following "</span><span class="variable">${specialCharacters}</span><span class="xml">".<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"username"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">8</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">5</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">message</span>&gt;</span>While </span><span class="variable">${username}</span><span class="xml"> is a nice name, a valid username must be between </span><span class="variable">${minLength}</span><span class="xml"> and </span><span class="variable">${maxLength}</span><span class="xml"> characters long. <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+     <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"email"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+          <span class="tag">&lt;<span class="title">message</span>&gt;</span>You must enter a value for email.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+       <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"email"</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">message</span> <span class="attribute">key</span>=<span class="value">"email.invalid"</span>/&gt;</span>
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+   <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">validator</span> <span class="attribute">type</span>=<span class="value">"expression"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"expression"</span>&gt;</span>username != password<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">message</span>&gt;</span>Username and password can't be the same.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>这个文件与之前的Register-validation.xml文件完全相同，但是我们需要把它放在User类同级目录下。User验证数据就绪后，我们需要把使用User的动作和这些验证元数据连接起来。这由visitor验证器完成。以下代码片段展示了UpdateAccount-validation.xml文件的简要内容，此文件将放在与UpdateAccount动作相同目录下：</p>
+<pre><code><figure class="highlight"><pre><span class="doctype">&lt;!DOCTYPE validators PUBLIC "-//OpenSymphony Group//XWork Validator 1.0.2//EN"
+       "http://www.opensymphony.com/xwork/xwork-validator-1.0.2.dtd"&gt;</span>
+<span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+   <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"user"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"visitor"</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">message</span>&gt;</span>User:  <span class="tag">&lt;/<span class="title">message</span>&gt;</span>     
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>    
+  <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span>
+</pre></figure></code></pre>
+<p>这个文件仅仅使用visitor验证器将验证细节全部转交给在这个指定的字段名的类上定义的验证元数据，即指定了user字段。visitor验证器使用这个信息找到User-validation.xml并使用这个文件描述的验证逻辑验证user属性上所有的数据。而在message元素上我们只定义了验证产生的错误信息的前缀。</p>
+<p><strong>ModelDriven动作中使用验证框架</strong></p>
+<p>当动作实现ModelDriven接口时，也可以使用上述技术，对于UpdateAccount-validation.xml文件我们只需要做一下轻微的改变：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+   <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"model"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"visitor"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"appendPrefix"</span>&gt;</span>false<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>User:  <span class="tag">&lt;/<span class="title">message</span>&gt;</span>      
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>    
+  <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span>
+</pre></figure></code></pre>
+<p>做了两处变更，首先，由于ModelDriven动作的域对象通过getModel()获取方法公开出来，所以现在我们需要改变指向model的字段名。其次，我们需要添加appendPrefix参数告诉visitor验证器不需要在字段前添加user前缀来获取字段值。</p>
+<h3>2. 使用验证上下文优化验证</h3>
+<p>有时候可能需要一种更加细粒度的对什么时候运行哪些验证的控制级别，为了控制这些内容，验证框架引入了上下文的概念。数据验证上下文提供了一种简单的方法来识别我们想验证的数据，在使用这些数据的应用程序中的具体位置。</p>
+<p>如果一个动作类中包含了多个方法作为动作的路口点时，我们就需要使用验证上下文。具体的做法是为这几个方法分别建立遵循：类名+-+方法名+-+validation.xml这个规则的文件，并在文件中定义验证逻辑。如果你仍然定义了一个类名+-+validation.xml的文件，那么这个文件中定义的验证也会被加载。</p>
+<p>与visitor验证器和域对象一起使用验证上下文时，方法与此相同，比如只需在User类所在的目录下定义类名+-+方法名+-+validation.xml的文件分别添加验证规则即可。</p>
+<p>显然这种方式很可能会发生冲突而不适合，幸运的是，我们可以在visitor验证器中使用context属性定义一个上下文名称来替换之前文件名中的方法名。使用如下：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"user"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"visitor"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"context"</span>&gt;</span>admin<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>User: <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+</pre></figure></code></pre>
+<p>于是我们就可以使用User-admin-validation.xml的名称命名文件而避免冲突。</p>
+<h3>3. 验证继承</h3>
+<p>我们已经知道验证可以被声明在不同级别的不同上下文中，现在我们简要的描述一下验证声明的继承。下面展示了当框架开始处理时收集验证文件位置的顺序：</p>
+<ul>
+<li>SuperClass-validation.xml</li>
+<li>SuperClass-aliasName-validation.xml</li>
+<li>Interface-validation.xml</li>
+<li>Interface-aliasName-validation.xml</li>
+<li>ActionClass-validation.xml</li>
+<li>ActionClass-aliasName-validation.xml</li>
+</ul>
+<p>在定义验证时，应该基于这个结构在这个搜索列表的更高层定义通用的验证，这样允许你重用这些定义。</p>
+<h3>4. 验证短路效应</h3>
+<p>验证框架的一个有用特性是当一个给定的验证失败时，它能够像短路一样停止后续验证。下面是一个用例：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"password"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span> <span class="attribute">short-circuit</span>=<span class="value">"true"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">10</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">6</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password should be </span><span class="number">6</span><span class="xml">-</span><span class="number">10</span><span class="xml"> characters.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"passwordintegrity"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"specialCharacters"</span>&gt;</span>$!@#?<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password must contain one letter, one number, and one of the following "</span><span class="variable">${specialCharacters}</span><span class="xml">".
+        <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">field</span>&gt;</span> </span>
+</pre></figure></code></pre>
+<p>这里我们追加的唯一内容是short-circuit属性，把它设置为true。这样做的目的是想在stringlength检查失败的情况下不让passwordintegrity检查运行。注意，虽然这个short-circuit定义在一个字段验证器上，但是这个字段剩余的验证都会成为短路的。如果在动作级别定义短路，那么所有的验证都将成为短路的。</p>
+<h3>5. 使用注解声明验证</h3>
+<p>使用注解声明验证和使用XML没有什么不同，下面是一个完整示例：</p>
+<pre><code><figure class="highlight"><pre><span class="annotation">@Validation</span>
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RegisterValidationAnnotated</span> <span class="keyword">extends</span> <span class="title">ActionSupport</span> <span class="keyword">implements</span> <span class="title">SessionAware</span> {</span>
+
+    <span class="annotation">@ExpressionValidator</span>(expression = <span class="string">"username != password"</span>, message = <span class="string">"Username and password can't be the same."</span>)
+    <span class="keyword">public</span> String execute(){
+        <span class="comment">/*
+         * Create and move the data onto our application domain object, user.
+         */</span>
+        User user = <span class="keyword">new</span> User();
+        user.setPassword( getPassword() );
+        Portfolio newPort = <span class="keyword">new</span> Portfolio();
+        newPort.setName( getPortfolioName() );
+        user.getPortfolios().add( newPort );
+        user.setUsername( getUsername() );
+
+        <span class="comment">/* Login the newly created user */</span>
+        getPortfolioService().persistUser( user );
+        session.put( Struts2PortfolioConstants.USER, user );
+
+        <span class="keyword">return</span> SUCCESS;
+    }
+
+    <span class="comment">/* JavaBeans Properties to Receive Request Parameters */</span>
+    <span class="keyword">private</span> String username;
+    <span class="keyword">private</span> String password;
+    <span class="keyword">private</span> String portfolioName;
+    <span class="keyword">private</span> <span class="keyword">boolean</span> receiveJunkMail;
+    <span class="keyword">private</span> String email;
+
+    <span class="annotation">@RequiredStringValidator</span>(type = ValidatorType.FIELD, message=<span class="string">"Email is required."</span>)
+    <span class="annotation">@EmailValidator</span>(type = ValidatorType.FIELD, key=<span class="string">"email.invalid"</span>, message=<span class="string">"Email no good."</span>)
+    <span class="keyword">public</span> <span class="keyword">void</span> setEmail(String email) {
+        <span class="keyword">this</span>.email = email;
+    }
+    <span class="keyword">public</span> String getEmail() {
+        <span class="keyword">return</span> email;
+    }
+
+    <span class="annotation">@RequiredStringValidator</span>(type = ValidatorType.FIELD, message = <span class="string">"Portfolio name is required."</span>)
+    <span class="keyword">public</span> String getPortfolioName() {
+        <span class="keyword">return</span> portfolioName;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setPortfolioName(String portfolioName) {
+        <span class="keyword">this</span>.portfolioName = portfolioName;
+    }
+
+    <span class="annotation">@StringLengthFieldValidator</span>(type = ValidatorType.FIELD, minLength=<span class="string">"5"</span> , maxLength = <span class="string">"8"</span>,  message = <span class="string">"Password must be between ${minLength} and ${maxLength} characters."</span>)
+    <span class="annotation">@RequiredStringValidator</span>(type = ValidatorType.FIELD, message = <span class="string">"Password is required."</span>)
+    <span class="keyword">public</span> String getPassword() {
+        <span class="keyword">return</span> password;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setPassword(String password) {
+        <span class="keyword">this</span>.password = password;
+    }
+
+    <span class="annotation">@RequiredStringValidator</span>(type = ValidatorType.FIELD, message = <span class="string">"Username is required."</span>)
+    <span class="annotation">@StringLengthFieldValidator</span>(type = ValidatorType.FIELD, minLength=<span class="string">"5"</span> , maxLength = <span class="string">"8"</span>,  message = <span class="string">"Username must be between ${minLength} and ${maxLength} characters."</span>)
+    <span class="keyword">public</span> String getUsername() {
+        <span class="keyword">return</span> username;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setUsername(String username) {
+        <span class="keyword">this</span>.username = username;
+    }
+
+    <span class="keyword">public</span> <span class="keyword">boolean</span> isReceiveJunkMail() {
+        <span class="keyword">return</span> receiveJunkMail;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setReceiveJunkMail(<span class="keyword">boolean</span> receiveJunkMail) {
+        <span class="keyword">this</span>.receiveJunkMail = receiveJunkMail;
+    }
+
+    <span class="keyword">private</span> PortfolioServiceInterface portfolioService;
+
+    <span class="keyword">public</span> PortfolioServiceInterface getPortfolioService( )     {
+
+        <span class="keyword">return</span> portfolioService;
+
+    }
+
+    <span class="keyword">public</span> <span class="keyword">void</span> setPortfolioService( PortfolioServiceInterface portService){
+        portfolioService = portService;
+    }
+
+    <span class="keyword">private</span> Map session;
+
+    <span class="keyword">public</span> <span class="keyword">void</span> setSession(Map session) {
+
+        <span class="keyword">this</span>.session = session;
+    }
+
+}
+</pre></figure></code></pre>
+<p>一个细微的不同是消息处理方式。message属性是这些注解必须的属性。如果想使用来自于属性文件资源包的消息，你不需要把关键字作为message属性的值。相反，向注解添加key属性即可，但你仍然需要在message中指定消息的值，当key查找失败时，将使用它作为默认消息。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-18T06:24:53.000Z"><a href="/My-Work/struts-2-validation-1.html">Mar 18 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-validation-1.html">Struts 2 的验证框架(一)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>之前我们已经学习了如何通过Validateable接口的validate()方法实现动作本地的验证方式。虽然这种方式工作得很好，但是它的某些限制最终会变得难以负担。因此，在本节中我们将引入Struts 2框架的另一个高级机制——验证框架。数据验证框架提供了一个比Validateable接口更通用、更可维护的验证解决方案。验证框架中更强大的一点是Validator（验证器），它是一种可重用的组件，其中实现了特定类型的验证逻辑。</p>
+<h3>1.熟悉数据验证框架</h3>
+<p>数据验证框架早已成为了Web应用程序框架的一部分，但是Struts 2将它在优化、模块化、整洁继承方面带到了一个权限的水平。</p>
+<h4>1.1 验证框架的架构</h4>
+<p>下图展示了验证框架的主要组件：</p>
+<p><img src="/media/2013/03/1475721437.png" alt="Struts 2 验证框架.png"></p>
+<p>如上图所示，在验证框架中有3个主要的组件：域数据、验证元数据和验证器。在验证工作中每一个组件都扮演了至关重要的角色，我们将一一解释这些内容。</p>
+<p><strong>1.域数据</strong></p>
+<p>首先，必须有一些验证数据，这些数据以属性的方式驻留在Struts 2的动作中，数据来自对象或者模型驱动对象。</p>
+<p><strong>2.验证元数据</strong></p>
+<p>验证器和数据属性之间有一个中间组件，这个中间组件就是元数据，这些数据将每一个数据属性与属性运行时数据的合法性验证关联起来。一个属性可以关联多个验证器，也可以不关联任何验证器。元数据层可以使用XML文件或者Java注解将数据属性映射到验证器。</p>
+<p><strong>3.验证器</strong></p>
+<p>所有这些数据的验证实际上都有验证器完成。验证器是一个包含了执行某种细粒度的验证行动的逻辑的可重用组件。</p>
+<h4>1.2 Struts 2 工作流中的验证框架</h4>
+<p>现在看看所有的这些验证工作是如何完成的。验证框架实际上与基本数据验证共享了大部分功能，它使用ValidationAware接口存储错误信息。如果需要，workflow拦截器会将用户带回到input页面。实际上，唯一改变的是验证本身，但是这是一个重大的变化。</p>
+<p>不管基本的验证示例还是验证框架都在Struts 2自带的defaultStack环境下工作。下面代码片段是跟当前话题相关的defaultStack部分，来自struts-default.xml文件：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"params"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"conversionError"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"validation"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>我们需要注意validation拦截器，workflow拦截器调用validate()方法来实施基本验证还没有参与。当validation拦截器触发时，它会通过前一节提到的元数据实施所有已经定义的验证。一下是验证框架的工作流程，数据验证框架在数据转移、类型转换之后，workflow拦截器之前运行：</p>
+<p><img src="/media/2013/03/1923682797.png" alt="验证框架的工作流程.png"></p>
+<p>从图中可以看出整个流程有两个数据验证机制，一种是validation拦截器即数据验证框架的验证，一种是workflow调用validate()方法的验证。我们将会有两种选择，如果能够预测到一个验证逻辑将来还会被重用，那么使用一个自定义验证器来实现会更有意义。然而，如果验证逻辑确实是一个生僻的需求，并且很可能只适用于一次的情况，那么把它放在validate()方法中会更有意义。</p>
+<h3>2.将动作关联到验证框架</h3>
+<h4>2.1 使用ActionClass-validations.xml声明验证元数据</h4>
+<p>现在，我们呢使用XML文件声明需要验证的元数据，文件名以：动作类名+-+validations.xml为规范，以下是Register-validation.xml:</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="doctype">&lt;!DOCTYPE validators PUBLIC "-//OpenSymphony Group//XWork Validator </span><span class="number">1.0</span><span class="xml"></span><span class="number">.2</span><span class="xml">//
+    EN" "http://www.opensymphony.com/xwork/xwork-validator-</span><span class="number">1.0</span><span class="xml"></span><span class="number">.2</span><span class="xml">.dtd"&gt;
+<span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"password"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>You must enter a value for password.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"username"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">8</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">5</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>While </span><span class="variable">${username}</span><span class="xml"> is a nice name, a valid username must
+                be between </span><span class="variable">${minLength}</span><span class="xml"> and </span><span class="variable">${maxLength}</span><span class="xml"> characters long.
+        <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"portfolioName"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span> <span class="attribute">key</span>=<span class="value">"portfolioName.required"</span>/&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"email"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>You must enter a value for email.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"email"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span> <span class="attribute">key</span>=<span class="value">"email.invalid"</span>/&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">validator</span> <span class="attribute">type</span>=<span class="value">"expression"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"expression"</span>&gt;</span>username != password<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>Username and password can't be the same.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p><strong>1.字段验证器</strong></p>
+<p>字段验证器是用来操作一个独立字段的验证器。这里的字段(field)与数据属性意思相同，字段验证器中的“字段”的含义是它们来源于请求的HTML表单的字段。</p>
+<p>例如第一个字段password字段，一旦为数据声明了一个field元素，我们只需在field元素内部放入field-validator元素来声明哪些验证器用来验证此数据。对于password，我们只声明了一个requiredstring验证器。message元素包含验证失败时显示的消息的文本。一个field元素可以声明任意多个验证器。</p>
+<p><strong>2.非字段验证器</strong></p>
+<p>你也可以声明验证逻辑不是适用在某个特定字段的验证器，这些验证器适用于整个动作，通常包含对多个字段值的检查。例如：expression验证器就是如此。这个验证器使用OGNL比较其他两个字段是否相等，如果不相等表达式返回true，验证通过，否则，验证失败最终用户会返回输入页面并显示message元素中的内容。</p>
+<p><strong>3.消息元素的选择</strong></p>
+<p>message元素用来指定验证错误的情况下用户应该看到的消息，我们可以使用OGNL动态的组织消息。例如username字段的声明那样。XML中OGNL使用$作为转义字符，而不是OGNL通常使用的%符号。</p>
+<p>message元素的另一个选择是将这些消息抽出到外部的资源文件中以实现验证错误的提示信息的国际化，portfolioName字段的验证方式是一个很好的示例，message 的 key 属性指向的正式国际化文件中的引用。如下：</p>
+<pre><code><figure class="highlight"><pre><span class="transposed_variable">user.</span>exists=This user $<span class="cell">{username}</span> already <span class="transposed_variable">exists.</span>
+<span class="transposed_variable">portfolioName.</span>required=You must enter a name <span class="keyword">for</span> your initial <span class="transposed_variable">portfolio.</span>
+<span class="transposed_variable">email.</span>invalid=Your email address was not a valid email <span class="transposed_variable">address.</span>
+</pre></figure></code></pre>
+<h4>2.2 内建的验证器</h4>
+<p>框架自带了一系列功能强大的验证器以满足常见的验证需求，以下列出了全部的内建验证器：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      数据验证器
+    </td>
+
+    <td>
+      参数
+    </td>
+
+    <td>
+      功能
+    </td>
+
+    <td>
+      类型
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      required
+    </td>
+
+    <td>
+      没有
+    </td>
+
+    <td>
+      检验值非空
+    </td>
+
+    <td style="width:50px;">
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      requiredstring
+    </td>
+
+    <td>
+      trim(默认为true)
+    </td>
+
+    <td>
+      验证值非空，并且不是空字符串
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      stringlength
+    </td>
+
+    <td>
+      trim(默认值为true)、minLenth、maxLength
+    </td>
+
+    <td>
+      验证字符床的长度在参数指定的范围内。不指定的参数不做检查。
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      int
+    </td>
+
+    <td>
+      min、max
+    </td>
+
+    <td>
+      验证这个证书值在参数指定的最小值和最大值之间
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      double
+    </td>
+
+    <td>
+      minInclusive、maxInclusive、minExclusive、maxExclusive
+    </td>
+
+    <td>
+      验证浮点值在参数指定的范围内
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      date
+    </td>
+
+    <td>
+      min、max
+    </td>
+
+    <td>
+      验证日期值在指定的最小值和最大值之间。日期格式MM/DD/YYYY
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      email
+    </td>
+
+    <td>
+      没有
+    </td>
+
+    <td>
+      验证电子邮件地址格式
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      url
+    </td>
+
+    <td>
+      没有
+    </td>
+
+    <td>
+      验证URL格式
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      fieldexpression
+    </td>
+
+    <td>
+      expression(必须)
+    </td>
+
+    <td>
+      根据当前ValueStack解析OGNL表达式。表达式必须返回true或者false以决定验证是否成功
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      expression
+    </td>
+
+    <td>
+      expression(必须)
+    </td>
+
+    <td>
+      与fieldexpression相同，但用在动作级别
+    </td>
+
+    <td>
+      动作
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      visitor
+    </td>
+
+    <td>
+      context、appendPrefix
+    </td>
+
+    <td>
+      将域对象属性的验证转交给域对象本地的验证声明
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      regx
+    </td>
+
+    <td>
+      expression(必须)、caseSensitive、trim
+    </td>
+
+    <td>
+      验证String遵循给定的正则表达式
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+</table>
+
+<p>这些数据验证器中的大部分功能都很简单，唯一需要深入讨论的是visitor验证器，这个验证器允许你为每一个域模型(ModelDriven)类定义验证元素据。</p>
+<h3>3.编写自定义验证器</h3>
+<p>编写自定义验证器与编写任何其他的Struts 2组件都不同，下面我们将通过编写一个检查密码完整性的自定义验证器。</p>
+<h4>3.1 检查密码强度的自定义验证器</h4>
+<p>所有验证器必须实现Validator接口或者FieldValidator接口，前者将实现非字段验证器，后者将实现字段验证器。通常情况下我们会扩展对应的ValidatorSupport或者FieldValidatorSupport这两个类。</p>
+<p>我们设计的密码验证器将做一下3项检查：</p>
+<ul>
+<li>密码必须包含一个大写字母或者小写字母；</li>
+<li>密码必须包含0～9的一个数字；</li>
+<li>密码必须至少包含一套特殊字符中的一个字符。</li>
+</ul>
+<p>特殊字符有一个默认值，但可以通过一个参数配置，这与之前使用的stringlength参数很类似。以下是自定义验证器类代码：</p>
+<pre><code><figure class="highlight"><pre>public <span class="class"><span class="keyword">class</span> <span class="title">PasswordIntegrityValidator</span> <span class="keyword">extends</span> <span class="title">FieldValidatorSupport</span> {</span>
+    static Pattern digitPattern = Pattern.compile( <span class="string">"[0-9]"</span>);
+    static Pattern letterPattern = Pattern.compile( <span class="string">"[a-zA-Z]"</span>);
+    static Pattern specialCharsDefaultPattern = Pattern.compile( <span class="string">"!@#$"</span>);
+
+    public void validate(Object <span class="keyword">object</span>) <span class="keyword">throws</span> ValidationException {
+        String fieldName = getFieldName();
+        String fieldValue = (String) getFieldValue(fieldName, <span class="class"><span class="keyword">object</span> );</span>
+        fieldValue = fieldValue.trim();
+        Matcher digitMatcher = digitPattern.matcher(fieldValue);
+        Matcher letterMatcher = letterPattern.matcher(fieldValue);
+        Matcher specialCharacterMatcher;
+        <span class="keyword">if</span> ( getSpecialCharacters() != <span class="keyword">null</span> ){
+            Pattern specialPattern = Pattern.compile(<span class="string">"["</span> + getSpecialCharacters() + <span class="string">"]"</span> );
+            specialCharacterMatcher = specialPattern.matcher( fieldValue );
+        } <span class="keyword">else</span>{
+            specialCharacterMatcher = specialCharsDefaultPattern.matcher( fieldValue );
+        }
+        <span class="keyword">if</span> ( !digitMatcher.find() ) {
+            addFieldError( fieldName, <span class="class"><span class="keyword">object</span> );</span>
+        }<span class="keyword">else</span> <span class="keyword">if</span> ( !letterMatcher.find() ) {
+            addFieldError( fieldName, <span class="class"><span class="keyword">object</span> );</span>
+        }<span class="keyword">else</span> <span class="keyword">if</span> ( !specialCharacterMatcher.find() ) {
+            addFieldError( fieldName, <span class="class"><span class="keyword">object</span> );</span>
+        }
+    }
+    <span class="keyword">private</span> String specialCharacters;
+    <span class="comment">//省略get和set方法</span>
+}
+</pre></figure></code></pre>
+<p>作为一个开发人员，只需要关注验证逻辑的细节，这个逻辑放在validate()方法中，这个方法是Validator接口定义的入口方法并且在扩展类的抽象支持类中没有实现。此外，还需要创建JavaBean属性，这些属性应该与所有公开给用户的参数匹配。以下代码片段展示了一个参数如何从XML文件传递到这个属性：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"passwordintegrity"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"specialCharacters"</span>&gt;</span>$!@#?<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password must contain one letter, one number, and one
+        of the following "</span><span class="variable">${specialCharacters}</span><span class="xml">".
+    <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>我们通过两个辅助方法 getFieldName()和getFieldValue()获取字段的值，这里注意，validate()方法接收了需要被验证的对象，由于我们在动作级别通过Register-validation.xml文件定义了验证，所以传入validate()方法的对象是动作本身。获取字段值后，我们进行了各种检查，最终将错误信息添加到存储的错误消息集中，当然还是使用从支持类继承的辅助方法。这就是全部内容了。</p>
+<h4>3.2 使用自定义数据验证器</h4>
+<p>我们在应用程序的类路径下的validators.xml文件中声明自定义的验证器，也就是src文件夹下，一下是这个文件的所有代码：</p>
+<pre><code><figure class="highlight"><pre><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="doctype">&lt;!DOCTYPE validators PUBLIC
+        "-//OpenSymphony Group//XWork Validator Config 1.0//EN"
+        "http://www.opensymphony.com/xwork/xwork-validator-config-1.0.dtd"&gt;</span>
+
+<span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+   <span class="tag">&lt;<span class="title">validator</span> <span class="attribute">name</span>=<span class="value">"passwordintegrity"</span> <span class="attribute">class</span>=<span class="value">"manning.utils.PasswordIntegrityValidator"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span>
+</pre></figure></code></pre>
+<p>然后在Register-validation.xml文件中把这个验证器添加到password字段对应的验证器中，以下是代码片段：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"password"</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+     <span class="tag">&lt;<span class="title">message</span> &gt;</span>Password is required.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span>&gt;</span>
+     <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">10</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+     <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">6</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+     <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password should be </span><span class="number">6</span><span class="xml">-</span><span class="number">10</span><span class="xml"> characters.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"passwordintegrity"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"specialCharacters"</span>&gt;</span>$!@#?<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password must contain one letter, one number, and one of the following "</span><span class="variable">${specialCharacters}</span><span class="xml">".<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">field</span>&gt;</span></span>
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-14T10:38:00.000Z"><a href="/My-Work/struts-2-tags-4.html">Mar 14 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-tags-4.html">Struts 2 标签（四）</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>我们已经从宏观上介绍了UI组件架构，现在开始学习使用UI组件标签。首先从总结所有UI组件都使用的属性和方法开始。</p>
+<h3>1.通用属性</h3>
+<p>所有Struts 2 UI组件标签通用的属性有很多，大部分是底层HTML元素公开的很多属性，这里我们重点关注Struts 2标签最核心的使用。通常情况下，你可以假定Struts 2标签支持底层HTML元素的所有属性。</p>
+<p>下面是这些常用通用属性的一个列表，如果属性的数据类型是String，那么属性值会被当作字符串字面值解析，除非使用%{expression}标记；所有非String类型都会被作为OGNL表达式自动求值。</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      主题
+    </td>
+
+    <td>
+      数据类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      simple
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      设置表单输入元素的name属性。如果没有手工设置value属性，那么也会被传播到组件的value属性。组件自己使用name属性指向ValueStack上的属性作为提交的请求参数值的目标
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      simple
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      指向ValueStack上的属性的OGNL表达式，用来为预填充设置表单输入元素的值。默认为name属性设置的值
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      key
+    </td>
+
+    <td>
+      simple
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      从ResourceBundle取得本地化的标签(label)，可以传播到name属性，也可以传播到value属性
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      label
+    </td>
+
+    <td>
+      XHTML
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      为组件创建一个HTML标签(label)，如果设定使用key属性和本地化的文本就不需要指定这个属性
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      labelPosition
+    </td>
+
+    <td>
+      XHTML
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      元素标签(label)的位置，可选的值是left或者top
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      required
+    </td>
+
+    <td>
+      XHTML
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      如果设定为true，那么标签(label)旁边会出现一个星号来暗示这是一个必须的字段。默认情况下，如果一个字段级别的数据验证器通过name属性与这个输入字段关联时，这个值为true
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      id
+    </td>
+
+    <td>
+      simple
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      HTML的id属性。如果id属性没有指定，组件会创建一个唯一标识。
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      cssClass
+    </td>
+
+    <td>
+      simple
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      HTML的class属性
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      cssStyle
+    </td>
+
+    <td>
+      simple
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      HTML的style属性
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      disabled
+    </td>
+
+    <td>
+      simple
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      HTML的disablled属性
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      tabindex
+    </td>
+
+    <td>
+      simple
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      HTML的tabindex属性
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      theme
+    </td>
+
+    <td>
+      N/A
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      在哪个主题下呈现这个组件，默认是xhtml
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      templateDir
+    </td>
+
+    <td>
+      N/A
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      用来覆盖从中取出模板的默认目录名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      template
+    </td>
+
+    <td>
+      N/A
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      用来呈现UI标签的模板。
+    </td>
+  </tr>
+</table>
+
+<p>除了上述属性，组件也支持常用的JavaScript事件处理属性，例如onclick和onchange。</p>
+<h3>2.简单组件</h3>
+<p><strong>1.head组件</strong></p>
+<p>这个标签什么事也做不了，但是在支持其他标签方面它起了重要作用。如果某个标签依赖head标签引入的资源，那么省去head标签，这个标签就不能正常工作。下面是使用方法：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">head</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">title</span>&gt;</span>Portfolio Registration<span class="tag">&lt;/<span class="title">title</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:head</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">head</span>&gt;</span>
+</pre></figure></code></pre>
+<p>下面是它生成的内容：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">link</span> <span class="attribute">rel</span>=<span class="value">"stylesheet"</span> <span class="attribute">href</span>=<span class="value">" . . . styles.css"</span> <span class="attribute">type</span>=<span class="value">"text/css"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">script</span> <span class="attribute">language</span>=<span class="value">"JavaScript"</span> <span class="attribute">type</span>=<span class="value">"text/javascript"</span> <span class="attribute">src</span>=<span class="value">". . .dojo.js"</span>/&gt;</span><span class="javascript">
+&lt;script language=<span class="string">"JavaScript"</span> type=<span class="string">"text/javascript"</span> src=<span class="string">"dojoRequire.js"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p><strong>2.form组件</strong></p>
+<p>form组件也许是这些组件中最重要的组件，它提供了重要的切入点，form组件是指向Struts 2 动作的表单。除了常用属性外，form组件还使用下面的一些属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      action
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      表单提交的目标，可以是Struts2动作的名字或者URL
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      namespace
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      Struts2命名空间，在这个命名空间中查找命名动作(action属性)，或者从这里开始构建URL。默认为当前命名空间
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      method
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      与HTML form属性相同，默认为POST
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      target
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      与HTML form属性相同
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      enctype
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      上传文件时设置为multipart/form-data
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      validate
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      与验证框架一起使用，打开客户端JavaScript验证
+    </td>
+  </tr>
+</table>
+
+<p>下面是使用的示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"Login"</span>&gt;</span>
+    ......
+<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span> 
+</pre></figure></code></pre>
+<p>会生成下面的代码：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">form</span> <span class="attribute">id</span>=<span class="value">"Login"</span> <span class="attribute">name</span>=<span class="value">"Login"</span> <span class="attribute">onsubmit</span>=<span class="value">"return true;"</span>
+    <span class="attribute">action</span>=<span class="value">"/manningSampleApp/chapterSeven/Login.action"</span> <span class="attribute">method</span>=<span class="value">"POST"</span>&gt;</span>
+......
+<span class="tag">&lt;/<span class="title">form</span>&gt;</span>
+</pre></figure></code></pre>
+<p>决定如何创建URL时需要遵循的步骤如下所述</p>
+<ul>
+<li>如果没有指定action属性，则会重新指向生成当前页面的动作</li>
+<li>如果指定了action属性，它首先被当作Struts 2动作解析。如果没有指定namespace属性，那么会在当前请求的命名空间中查找这个动作。如果指定了namespace属性，那么会在指定的命名空间中查找这个动作。注意，指定的动作没有.action的扩展名。</li>
+<li>如果action属性中指定的值不是声明性架构中的Struts 2动作，那么这个值会被用来直接构建URL。如果指定的字符串以一个斜线(/)开头，那么它被假定为ServletContext相关，框架会在它之前加上ServletContext的庐江构建一个URL。如果指定的字符串没有已斜线开头，那么这个值会被直接当作URL。注意这种情况下，即使指定了namespace属性也不会使用。</li>
+</ul>
+<p>下面是使用namespace的示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"Login"</span> <span class="attribute">namespace</span>=<span class="value">"/chapterFour"</span>&gt;</span>
+</pre></figure></code></pre>
+<p>会生成下面的代码：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">form</span> <span class="attribute">id</span>=<span class="value">"Login"</span> <span class="attribute">name</span>=<span class="value">"Login"</span> <span class="attribute">onsubmit</span>=<span class="value">"return true;"</span>
+<span class="attribute">action</span>=<span class="value">"/manningSampleApp/chapterFour/Login.action"</span> &gt;</span>
+</pre></figure></code></pre>
+<p>下面是一个使用不映射动作的例子：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"/chapterSeven/PortfolioHomePage.jsp"</span>&gt;</span>
+</pre></figure></code></pre>
+<p>生成代码如下：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">form</span> <span class="attribute">id</span>=<span class="value">"PortfolioHomePage"</span> <span class="attribute">onsubmit</span>=<span class="value">"return true;"</span>
+<span class="attribute">action</span>=<span class="value">"/manningSampleApp/chapterSeven/PortfolioHomePage.jsp"</span>&gt;</span>
+</pre></figure></code></pre>
+<p>最后，如果你指定一个不是以斜线开始的值，并且这个值也不是一个动作，也不是一个完整的URL，那么这个值会被原封不动的输出到action属性中。下面是示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"MyResource"</span>&gt;</span>    
+</pre></figure></code></pre>
+<p>这是输出：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">form</span> <span class="attribute">id</span>=<span class="value">"MyResource"</span> <span class="attribute">onsubmit</span>=<span class="value">"return true;"</span> <span class="attribute">action</span>=<span class="value">"MyResource"</span>&gt;</span>
+</pre></figure></code></pre>
+<p><strong>3.textfield组件</strong></p>
+<p>这个组件生成了无处不在的文本输入字段。除了通用属性外，textfield还经常使用一些自己的属性，如下：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      maxlength
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      字段数据的最大长度
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      readonly
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      如果为true,字段不可编辑
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      size
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      可视长度
+    </td>
+  </tr>
+</table>
+
+<p><strong>4.password组件</strong></p>
+<p>password标签实质上很像textfield标签，除通用属性外，它还经常使用如下属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      maxlength
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      字段数据的最大长度
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      readonly
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      如果为true字段不可编辑
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      size
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      文本字段的可视长度
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      showPassword
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      如果设置为true，并且ValueStack中对应的属性有值，那么密码会预填充。默认为false。被填充的值会被伪装。
+    </td>
+  </tr>
+</table>
+
+<p><strong>5.textarea组件</strong></p>
+<p>textarea标签生成一个基于HTML的textarea元素的组件。除了通用属性外，它还有一些其他属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      cols
+    </td>
+
+    <td>
+      Integer
+    </td>
+
+    <td>
+      列数
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      rows
+    </td>
+
+    <td>
+      Integer
+    </td>
+
+    <td>
+      行数
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      readonly
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      如果为true字段不可编辑
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      wrap
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      指定textarea中的内容是否应该被包装起来
+    </td>
+  </tr>
+</table>
+
+<p><strong>6.checkbox组件</strong></p>
+<p>checkbox组件使用单个HTML的checkbox元素创建一个Boolean型的组件。注意，这个组件与HTML的checkbox组件不是完全相同，它只能指定Boolean类型的值，与这个标签绑定的Java端的属性必须是Boolean类型的。除了之前的通用属性，checkbox组件也使用下列属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      fieldValue
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      被checkbox提交的哦真实值，可能是false或者true，默认是true
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      与fieldValue一起使用，决定checkbox是否被选中。如果fieldValue=true，并且value=true，那么组件被选中
+    </td>
+  </tr>
+</table>
+
+<p>预填充通常使用UI组件的value属性完成，对于checkbox组件来说要复杂一些。我们必须指定字段要提交的值以及Java端属性的当前值。在checkbox组件的上下文中他们是不同的值，而在textfield标签中是相同的。</p>
+<h3>3.基于集合的组件</h3>
+<p>Struts 2 标签支持数组、Map或者List集合类型。集合支持的组件的金币嗯逻辑是Java端的数据以一系列选项的方式呈现给用户，之后用户选择一个选项，这个值随着请求被提交。</p>
+<p><strong>1.select组件</strong></p>
+<p>select组件可能是最常见的基于几何的UI组件，在Java Web应用程序中，通常利用Collection、Map或者数组中的数据构建这一系列选项。</p>
+<p>以下代码展示了select UI组件最简单的用例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:select</span> <span class="attribute">name</span>=<span class="value">"user.name"</span> <span class="attribute">list</span>=<span class="value">"{'Mike','Payal','Silas'}"</span> /&gt;</span>
+</pre></figure></code></pre>
+<p>select组件的list属性指向了为这个组件提供数据的数据集。通常情况下会使用一个OGNL表达式指向ValueStack上的一系列的数据，而不是用字面值生成的列表。但这里在介绍这个标签时我们尽量简化它的使用。以下代码是上述标签呈现的HTML标记：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">select</span> <span class="attribute">name</span>=<span class="value">"user.name"</span> <span class="attribute">id</span>=<span class="value">"ViewPortfolio_user_name"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">option</span> <span class="attribute">value</span>=<span class="value">"Mike"</span>&gt;</span>Mike<span class="tag">&lt;/<span class="title">option</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">option</span> <span class="attribute">value</span>=<span class="value">"Payal"</span>&gt;</span>Payal<span class="tag">&lt;/<span class="title">option</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">option</span> <span class="attribute">value</span>=<span class="value">"Silas"</span>&gt;</span>Silas<span class="tag">&lt;/<span class="title">option</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">select</span>&gt;</span>
+</pre></figure></code></pre>
+<p>列表中的每一个值都用来创建一个对应的option元素。但是如何预填充呢？由于没有指定value属性，所以会从name属性推断出value属性。如果标签呈现的过程中ValueStack的user.name属性包含了一个值，那么这个值会与所有option元素中的value属性逐一匹配，知道找到相同的值，并将其预选中。上面的情况没有一个选项被预选中，因此user.name属性是没有包含值的。</p>
+<p>以下是select UI组件特有的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      lisst
+    </td>
+
+    <td>
+      Collection\ Map\Array\Iterrator
+    </td>
+
+    <td>
+      用来生成下拉列表选项的数据集合
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      listKey
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      当list中的元素是复杂类型时，用来指定用作被提交的值的list元素的属性，默认是key
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      listValue
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      当列表中的元素是复杂类型时，用来指定用作选项内容的list元素的属性。换句话说就是用户看到的字符串。默认是value
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      headerKey
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      与标题一起使用，如果用户选择了标题，那么指定提交的值
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      headerValue
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      作为list的标题呈现给用户，例如“States”、“Countries”
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      emptyOption
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      与标题一起使用，在标题和真实选项之间放置一个空的间隔选项
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      multiple
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      用户可以选择多个值
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      size
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      一次显示的选项个数
+    </td>
+  </tr>
+</table>
+
+<p>下面是select标签的一个比较复杂的用例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h5</span>&gt;</span>Browse an Artist's Portfolios ( Demo of select component. )<span class="tag">&lt;/<span class="title">h5</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"SelectPortfolio"</span> &gt;</span>
+    <span class="tag">&lt;<span class="title">s:select</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">list</span>=<span class="value">'users'</span> <span class="attribute">listKey</span>=<span class="value">"username"</span>
+        <span class="attribute">listValue</span>=<span class="value">"username"</span> <span class="attribute">label</span>=<span class="value">"Select an artist"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">s:submit</span> <span class="attribute">value</span>=<span class="value">"Browse"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+</pre></figure></code></pre>
+<p>两个新的属性listKey和listValue是必须的，因为与我们展示的第一个例子不同，支持这个select组件的集合中的数据是复杂的User类型而不是简单的String。listKey属性将对象的一个属性与生成的option元素的value属性绑定，这个属性决定了选项被选中时提交的请求参数值。这里只需一个唯一的标识符即可，显然使用username属性非常适合(已假定username是唯一的)。listValue属性决定了UI下拉列表中用户看到的内容。它相当于生成的option元素包含的字符串。</p>
+<p>下面是上述标签生成的HTML代码：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">form</span> <span class="attribute">id</span>=<span class="value">"SelectPortfolio"</span> <span class="attribute">name</span>=<span class="value">"SelectPortfolio"</span>
+        <span class="attribute">action</span>=<span class="value">"/manningSampleApp/chapterSeven/SelectPortfolio.action"</span> &gt;</span>
+    <span class="tag">&lt;<span class="title">select</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">id</span>=<span class="value">"SelectPortfolio_username"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">option</span> <span class="attribute">value</span>=<span class="value">"Jimmy"</span>&gt;</span>Jimmy<span class="tag">&lt;/<span class="title">option</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">option</span> <span class="attribute">value</span>=<span class="value">"Chad"</span>&gt;</span>Chad<span class="tag">&lt;/<span class="title">option</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">option</span> <span class="attribute">value</span>=<span class="value">"Mary"</span>&gt;</span>Mary<span class="tag">&lt;/<span class="title">option</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">select</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"submit"</span> <span class="attribute">id</span>=<span class="value">"SelectPortfolio_0"</span> <span class="attribute">value</span>=<span class="value">"Browse"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">form</span>&gt;</span>
+</pre></figure></code></pre>
+<p>下面展示了用Map类型的数据实现同样功能的代码：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h5</span>&gt;</span>Browse an Artist's Portfolios ( Demo of select component. )<span class="tag">&lt;/<span class="title">h5</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"SelectPortfolio"</span> &gt;</span>
+    <span class="tag">&lt;<span class="title">s:select</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">list</span>=<span class="value">'users'</span> <span class="attribute">listValue</span>=<span class="value">"value.username"</span>
+        <span class="attribute">label</span>=<span class="value">"Select an artist"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">s:submit</span> <span class="attribute">value</span>=<span class="value">"Browse"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+</pre></figure></code></pre>
+<p>需要注意的是遍历Map数据时，遍历的是类型为Entry的对象，而Entry有两个属性key和value，这正好是listKey和listValue的默认值，所以在这里无需指定listKey属性的值，而Entry的value属性对应的是User对象，因此listValue使用value.username的方式从中取的username属性的值。</p>
+<p><strong>2.radio组件</strong></p>
+<p>radio组件提供了很多与select组件相似的功能，但呈现方式不同。下面是除通用属性外，这个组件的一些常用属性列表：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      list
+    </td>
+
+    <td>
+      Collection\ Map\Array\Iterrator
+    </td>
+
+    <td>
+      用来生成单选项的数据集合
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      listKey
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      集合的元素的属性，用来作为提交的值，默认是key
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      listValue
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      集合的元素的属性，用来作为选项的内容，换句话说是用户看到的字符串。默认是value
+    </td>
+  </tr>
+</table>
+
+<p>下面是这个组件在页面上的显示：</p>
+<p><img src="/media/2013/03/2146681631.png" alt="radio tag.png" title="radio tag.png"></p>
+<p>这个标签的使用几乎与select组件完全相同，因此我们不会讲解这个组件的详细内容。</p>
+<p><strong>3.checkboxlist组件</strong></p>
+<p>checkboxlist组件与select组件也很相似。如下图所示，它呈现了相同的选项，但使用了多选框，因此它允许选择多个选项。</p>
+<p><img src="/media/2013/03/319284732.png" alt="checkboxlist tag.png" title="checkboxlist tag.png"></p>
+<p>此外，checkboxlist组件还经常使用下面的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      list
+    </td>
+
+    <td>
+      Collection\ Map\Array\Iterrator
+    </td>
+
+    <td>
+      用来生成复选项的数据集合
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      listKey
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      集合的元素的属性，用来作为提交的值，默认是key
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      listValue
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      集合的元素的属性，用来作为选项的内容，换句话说是用户看到的字符串。默认是value
+    </td>
+  </tr>
+</table>
+
+<p><strong>4.预选中基于集合的组件</strong></p>
+<p>value属性指向了ValueStack上的一个属性，这个属性会用作组件的当前值预先选择一个选项。通常不设置value属性，而是让框架根据name属性推断出value属性。每一个HTML的选项都有一个value属性，这个属性表示这个选项被选中时整个组件的值。巧妙的地方是框架使用Struts2标签的value属性的值来匹配某一个选项的值，在匹配时，这个选项被选中。</p>
+<p>例如下面的代码，其中defaultUsername中包含了后台传入的默认的用户名chad：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"SelectPortfolio"</span> &gt;</span>
+    <span class="tag">&lt;<span class="title">s:radio</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">list</span>=<span class="value">'users'</span> <span class="attribute">value</span>=<span class="value">"defaultUsername"</span>
+            <span class="attribute">listKey</span>=<span class="value">"username"</span> <span class="attribute">listValue</span>=<span class="value">"username"</span> <span class="attribute">label</span>=<span class="value">"Select an artist"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">s:submit</span> <span class="attribute">value</span>=<span class="value">"Browse"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+</pre></figure></code></pre>
+<p>以上代码最终会输出下面的HTML代码：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"radio"</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">value</span>=<span class="value">"Jimmy"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"radio"</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">value</span>=<span class="value">"Charlie Joe"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"radio"</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">checked</span>=<span class="value">"checked"</span> <span class="attribute">value</span>=<span class="value">"Chad"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"radio"</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">value</span>=<span class="value">"Mary"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>相同的预选中的过程同样适用于所有基于集合的组件，如果是多重选中的情况，value属性可以指向一个包含多个选择的属性，例如一个包含用户名的数组，那么这个数组会选中这些值中的每一个。</p>
+<h3>4.额外的组件</h3>
+<p><strong>1.label组件</strong></p>
+<p>label(标签)组件不应该与前面讲解的UI组件生成的标签(label)相混淆。label组件在HTML只输出只读文本，很像一个只读的textfield组件。下面是一个用例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:label</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">label</span>=<span class="value">"Username"</span> /&gt;</span>
+</pre></figure></code></pre>
+<p><strong>2.hidden组件</strong></p>
+<p>hidden组件用来是实现隐藏域，以下是使用的标记及输出的HTML：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:hidden</span> <span class="attribute">name</span>=<span class="value">"username"</span> /&gt;</span>
+
+<span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"hidden"</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">value</span>=<span class="value">"Chad"</span>
+          <span class="attribute">id</span>=<span class="value">"UpdateAccount_username"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p><strong>3.doubleselect组件</strong></p>
+<p>doubleselect(关联下拉列表)组件可实现下拉列表的联动效果，下面是常见的使用方法，其中protfolios即使User对象的属性，而它本神又是一个集合；</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h4</span>&gt;</span>Select a portfolio to view.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"ViewPortfolio"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:doubleselect</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">list</span>=<span class="value">'users'</span> <span class="attribute">listKey</span>=<span class="value">"username"</span>
+            <span class="attribute">listValue</span>=<span class="value">"username"</span> <span class="attribute">doubleName</span>=<span class="value">"portfolioName"</span>
+            <span class="attribute">doubleList</span>=<span class="value">"portfolios"</span> <span class="attribute">doubleListValue</span>=<span class="value">"name"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">s:submit</span> <span class="attribute">value</span>=<span class="value">"View"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-14T08:00:03.000Z"><a href="/My-Work/struts-2-tags-3.html">Mar 14 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-tags-3.html">Struts 2 标签（三）</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>前两节我们复习了Struts2的数据标签、流程管理标签以及其他标签，本节将学习Struts2的UI组件标签。每一个UI组件都是一个功能单元，用户通过UI组件与应用程序交互、向应用程序输入数据。每一个Struts 2 UI组件的核心都是一个HTML表单控件。但是不要误解，这些组件不仅仅是一个输出HTML输入元素的标签，它们是高层组件，其中的HTML元素只是在浏览器中的表现。UI组件构建在一个分层的、迷你的MVC架构上，这个架构把某个组件的HTML标签的输出分离到了底层的FreeMarker模板中，开发人员可以通过修改这些底层的模板来改变这些组件。</p>
+<h3>1.为什么需要UI组件标签</h3>
+<p>新一波的前端界面复杂化的浪潮已然到来，随着时间的流逝，由AJAX和其他富客户端技术支持的动态的前端界面慢慢变成了普通的需求。一个新的web应用程序框架如果不能从框架上考虑管理前端界面日益增加的复杂度，那么它必将走向失败。Struts2 UI组件很好的实现了这个要求。</p>
+<p><strong>不仅仅是表单元素</strong></p>
+<p>每一个常用的HTML表单元素都有一个对应的Struts 2 UI组件，除了这个一对一的关系，更复杂的UI组件将一对HTML元素包装成一个单元来创建一个新的表单组件。你可以把呈现对应的HTML元素当作是UI组件的基本功能，但最终你会发现，UI组件不仅仅是底层HTML元素的总和。下面是UI组件能够做的一些事情。</p>
+<ul>
+<li>生成HTML标记</li>
+<li>绑定HTML表单字段和Java端属性</li>
+<li>与框架提供的类型转换关联起来</li>
+<li>与框架提供的验证关联起来</li>
+<li>与框架提供的国际化功能关联起来</li>
+</ul>
+<p><strong>1.生成HTML标记</strong></p>
+<p>每一个UI组件标签确实生成了一组HTML标记，这些标记定义了对应的HTML元素，并且经常包含一些其他的布局标记，这是组件标签最简单的一个方面。下面是一个简单的示例。：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">label</span>=<span class="value">"Username"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>上述标签将会在页面输出如下HTML代码：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">td</span> <span class="attribute">class</span>=<span class="value">"tdLabel"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">label</span> <span class="attribute">for</span>=<span class="value">"Register_username"</span> <span class="attribute">class</span>=<span class="value">"label"</span>&gt;</span>Username:<span class="tag">&lt;/<span class="title">label</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">td</span>&gt;</span>
+<span class="tag">&lt;<span class="title">td</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"text"</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">value</span>=<span class="value">""</span> <span class="attribute">id</span>=<span class="value">"Register_username"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">td</span>&gt;</span>
+</pre></figure></code></pre>
+<p>首先不要被表格标记迷惑，这些是XHTML主题生成的，主题也追加了一些CSS控制用的类属性。如果你喜欢，它甚至能够为这些样式生成一个简单的默认样式表。id属性由包含它的表单的name属性与输入字段的name属性拼接而成。</p>
+<p><strong>2.将表单字段绑定到ValueStack的属性</strong></p>
+<p>创建HTML元素只是开始。一旦HTML元素生成后，UI组件会将这些生成的元素与Struts2框架提供的丰富的功能连接起来。首先，UI组件会把表单字段绑定到ValueStack的属性，这为数据转移奠定了基础。当你查看这些UI组件标签生成的表单时，它在两个方向上与后台的Java属性关联。首先，ValueStack上的数据能够流向表单来预填充表单。其次，当表单提交时，来源于表单字段的数据会流向框架并自动被转移到ValueStack上。UI组件通过将name属性指定为OGNL表达式将自己同时绑定到ValueStack上的传出和传入属性，以实现表单的预先填充和表单提交时的自动数据转移。</p>
+<p><strong>3.与类型转换、数据验证以及国际化集成</strong></p>
+<p>对于类型转换和数据验证，在问题发生时UI组件能够自动处理错误消息。类型转换或者数据验证出现问题时会导致请求将用户带回数据表单页面。这时UI组件会自动检测与自己相关的错误信息是否存在，并显示相应的错误信息，当然你也可以自定义和国际化这些错误信息。</p>
+<p>UI组件也能够接入国际化机制为UI组件提供本地化的标签名字。这个特性需要使用所有UI组件都有的key属性，只需设置这个属性，UI组件就能够从框架的ResourceBundle中取得本地化的标签，并能智能的推算出name属性和value属性来完成组件的数据绑定。</p>
+<h3>2. 标签、模板和主题</h3>
+<p>现在我们来学习UI组件标签独一无二的架构。UI组件的迷你MVC架构最大的好处是可以重用自定义的内容。</p>
+<p><img src="/media/2013/03/2197838678.png" alt="UI组件架构.png" title="UI组件架构.png"></p>
+<p>UI组件构建在分层的架构上。组件API被公开为页面中的JSP标签，它会被作为JSP标签处理。本地标签仅仅是框架对应的UI组件API的包装，如JSP类型的Struts 2 textfield标签就是对org.apache.struts2.components.TextField组件类的包装。如图，本地标签很快将控制转交给对应的组件API做实际处理。UI组件层处理标签的逻辑并准备数据，之后组件将呈现的任务交给底层的FreeMarker模板。</p>
+<p>以这种方式将标签API输出的标记与实现逻辑的Java类分层，这样我们就有了迷你MVC架构。像所有的MVC架构一样，最主要的好处就是能够很容易的修改标签的视图而不需要修改嵌入在标签组件类中的业务逻辑。</p>
+<h4>2.1 标签</h4>
+<p>标签非常简单，Struts2标签API是一个高层的API，也就是说，标签的功能和使用定义在给定的视图层技术细节之外，框架提供了标签API在JSP、Velocity、FreeMarker等视图层技术中的实现。不管你使用哪种技术，本地标签都将处理过程委托给UI组件框架，框架管理标签的逻辑和数据模型，数据可能来源于ActionContext或者ValueStack，也可能来源于标签的属性或参数。那些呈现UI组件的HTML标记的模板可以访问这些数据。框架使用FreeMarker模板呈现UI组件。</p>
+<h4>2.2 模板</h4>
+<p>每一个标签都有一个与之对应的FreeMarker模板来呈现它的标记。FreeMarker模板看起来很像普通的文本文件，在这些普通的文本内部有一些特殊的FreeMarker指令，它们可以动态地取得数据并能呈现结果输出。对于UI组件标签，模板获得标签逻辑收集的数据模型，将这些数据和模板中的静态部分混合起来创建最终呈现在HTML页面中的标记。</p>
+<h4>2.3 主题</h4>
+<p>底层模板为给定标签生成标记是很容易理解的，然而，实际上情况更复杂。实际上，每个标签都准备了几个版本的底层模板。每一个版本属于一个主题。一个主题是一组模板，每一个模板至少属于一个标签，这些模板以某种一致的方式或者习惯呈现这些标签。</p>
+<p>有几种方法可以指定使用的主题，默认情况下，所有的标签都使用xhtml主题呈现。可以在整个应用的范围内改变默认主题，也可以在每个页面或者每个标签指定不同的主题。</p>
+<p>Struts 2 自带了4个主题来呈现UI组件，它们如下：</p>
+<ul>
+<li>simple:呈现基本的HTML元素</li>
+<li>xhtml:使用表格提供的布局呈现UI组件</li>
+<li>css_xhtml:使用纯CSS提供的布局呈现UI组件</li>
+<li>ajax:扩展xhtml主题并且提供丰富的ajax组件。</li>
+</ul>
+<p><strong>改变主题</strong></p>
+<p>所有框架的默认属性都定义在default.properties文件中，这个文件在Struts 2核心的JAR文件的org.apache.struts2包内。覆盖框架的默认属性，只需创建自己的属性文件，命名为struts.properties，并把它放在类路径中。要改变默认主题，只需添加如下内容，UI组件就会使用css_xhtml来呈现。</p>
+<pre><code><figure class="highlight"><pre>struts<span class="variable">.ui</span><span class="variable">.theme</span>=css_xhtml
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-14T05:59:55.000Z"><a href="/My-Work/struts-2-tags-2.html">Mar 14 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/struts-2-tags-2.html">Struts 2 标签（二）</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>本节将学习Struts2标签库的详细内容，包括数据标签，流程控制标签和其他标签。</p>
+<h3>1.数据标签</h3>
+<p>数据标签能从ValueStack上取得数据，或者将变量、对象放在ValueStack上。本小节将讨论property、set、push、bean和action标签，并演示这些标签的常见用例。</p>
+<h4>1.1 property标签</h4>
+<p>property标签提供了一种将属性写入呈现的HTML页面的快速、方便的方法。下面是这个标签的重要属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      默认值
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      栈最顶端
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      被显示的值
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      default
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      空(null)
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      值为空时使用的默认值
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      escape
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      true
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      是否转义HTML
+    </td>
+  </tr>
+</table>
+
+<p>实际的使用很简单，代码如下：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h4</span>&gt;</span>Property Tag<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+The current user is <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"user.username"</span>/&gt;</span>.
+</pre></figure></code></pre>
+<h4>1.2 set标签</h4>
+<p>在标签的上下文中，set意味着给一个属性指定一个别名。有时候一个属性需要使用一个很长的、复杂的OGNL表达式才能引用到它，通过为这个属性重新指定一个顶层的名字可以更容易、更快捷的访问它。默认情况下，这个属性会变成ActionContext中的一个命名对象，与ValueStack、会话映射齐名。所以你可以使用如#myObjec这样的OGNL表达式把它作为一个顶层的命名对象引用。当然，你也可以指定这个新引用被放置在ActionContext中的某个作用域中。下面是set标签的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      被设置在指定作用域内的变量的引用名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      scope
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      application、session、request、page或者action，默认是action
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      设置值的表达式
+    </td>
+  </tr>
+</table>
+
+<p>下面是实际的使用：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:set</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">value</span>=<span class="value">"user.username"</span>/&gt;</span>
+Hello, <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#username"</span>/&gt;</span>. How are you?    
+</pre></figure></code></pre>
+<p>以下代码经把新引用设置为application作用域映射内的一个实体：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:set</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">scope</span>=<span class="value">"application"</span> <span class="attribute">value</span>=<span class="value">"user.username"</span>/&gt;</span>
+Hello, <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#application['username']"</span>/&gt;</span>. How are you?
+</pre></figure></code></pre>
+<h4>1.3 push标签</h4>
+<p>set标签允许你创建指向值的新引用，而push标签允许你把属性放到ValueStack上。当你需要对一个对象进行很多操作时这个标签会很有用。将对象放在ValueStack顶端之后，它的所有属性可以通过第一级别的OGNL表达式访问。</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      放到ValueStack中的值
+    </td>
+  </tr>
+</table>
+
+<p>以下是使用这个标签的示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:push</span> <span class="attribute">value</span>=<span class="value">"user"</span>&gt;</span>
+    This is the "<span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"portfolioName"</span>/&gt;</span>" portfolio,
+    created by none other than <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"username"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:push</span>&gt;</span>
+</pre></figure></code></pre>
+<p>push标签把user属性放到ValueStack的顶端，这是我们就可以把user的属性当作ValueStack这个虚对象上的顶级属性访问，这样OGNL表达式就变简单了。最后push的结束标签把user从ValueStack顶端删除。</p>
+<h4>1.4 bean标签</h4>
+<p>bean标签像是set标签和push标签的混合标签。主要的不同是不需要使用一个已经存在的对象，bean标签会自己new这个对象，并把它放到ValueStack上或者设置为ActionContext的顶级引用。默认是将对象放在ValueStack上，并在标签存在期间一直保留在ValueStack上。以下是bean标签的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      被传入bean的包名和类名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      var
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      在结束标签作用域外引用这个bean时使用的变量名
+    </td>
+  </tr>
+</table>
+
+<p>下面示例展示了如何创建和存储一个bean作为ActionContext中的命名参数：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:bean</span> <span class="attribute">name</span>=<span class="value">"org.apache.struts2.util.Counter"</span> <span class="attribute">var</span>=<span class="value">"counter"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:param</span> <span class="attribute">name</span>=<span class="value">"last"</span> <span class="attribute">value</span>=<span class="value">"7"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:bean</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:iterator</span> <span class="attribute">value</span>=<span class="value">"#counter"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">li</span>&gt;</span><span class="tag">&lt;<span class="title">s:property</span>/&gt;</span><span class="tag">&lt;/<span class="title">li</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">s:iterator</span>&gt;</span>
+</pre></figure></code></pre>
+<p>默认情况下创建的对象会存储在ValueStack中，使用var后会在ActionContext中存储这个对象的引用，正是因为如此，在iterator标签中，我们使用它的方式需要用#操作符，即OGNL表达式#counter。在许多Struts2标签中，都存在可选的var属性，它的作用与此类似。</p>
+<p>bean标签是我们研究的第一个参数化标签。现在看看如何使用bean标签将新创建的bean放在ValueStack上而不是存储在ActionContext上。而且我们我们还是用param标签演示怎样向自定义对象提供参数。</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:bean</span> <span class="attribute">name</span>=<span class="value">"manning.utils.JokeBean"</span> &gt;</span>
+    <span class="tag">&lt;<span class="title">s:param</span> <span class="attribute">name</span>=<span class="value">"jokeType"</span>&gt;</span>knockknock<span class="tag">&lt;/<span class="title">s:param</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"startAJoke()"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:bean</span>&gt;</span>
+</pre></figure></code></pre>
+<p>上面我们使用了OGNL方法调用语法starAJoke()，bean标签不需要完全遵守JavaBean标准，但是OGNL能够使用这个方法，我们将在OGNL详解中讲解它的机制。</p>
+<p>最后，注意我们向JokenBean传递了一个参数，这个参数用来控制这个bean讲述的笑话的类型。只要这个对象实现了一个与这个参数同名的属性，它就能自动接收传入的参数。</p>
+<h4>1.5 action标签</h4>
+<p>这个标签允许我们从当前的视图层调用其他的动作。action标签的实际使用很简单，只需指定其他需要调用的动作。</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      动作名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      namespace
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      动作的命名空间，默认使用当前页面的命名空间
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      var
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      在页面后续代码中使用的动作对象的引用名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      executeResult
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      设置为true时排除动作的结果(默认值为false)
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      flush
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      设置为true时在action标签的结尾会刷新写出缓冲(默认为true)
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      ignoreConte xtParams
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      设置为true时动作被调用时不包含请求参数(默认值为false)
+    </td>
+  </tr>
+</table>
+
+<p>以下是一个选择包含辅助动作结果的示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h3</span>&gt;</span>Action Tag<span class="tag">&lt;/<span class="title">h3</span>&gt;</span>
+<span class="tag">&lt;<span class="title">h4</span>&gt;</span>This line is from the ActionTag action's result.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:action</span> <span class="attribute">name</span>=<span class="value">"TargetAction"</span> <span class="attribute">executeResult</span>=<span class="value">"true"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>通常情况下，你希望辅助动作被触发，但不写结果，而是提供一个在ActionContext上某个地方存储域数据，在控制返回后，主动作可以访问这些数据，下面示例正是如此：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h4</span>&gt;</span>This line is before the ActionTag invokes the secondary action.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:action</span> <span class="attribute">name</span>=<span class="value">"TargetAction"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">h4</span>&gt;</span>Secondary action has fired now.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+<span class="tag">&lt;<span class="title">h5</span>&gt;</span>Request attribute set by secondary action = <span class="tag">&lt;/<span class="title">h5</span>&gt;</span>
+<span class="tag">&lt;<span class="title">pre</span>&gt;</span> <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#request.dataFromSecondAction"</span>/&gt;</span><span class="tag">&lt;/<span class="title">pre</span>&gt;</span>
+</pre></figure></code></pre>
+<h3>2.控制标签</h3>
+<p>Struts2中有一系列的标签可以容易的控制页面执行的流程，包括iterator标签和if/else标签等。</p>
+<h4>2.1 iterator标签</h4>
+<p>使用iterator表亲啊可以很容易的便利集合对象。下面是这个标签的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      被遍历的对象
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      status
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      如果被指定，IteratorStatus对象会使用这个属性指定的名字被放在ActionContext中
+    </td>
+  </tr>
+</table>
+
+<p>下面是一个使用示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:iterator</span> <span class="attribute">value</span>=<span class="value">"users"</span> <span class="attribute">status</span>=<span class="value">"itStatus"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">li</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#itStatus.count"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"portfolioName"</span>/&gt;</span>
+    <span class="tag">&lt;/<span class="title">li</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">s:iterator</span>&gt;</span>
+</pre></figure></code></pre>
+<p>上面的代码很直观，在标签内部，每一个对象会轮流被放在ValueStack顶端，我们可以很容易的访问用户属性。注意，iterator标签通过指定status属性，也声明了IteratorStatus对象。你为status属性指定的名字会用来作为关键字从ActionContext中取得遍历状态对象。</p>
+<p><strong>使用IteratorStatus</strong></p>
+<p>有时候我们非常想知道当前发生的循环的状态信息。如果定义了status属性，那么会在ActionContext中提供一个IteratorStatus对象，这个对象可以提供诸如集合大小、当前索引、当前对象的索引是奇数还是偶数的简单信息。下面是IteratorStatus的共有方法：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      方法名
+    </td>
+
+    <td>
+      返回值
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      getCount
+    </td>
+
+    <td>
+      int
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      getIndex
+    </td>
+
+    <td>
+      int
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      isEven
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      isFirst
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      isLast
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      isOdd
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      modulus(int operand)
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+</table>
+
+<h4>2.2 if和else标签</h4>
+<p>很多语言都提供了熟悉的if和else控制逻辑，Struts2标签亦是如此。使用这些标签很容易，它们都只有一个属性，即布尔型test:</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      test
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      被求值和测试的布尔表达式
+    </td>
+  </tr>
+</table>
+
+<p>以下是如何使用这个标签的示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:if</span> <span class="attribute">test</span>=<span class="value">"user.age &gt; 35"</span>&gt;</span>This user is too old.<span class="tag">&lt;/<span class="title">s:if</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:elseif</span> <span class="attribute">test</span>=<span class="value">"user.age &lt; 35"</span>&gt;</span>This user is too young<span class="tag">&lt;/<span class="title">s:elseif</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:else</span>&gt;</span>This user is just right<span class="tag">&lt;/<span class="title">s:else</span>&gt;</span>
+</pre></figure></code></pre>
+<h3>3.其他标签</h3>
+<p>这一节将讨论Struts2的inclued标签、URL标签、i18n标签和text标签，最后了解下详细的param标签的使用。这些标签很有用，但是不太容易分类。</p>
+<h4>3.1 inclued标签</h4>
+<p>虽然JSP有自己的包含标签<jsp:include>，但是Struts2提供了一个与Struts2集成的更好、有更多高级特性的include标签。简而言之，这个标签可以执行Servlet API样式的包含。下面是其唯一的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      页面、动作、Servlet以及其他可以被引用的URL的名字
+    </td>
+  </tr>
+</table>
+
+<p>这个标签很简单，无须展示例子了吧。include标签的行为很想JSP的include标签，但是它与框架集成的更好并且提供了对ValueStack(使用%{...}从ValueStack取值)和可扩展参数模型的本地访问(使用<s:param>标签传递查询字符串参数)。</p>
+<h4>3.2 URL标签</h4>
+<p>Struts2提供了URL标签来帮助管理URL，这个标签支持与URL相关的所有操作，从控制参数到Cookie缺失时自动持久化会话。下面是它的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      基础URL，默认为呈现当前页面的URL
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      action
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      生成的URL指向的动作名，使用声明性架构中配置的动作名(不带.action扩展名)
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      var
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      如果指定，这个URL不会被重写，而会存储在ActionContext留待后用
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      includeParams
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      从all、get、none中选择参数，默认值为get
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      includeContext
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      如果为true，那么生成的URL会使用应用程序的Context作为前缀，默认值为true
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      encode
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      如果用户浏览器不支持Cookie，会将session ID追加到生成的URL中
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      scheme
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      指定协议，默认使用当前协议(HTTP或HTTPS)
+    </td>
+  </tr>
+</table>
+
+<p>下面是两个示例：</p>
+<pre><code><figure class="highlight"><pre>URL = <span class="xml"><span class="tag">&lt;<span class="title">s:url</span> <span class="attribute">value</span>=<span class="value">"IteratorTag.action"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">'&lt;s:url value="IteratorTag.action" /&gt;'</span>&gt;</span> Click Me <span class="tag">&lt;/<span class="title">a</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>URL标签只是把生成URL输出为字符串，下面是页面输出：</p>
+<pre><code><figure class="highlight"><pre>URL = IteratorTag.action
+<span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">'IteratorTag.action'</span>&gt;</span> Click Me <span class="tag">&lt;/<span class="title">a</span>&gt;</span>
+</pre></figure></code></pre>
+<p>如果我们想指向一个动作，那么应该使用action属性：</p>
+<pre><code><figure class="highlight"><pre>URL = <span class="xml"><span class="tag">&lt;<span class="title">s:url</span> <span class="attribute">action</span>=<span class="value">"IteratorTag"</span> <span class="attribute">var</span>=<span class="value">"myUrl"</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">s:param</span> <span class="attribute">name</span>=<span class="value">"id"</span> <span class="attribute">value</span>=<span class="value">"2"</span>/&gt;</span>
+            <span class="tag">&lt;/<span class="title">s:url</span>&gt;</span>
+<span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">'&lt;s:property value="#myUrl" /&gt;'</span>&gt;</span> Click Me <span class="tag">&lt;/<span class="title">a</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>这样页面输出会是这样：</p>
+<pre><code><figure class="highlight"><pre>URL =
+<span class="xml"><span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">'/manningHelloWorld/chapterSix/IteratorTag.action?id=2'</span>&gt;</span>
+    Click Me
+<span class="tag">&lt;/<span class="title">a</span>&gt;</span></span>
+</pre></figure></code></pre>
+<h4>3.3 i18n和text标签</h4>
+<p>这两个标签被用在国际化功能中，它们使用name属性指定关键字，通过这个关键字取得对应的文本消息。</p>
+<p>下面是text标签支持的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      在ResourceBundle中查找用的关键字
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      var
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      如果找到，文本会使用这个名字保存在ActionContext中
+    </td>
+  </tr>
+</table>
+
+<p>如果你想手动指定应该使用的ResourceBundle，可以使用i18n标签，下面是i18n的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      ResourceBundle的名字
+    </td>
+  </tr>
+</table>
+
+<p>下面是一个示例，它展示了如何使用i18n标签设置ResourceBundle，以及如何使用text标签从中取出文本消息：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:i18n</span> <span class="attribute">name</span>=<span class="value">"manning.chapterSix.myResourceBundle_tr"</span>&gt;</span>
+    In <span class="tag">&lt;<span class="title">s:text</span> <span class="attribute">name</span>=<span class="value">"language"</span>/&gt;</span>,
+    <span class="tag">&lt;<span class="title">s:text</span> <span class="attribute">name</span>=<span class="value">"girl"</span> <span class="attribute">var</span>=<span class="value">"foreignWord"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:i18n</span>&gt;</span>
+"<span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#foreignWord"</span>/&gt;</span>" means girl.
+</pre></figure></code></pre>
+<h4>3.4 param标签</h4>
+<p>param标签什么也不做，但它是最重要的标签之一。它不仅在上述标签中起重要作用，而且在许多UI组件标签中也起重要作用。下面是它的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      参数名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      参数值
+    </td>
+  </tr>
+</table>
+
+<p>在之前的例子中已经展示了param标签的作用，包括作为一种自定义的工具对象传递参数的方法。只要有了这个整体思路，剩下的就是细读标签API看看哪个标签可以接受参数。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+
+<nav id="pagination">
+  
+    <a href="/page/2/" class="prev">Prev</a>
+  
+  
+    <a href="/page/4/" class="next">Next</a>
+  
+  <div class="clearfix"></div>
+</nav></div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/My-Work/after-install-ubuntu-1304.html">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/My-Work/java-programmers-in-the-eyes-of-javascript.html">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/My-Life/june-youth-future.html">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/My-Work/how-install-apache-24-and-php-54.html">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/My-Life/reasons-to-date-a-geek-boy.html">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>

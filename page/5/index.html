@@ -1,0 +1,869 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>Page 5 | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content">
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-09T05:32:58.000Z"><a href="/My-Work/action-of-struts-2.html">Mar 9 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/action-of-struts-2.html">Action of Struts 2</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>Struts2是一个面向动作的框架，Action是它的核心。</p>
+<h3>1.Struts2中Action的作用</h3>
+<p>封装业务单元 为数据转移提供场所 为结果选择路由</p>
+<h3>2.使用包(package)机制将Action分组</h3>
+<p>包是一种逻辑容器，想Java的包一样，它提供了一种基于功能或者领域的共性将action组件分组。包级别上定义的URL可用来映射到动作；此外它还具有继承的特性，你能够继承框架已经定义好的一些组件。 包声明只需设置它的四个属性：</p>
+<pre><code><figure class="highlight"><pre>属性          描述
+name(必须)    包的名字
+namespace    包内所有action的命名空间
+extends      被继承的父包
+abstract     如果为true,这个包只能用来定义可继承的组件，不能定义动作
+
+<span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"chapterThreeSecure"</span> <span class="attribute">namespace</span>=<span class="value">"/chapterThree/secure"</span> <span class="attribute">extends</span>=<span class="value">"struts-default"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"AdminPortfolio"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span>&gt;</span>/chapterThree/AdminPortfolio.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"AddImage"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span>&gt;</span>/chapterThree/ImageUploadForm.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"RemoveImage"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span>&gt;</span>/chapterThree/ImageRemoved.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">package</span>&gt;</span>
+</pre></figure></code></pre>
+<p>上面的配置展示了包的用法。当一个请求(比如AddImage)到达时，框架会在/chapterThree/secure命名空间下查找AddImage的action方法，如果没有设置命名空间，请求动作就会进入默认命名空间查找。因为继承了struts-default包，而使用其中的默认命名空间。</p>
+<p><strong>struts-default包中的组件</strong></p>
+<p>只要继承struts-default包，就会自动使用它已经定义好的组件。大部分常用的拦截器在其中已经定义好了，这个包在struts2-core.jar的struts-default.xml中定义，它声明了大多数应用程序用到的拦截器栈：</p>
+<pre><code><figure class="highlight"><pre>  &lt;<span class="package"><span class="keyword">package</span> <span class="title">name</span>="<span class="title">struts</span>-<span class="title">default</span>" <span class="title">abstract</span>="<span class="title">true</span>"&gt;
+         ........
+
+        &lt;!-- <span class="title">A</span> <span class="title">complete</span> <span class="title">stack</span> <span class="title">with</span> <span class="title">all</span> <span class="title">the</span> <span class="title">common</span> <span class="title">interceptors</span> <span class="title">in</span> <span class="title">place</span>.
+             <span class="title">Generally</span>, <span class="title">this</span> <span class="title">stack</span> <span class="title">should</span> <span class="title">be</span> <span class="title">the</span> <span class="title">one</span> <span class="title">you</span> <span class="title">use</span>, <span class="title">though</span> <span class="title">it</span>
+             <span class="title">may</span> <span class="title">do</span> <span class="title">more</span> <span class="title">than</span> <span class="title">you</span> <span class="title">need</span>. <span class="title">Also</span>, <span class="title">the</span> <span class="title">ordering</span> <span class="title">can</span> <span class="title">be</span>
+             <span class="title">switched</span> <span class="title">around</span> (<span class="title">ex</span>: <span class="title">if</span> <span class="title">you</span> <span class="title">wish</span> <span class="title">to</span> <span class="title">have</span> <span class="title">your</span> <span class="title">servlet</span>-<span class="title">related</span>
+             <span class="title">objects</span> <span class="title">applied</span> <span class="title">before</span> <span class="title">prepare</span>() <span class="title">is</span> <span class="title">called</span>, <span class="title">you</span>'<span class="title">d</span> <span class="title">need</span> <span class="title">to</span> <span class="title">move</span>
+             <span class="title">servletConfig</span> <span class="title">interceptor</span> <span class="title">up</span>.
+
+             <span class="title">This</span> <span class="title">stack</span> <span class="title">also</span> <span class="title">excludes</span> <span class="title">from</span> <span class="title">the</span> <span class="title">normal</span> <span class="title">validation</span> <span class="title">and</span> <span class="title">workflow</span>
+             <span class="title">the</span> <span class="title">method</span> <span class="title">names</span> <span class="title">input</span>, <span class="title">back</span>, <span class="title">and</span> <span class="title">cancel</span>. <span class="title">These</span> <span class="title">typically</span> <span class="title">are</span>
+             <span class="title">associated</span> <span class="title">with</span> <span class="title">requests</span> <span class="title">that</span> <span class="title">should</span> <span class="title">not</span> <span class="title">be</span> <span class="title">validated</span>.
+             --&gt;
+        &lt;<span class="title">interceptor</span>-<span class="title">stack</span> <span class="title">name</span>="<span class="title">defaultStack</span>"&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">exception</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">alias</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">servletConfig</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">i18n</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">prepare</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">chain</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">debugging</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">scopedModelDriven</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">modelDriven</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">fileUpload</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">checkbox</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">multiselect</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">staticParams</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">actionMappingParams</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">params</span>"&gt;
+              &lt;<span class="title">param</span> <span class="title">name</span>="<span class="title">excludeParams</span>"&gt;<span class="title">dojo</span>\..*,^<span class="title">struts</span>\..*&lt;/<span class="title">param</span>&gt;
+            &lt;/<span class="title">interceptor</span>-<span class="title">ref</span>&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">conversionError</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">validation</span>"&gt;
+                &lt;<span class="title">param</span> <span class="title">name</span>="<span class="title">excludeMethods</span>"&gt;<span class="title">input</span>,<span class="title">back</span>,<span class="title">cancel</span>,<span class="title">browse</span>&lt;/<span class="title">param</span>&gt;
+            &lt;/<span class="title">interceptor</span>-<span class="title">ref</span>&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">workflow</span>"&gt;
+                &lt;<span class="title">param</span> <span class="title">name</span>="<span class="title">excludeMethods</span>"&gt;<span class="title">input</span>,<span class="title">back</span>,<span class="title">cancel</span>,<span class="title">browse</span>&lt;/<span class="title">param</span>&gt;
+            &lt;/<span class="title">interceptor</span>-<span class="title">ref</span>&gt;
+        &lt;/<span class="title">interceptor</span>-<span class="title">stack</span>&gt;
+
+        ......
+
+   &lt;/<span class="title">interceptors</span>&gt;
+
+    &lt;<span class="title">default</span>-<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">defaultStack</span>"/&gt;
+
+    &lt;<span class="title">default</span>-<span class="title">class</span>-<span class="title">ref</span> <span class="title">class</span>="<span class="title">com</span>.<span class="title">opensymphony</span>.<span class="title">xwork2</span>.<span class="title">ActionSupport</span>" /&gt;
+&lt;/<span class="title">package</span>&gt;
+</pre></figure></code></pre>
+<p>注意那个叫做params的拦截器，从请求到动作的数据自动转移就是由它完成的。</p>
+<h3>3.实现动作(Action)</h3>
+<p>struts2中的action只需要实现一个返回控制字符串的execute()方法即可，不需要实现action接口，因此基本上任何一个类都可以成为一个动作(action).即使如此框架还是提供了一些接口和实现来让工作变得更简单，成本更小。</p>
+<p><strong>Action接口</strong><br>如果一个action实现了com.opensymphony.xwork2.Action接口，它就可以使用一下常量，而这些也正是框架中使用的默认值：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String ERROR=<span class="string">"error"</span>;
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String INPUT=<span class="string">"input"</span>;
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String LOGIN=<span class="string">"login"</span>;
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String NONE=<span class="string">"none"</span>;
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String SUCCESS=<span class="string">"success"</span>;
+</pre></figure></code></pre>
+<p><strong>ActionSupport类</strong><br>此类提供了数据验证、错误信息传输及错误信息国际化等功能。</p>
+<p><strong>Ⅰ.基本验证</strong></p>
+<p>ActionSupport类使用两个接口与默认拦截器栈的DefaultWorkflowInterceptor拦截器配合完成基本验证。</p>
+<pre><code><figure class="highlight"><pre>        <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+</pre></figure></code></pre>
+<p>当workflow拦截器被触发时，它会在action中查找并执行validate()方法，ActionSupport实现了该方法，不过在实际项目中我们一般要使用自己的业务验证逻辑重写此方法。</p>
+<pre><code><figure class="highlight"><pre><span class="annotation">@Override</span>
+<span class="keyword">public</span> <span class="keyword">void</span> validate() {
+    <span class="comment">// TODO Auto-generated method stub</span>
+
+    <span class="comment">//添加一个字段的数据错误</span>
+    addFieldError(<span class="string">"fieldName"</span>, <span class="string">"errorMessage"</span>);
+    <span class="comment">//使用国际化</span>
+    addFieldError(<span class="string">"name"</span>, getText(<span class="string">"properties_name"</span>));
+    <span class="comment">//添加一个action范围内的错误</span>
+    addActionError(<span class="string">"anErrorMessage"</span>);
+
+}
+</pre></figure></code></pre>
+<p>当执行完validate()方法后，workflow拦截器会检查是否有错误信息。如果有错误信息，它将改变请求的工作流，它会立即停止请求的处理，将用户带回到表单页面并显示相应的错误提示。</p>
+<p><strong>Ⅱ.使用资源包(国际化)</strong></p>
+<p>ActionSupport实现了两个接口，它们协作完成了国际化文本信息的功能。首先是实现com.opensymphony.xwork2.TextProvider接口，可以从资源属性文件中通过关键字获取文本的本地化信息。下面是regist_en.properties文件的内容：</p>
+<pre><code><figure class="highlight"><pre><span class="transposed_variable">user.</span>exists=This user already <span class="transposed_variable">exists.</span>
+<span class="transposed_variable">username.</span>required=Username is <span class="transposed_variable">required.</span>
+<span class="transposed_variable">password.</span>required=Password is <span class="transposed_variable">required.</span>
+<span class="transposed_variable">portfolioName.</span>required=Portfolio Name is <span class="transposed_variable">required.</span>
+</pre></figure></code></pre>
+<p>属性文件创建之后，在action中使用getText(&quot;property_name&quot;)方法即可引用资源属性文件中的本地化信息。</p>
+<p>其次，ActionSupport实现了com.opensymphony.xwork2.LocaleProvider接口，它只提供了一个方法getLocale(),可通过浏览器发送来的地域语言信息获取用户所在的地域，从而判断使用那一种资源属性文件来国际化。</p>
+<h3>4.action传递域对象数据</h3>
+<p>action把请求中的数据放在简单的JavaBean对象上，这种做法很好很强大，但是当JavaBean对象足够复杂之后(如具有很多属性)，这种做法就不够强大了。既然框架提供了数据转移的机制，我们何不直接使用域对象进行数据转移呢？是的，框架允许我们这么做。</p>
+<p>有两种实现方式可以做的这一点：</p>
+<p>使用JavaBean对象，让数据直接传输到这个对象上 使用模型驱动(ModelDriven)的action</p>
+<p><strong>Ⅰ.使用JavaBean方式</strong></p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> String execute(){
+    getPortfolioService()<span class="variable">.createAccount</span>( user ); 
+    <span class="keyword">return</span> SUCCESS;
+}
+
+<span class="keyword">private</span> User user; 
+
+<span class="keyword">public</span> User getUser() {
+    <span class="keyword">return</span> user;
+}
+
+<span class="keyword">public</span> <span class="keyword">void</span> setUser(User user) {
+    <span class="keyword">this</span><span class="variable">.user</span> = user;
+}
+
+<span class="keyword">public</span> <span class="keyword">void</span> validate(){
+
+    <span class="keyword">if</span> ( getUser()<span class="variable">.getPassword</span>()<span class="variable">.length</span>() == <span class="number">0</span> ){           
+        addFieldError( <span class="string">"user.password"</span>, getText(<span class="string">"password.required"</span>) );
+    }
+    <span class="keyword">if</span> ( getUser()<span class="variable">.getUsername</span>()<span class="variable">.length</span>() == <span class="number">0</span> ){           
+        addFieldError( <span class="string">"user.username"</span>, getText(<span class="string">"username.required"</span>) );
+    }
+            ....
+}
+</pre></figure></code></pre>
+<p>后台代码变的简单了，前台代码就变复杂点了，就是这样无奈。</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.name"</span> <span class="attribute">label</span>=<span class="value">"姓名"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p><strong>Ⅱ使用模型驱动(ModelDriven)</strong></p>
+<p>使用ModelDriven与使用JavaBean方法不同，它使用getModel()方法将域对象公开。它引入了新的接口和拦截器，但拦截器已经包含在默认拦截器栈中了，我们只需要实现getModel()方法即可。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ModelDrivenRegister</span> <span class="keyword">extends</span> <span class="title">ActionSupport</span> <span class="keyword">implements</span> <span class="title">ModelDriven</span> {</span>
+
+    <span class="keyword">public</span> String execute(){<span class="comment">//注意在execute方法中只能使用user本来的引用，而不能做任何将其</span>
+                                    <span class="comment">//改变引用的操作</span>
+        getPortfolioService().createAccount( user ); 
+        <span class="keyword">return</span> SUCCESS;
+    }
+
+    <span class="keyword">private</span> User user = <span class="keyword">new</span> User();<span class="comment">//注意使用模型驱动需要初始化模型对象</span>
+
+    <span class="keyword">public</span> Object getModel() {
+        <span class="keyword">return</span> user;
+    }
+
+    <span class="keyword">public</span> <span class="keyword">void</span> validate(){
+        PortfolioService ps = getPortfolioService();
+
+        <span class="keyword">if</span> ( user.getPassword().length() == <span class="number">0</span> ){            
+            addFieldError( <span class="string">"password"</span>, getText(<span class="string">"password.required"</span>) );
+        }
+        ......
+    }
+
+    <span class="keyword">public</span> PortfolioService getPortfolioService( )  {
+        <span class="keyword">return</span> <span class="keyword">new</span> PortfolioService();
+    }
+}
+</pre></figure></code></pre>
+<p>值得庆幸的是使用模型驱动的方式传递数据在视图层不需要做任何改变，这也许就是为什么一般选择使用模型驱动而不选择JavaBean方式的原因了。</p>
+<p><strong>Ⅲ.使用域对象传递数据的潜在危险</strong></p>
+<p>像上面那样使用域对象传递数据的做法很好，但是这样做的前提是要将域对象公开出去，无论是使用JavaBean方式还是模型驱动方式都是如此。但是无论如何将域对象整个的暴露给用户总不是一个很好的做法，它还存在一些潜在的威胁。比如说域对象中有一些敏感的数据你不想公开给外界；一个恶意的用户在请求中添加一个适当命名精心设计的查询语句，这样这个参数就会被自动写入到域对象的属性上。当然你可以进行适当的过滤，但是这样一来使用域对象的目的就变的无效了。这个问题现在也没有很好的解决方法，看的人自己想想，在实际的开发中记住这一点就行。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-09T05:22:36.000Z"><a href="/My-Work/hello-struts-2.html">Mar 9 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/hello-struts-2.html">Hello Struts 2</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>本文主要复习Struts2的两种声明性架构：</p>
+<ul>
+<li>基于xml的声明性架构； </li>
+<li>基于java注解的声明性架构.</li>
+</ul>
+<p>需要的jar包：</p>
+<ul>
+<li>commons-fileupload-1.2.1.jar</li>
+<li>commons-io-1.3.2.jar</li>
+<li>commons-logging-1.0.4.jar</li>
+<li>commons-logging-api-1.1.jar</li>
+<li>freemarker-2.3.16.jar </li>
+<li>javassist-3.7.ga.jar</li>
+<li>ognl-3.0.jar</li>
+<li>struts2-core-2.2.1.1.jar</li>
+<li>xwork-core-2.2.1.1.jar</li>
+</ul>
+<h3>1.基于xml的声明性架构</h3>
+<p>web.xml配置：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">filter</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-name</span>&gt;</span>struts2<span class="tag">&lt;/<span class="title">filter-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-class</span>&gt;</span>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter<span class="tag">&lt;/<span class="title">filter-class</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">filter</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">filter-mapping</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-name</span>&gt;</span>struts2<span class="tag">&lt;/<span class="title">filter-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">url-pattern</span>&gt;</span>/*<span class="tag">&lt;/<span class="title">url-pattern</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">filter-mapping</span>&gt;</span>
+</pre></figure></code></pre>
+<p>struts.xml配置：</p>
+<pre><code><figure class="highlight"><pre><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="doctype">&lt;!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd"&gt;</span>
+<span class="tag">&lt;<span class="title">struts</span>&gt;</span>
+    <span class="comment">&lt;!-- 运行于开发者模式 --&gt;</span>
+    <span class="tag">&lt;<span class="title">constant</span> <span class="attribute">name</span>=<span class="value">"struts.devMode"</span> <span class="attribute">value</span>=<span class="value">"true"</span>&gt;</span><span class="tag">&lt;/<span class="title">constant</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"struts2demo1"</span> <span class="attribute">namespace</span>=<span class="value">"/demo1"</span> <span class="attribute">extends</span>=<span class="value">"struts-default"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"Name"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span>&gt;</span>/nameCollection.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"Hello"</span> <span class="attribute">class</span>=<span class="value">"xiaoxie.review.struts2demo.HelloworldAction"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span> <span class="attribute">name</span>=<span class="value">"SUCCESS"</span>&gt;</span>/helloworld.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">package</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">struts</span>&gt;</span>
+</pre></figure></code></pre>
+<p>这个示例中包含了两个动作(action),其中一个几乎什么都没做。package元素是一个重要的容器元素，示例中它声明了一个当框架将url映射到动作时需要使用的命名空间：</p>
+<pre><code><figure class="highlight"><pre><span class="method">http:</span>//+<span class="method">localhost:</span><span class="number">8080</span>/+struts2demo/+demo1/+helloworld.action
+协议+主机名：端口+servlet上下文+命名空间+动作
+</pre></figure></code></pre>
+<p>nameCollection.jsp</p>
+<pre><code><figure class="highlight"><pre>&lt;%@ page language=<span class="string">"java"</span> contentType=<span class="string">"text/html; charset=UTF-8"</span>
+    pageEncoding=<span class="string">"UTF-8"</span>%&gt;
+<span class="xml"><span class="vbscript">&lt;%@ taglib prefix=<span class="string">"s"</span> uri=<span class="string">"/struts-tags"</span> %&gt;</span>
+<span class="doctype">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"&gt;</span>
+<span class="tag">&lt;<span class="title">html</span>&gt;</span>
+<span class="tag">&lt;<span class="title">head</span>&gt;</span>
+<span class="tag">&lt;<span class="title">meta</span> <span class="attribute">http-equiv</span>=<span class="value">"Content-Type"</span> <span class="attribute">content</span>=<span class="value">"text/html; charset=UTF-8"</span>&gt;</span>
+<span class="tag">&lt;<span class="title">title</span>&gt;</span>Name Collection<span class="tag">&lt;/<span class="title">title</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">head</span>&gt;</span>
+<span class="tag">&lt;<span class="title">body</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">center</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">div</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">h4</span>&gt;</span>输入姓名<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"Hello"</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"name"</span> <span class="attribute">label</span>=<span class="value">"姓名"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">s:submit</span> <span class="attribute">value</span>=<span class="value">"Submit"</span>&gt;</span><span class="tag">&lt;/<span class="title">s:submit</span>&gt;</span>
+            <span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">center</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">body</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">html</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>helloworld.jsp</p>
+<pre><code><figure class="highlight"><pre>&lt;%@ page language=<span class="string">"java"</span> contentType=<span class="string">"text/html; charset=UTF-8"</span>
+    pageEncoding=<span class="string">"UTF-8"</span>%&gt;
+<span class="xml"><span class="vbscript">&lt;%@ taglib prefix=<span class="string">"s"</span> uri=<span class="string">"/struts-tags"</span> %&gt;</span>
+<span class="doctype">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"&gt;</span>
+<span class="tag">&lt;<span class="title">html</span>&gt;</span>
+<span class="tag">&lt;<span class="title">head</span>&gt;</span>
+<span class="tag">&lt;<span class="title">meta</span> <span class="attribute">http-equiv</span>=<span class="value">"Content-Type"</span> <span class="attribute">content</span>=<span class="value">"text/html; charset=UTF-8"</span>&gt;</span>
+<span class="tag">&lt;<span class="title">title</span>&gt;</span>HelloWorld<span class="tag">&lt;/<span class="title">title</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">head</span>&gt;</span>
+<span class="tag">&lt;<span class="title">body</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">center</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">h4</span>&gt;</span>Hello<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">div</span>&gt;</span><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"coutomeName"</span>/&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">center</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">body</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">html</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>HelloworldAction.java</p>
+<pre><code><figure class="highlight"><pre><span class="package"><span class="keyword">package</span> <span class="title">xiaoxie</span>.<span class="title">review</span>.<span class="title">struts2demo</span>;
+
+<span class="title">public</span> <span class="title">class</span> <span class="title">HelloworldAction</span> {</span>
+    <span class="keyword">private</span> String name;
+    <span class="keyword">private</span> String coutomeName;
+    <span class="keyword">public</span> String getName() {
+        <span class="keyword">return</span> name;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setName(String name) {
+        <span class="keyword">this</span>.name = name;
+    }
+
+    <span class="keyword">public</span> String getCoutomeName() {
+        <span class="keyword">return</span> coutomeName;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setCoutomeName(String coutomeName) {
+        <span class="keyword">this</span>.coutomeName = coutomeName;
+    }
+    <span class="keyword">public</span> String execute(){
+        setCoutomeName(<span class="string">"Hello "</span>+getName());
+        <span class="keyword">return</span> <span class="string">"SUCCESS"</span>;
+    }
+}
+</pre></figure></code></pre>
+<p>使用JavaBean的方式编写action使领域数据总是存储在action中,action的execute方法可以很方便的访问到数据；而为了在其他地方(比如jsp)也能访问到数据，框架底层也把数据放到了ValueStack中。ValueStack的机制是将action中的所有属性作为它的第一级属性公开出来，这样就可以使用ONGL来访问(<code><s:property value="coutomeName"/></code>).</p>
+<h3>2.基于java注解的声明性架构</h3>
+<p>在web.xml中添加以下代码</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">filter</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-name</span>&gt;</span>struts2<span class="tag">&lt;/<span class="title">filter-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-class</span>&gt;</span>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter<span class="tag">&lt;/<span class="title">filter-class</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">init-param</span>&gt;</span>
+        <span class="comment">&lt;!-- 扫描xiaoxie包，查找注解 --&gt;</span>
+        <span class="tag">&lt;<span class="title">param-name</span>&gt;</span>actionPackages<span class="tag">&lt;/<span class="title">param-name</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param-value</span>&gt;</span>xiaoxie<span class="tag">&lt;/<span class="title">param-value</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">init-param</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">filter</span>&gt;</span>
+</pre></figure></code></pre>
+<p>标记哪个类是action类有两种方法：</p>
+<ul>
+<li>让action类实现com.opensymphony.xwork2.Action接口</li>
+<li>使用命名约定，类名以Action结尾 </li>
+</ul>
+<p>例如：</p>
+<pre><code><figure class="highlight"><pre><span class="comment">@Result(name="SUCCESS"</span>,<span class="comment">location="/helloworld</span>.<span class="comment">jsp")</span>  
+<span class="comment">public</span> <span class="comment">class</span> <span class="comment">HelloworldAction{</span> <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span> <span class="comment">}
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-04T05:14:24.000Z"><a href="/My-Work/byte-of-python-notes-2.html">Mar 4 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/byte-of-python-notes-2.html">简明 Python 教程笔记(下)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>今天星期一，周末综合症发作，头痛不行，下班后休息了一会终于活了过来。继续上篇的笔记吧。</p>
+<h3>1. 类</h3>
+<h4>1.1 类的定义</h4>
+<pre><code><figure class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">Person</span>:</span>
+    <span class="keyword">pass</span> <span class="comment"># 空表达式</span>
+
+p = Person()
+<span class="keyword">print</span> p
+</pre></figure></code></pre>
+<h4>1.2 类的方法</h4>
+<pre><code><figure class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">Person</span>:</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">sayHi</span><span class="params">(self)</span>:</span>
+        <span class="keyword">print</span> <span class="string">'Hello, how are you?'</span>
+
+p = Person()
+p.sayHi()
+</pre></figure></code></pre>
+<p>在类中定义方法时，类的第一个参数必须是<code>self</code>。</p>
+<p><strong>init</strong>方法在类的一个对象被建立时，马上运行。这个方法可以用来对你的对象做一些你希望的初始化 。类似与Java中类的构造方法。</p>
+<pre><code><figure class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">Person</span>:</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span>
+        self.name = name
+    <span class="function"><span class="keyword">def</span> <span class="title">sayHi</span><span class="params">(self)</span>:</span>
+        <span class="keyword">print</span> <span class="string">'Hello, my name is'</span>, self.name
+
+p = Person(<span class="string">'Swaroop'</span>)
+p.sayHi()
+</pre></figure></code></pre>
+<p>Python 中所有的类成员(包括数据成员)都是 公共的 ,所有的方法都是有效的 。只有一个例外:如果你使用的数据成员名称以 双下划线前缀 比如__privatevar,Python 的名称管理体系会有效地把它作为私有变量。</p>
+<p>当对象不再被使用时，<strong>del</strong>方法就会运行。</p>
+<h4>1.3 继承</h4>
+<pre><code><figure class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">SchoolMember</span>:</span>
+    ......
+<span class="class"><span class="keyword">class</span> <span class="title">Teacher</span><span class="params">(SchoolMember)</span>:</span>
+    ......
+<span class="class"><span class="keyword">class</span> <span class="title">Student</span><span class="params">(SchoolMember)</span>:</span>
+    ......
+</pre></figure></code></pre>
+<p>一个术语的注释——如果在继承元组中列了一个以上的类,那么它就被称作多重继承 。</p>
+<h3>2. 输入/输出操作</h3>
+<pre><code><figure class="highlight"><pre>f = file(<span class="string">'poem.txt'</span>,<span class="string">'w'</span>)  <span class="comment"># r读模式 w写模式 a追加模式 </span>
+f.<span class="keyword">write</span>(pome)
+f.<span class="keyword">close</span>()
+
+f = file(<span class="string">'poem.txt'</span>)
+
+<span class="keyword">while</span> True:
+    line = f.<span class="keyword">readline</span>()
+    <span class="keyword">if</span> len(line) == <span class="number">0</span>:
+        <span class="keyword">break</span>
+    <span class="keyword">print</span> line
+f.<span class="keyword">close</span>()
+</pre></figure></code></pre>
+<h3>3. 存储器pickle</h3>
+<p>Python提供一个标准的模块，称为pickle。使用它你可以在一个文件中储存任何Python对象，之后你又可以把它完整无缺地取出来。这被称为 持久地 储存对象。</p>
+<pre><code><figure class="highlight"><pre><span class="import"><span class="keyword">import</span> cPickle <span class="keyword">as</span> p</span>
+
+<span class="title">shoplist</span> = ['apple','mango','carrot']
+
+<span class="title">f</span> = file('shoplist.<span class="typedef"><span class="keyword">data</span>','w')</span>
+<span class="title">p</span>.dump(shoplist,f)
+<span class="title">f</span>.close
+
+<span class="title">del</span> shoplist
+
+<span class="title">f</span> = file('shoplist.<span class="typedef"><span class="keyword">data</span>')</span>
+<span class="title">storedlist</span> = p.load(f)
+<span class="title">print</span> storedlist
+</pre></figure></code></pre>
+<h3>4. 异常</h3>
+<h4>4.1 处理异常</h4>
+<pre><code><figure class="highlight"><pre><span class="comment">try:</span>
+    <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span>
+<span class="comment">except</span> <span class="comment">EOFError:</span>
+    <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span>
+<span class="comment">except:</span>
+    <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span>
+<span class="comment">finally:</span>
+    <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span>
+</pre></figure></code></pre>
+<h4>4.2 引发异常</h4>
+<p>使用 raise 语句 引发 异常。你还得指明错误/异常的名称和伴随异常触发的 异常对象。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">if</span> len(s) &lt; <span class="number">3</span>:
+    <span class="keyword">raise</span> ShortInputException(len(s), <span class="number">3</span>)
+<span class="comment">#参数：实际值/期望值</span>
+</pre></figure></code></pre>
+<p>类似于java中的throw</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-03T05:12:32.000Z"><a href="/My-Work/byte-of-python-notes-1.html">Mar 3 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Work/byte-of-python-notes-1.html">简明 Python 教程笔记(上)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>利用周末时间终于看完了《简明Python教程》，在线地址在<a href="http://woodpecker.org.cn/abyteofpython_cn/chinese/">这里</a>，说来真是惭愧，本来想过年放假时看完的，想不到竟然托到了现在。废话不多说，还是在这里记录下看书时做的笔记吧。</p>
+<h3>1. 控制流</h3>
+<p>在Python中有三种控制流语句——if、for和while。</p>
+<h4>1.1 if语句</h4>
+<pre><code><figure class="highlight"><pre><span class="type">number</span> = <span class="number">23</span>
+guess = int(raw_input('Enter an <span class="type">integer</span> : '))
+
+<span class="keyword">if</span> guess == <span class="type">number</span>:
+    print 'Congratulations, you guessed <span class="keyword">it</span>.' 
+    print <span class="string">"(but you do not win any prizes!)"</span> 
+elif guess &lt; <span class="type">number</span>:
+    print 'No, <span class="keyword">it</span> <span class="keyword">is</span> a little higher than <span class="keyword">that</span>' 
+<span class="keyword">else</span>:
+    print 'No, <span class="keyword">it</span> <span class="keyword">is</span> a little lower than <span class="keyword">that</span>' 
+
+print 'Done'
+</pre></figure></code></pre>
+<h4>1.2 while语句</h4>
+<pre><code><figure class="highlight"><pre><span class="type">number</span> = <span class="number">23</span>
+<span class="property">running</span> = True
+
+<span class="keyword">while</span> <span class="property">running</span>:
+    guess = int(raw_input('Enter an <span class="type">integer</span> : '))
+
+    <span class="keyword">if</span> guess == <span class="type">number</span>:
+        print 'Congratulations, you guessed <span class="keyword">it</span>.' 
+        <span class="property">running</span> = False 
+    elif guess &lt; <span class="type">number</span>:
+        print 'No, <span class="keyword">it</span> <span class="keyword">is</span> a little higher than <span class="keyword">that</span>' 
+    <span class="keyword">else</span>:
+        print 'No, <span class="keyword">it</span> <span class="keyword">is</span> a little lower than <span class="keyword">that</span>' 
+<span class="keyword">else</span>:
+    print 'The <span class="keyword">while</span> loop <span class="keyword">is</span> <span class="keyword">over</span>.' 
+
+print 'Done'
+</pre></figure></code></pre>
+<h4>1.3 for语句</h4>
+<pre><code><figure class="highlight"><pre><span class="keyword">for</span> i <span class="keyword">in</span> <span class="keyword">range</span>(<span class="number">1</span>, <span class="number">5</span>):
+    print i
+<span class="keyword">else</span>:
+    print <span class="attribute">'The</span> <span class="keyword">for</span> <span class="keyword">loop</span> <span class="keyword">is</span> over'
+</pre></figure></code></pre>
+<p>除此之外，还有<code>break</code>和<code>continue</code>语句，与java语言相同。</p>
+<h3>2. 函数</h3>
+<h4>2.1 函数定义</h4>
+<pre><code><figure class="highlight"><pre><span class="function"><span class="keyword">def</span> <span class="title">sayHello</span><span class="params">()</span>:</span>
+    <span class="keyword">print</span> <span class="string">'Hello World!'</span> <span class="comment"># 函数体</span>
+
+sayHello() <span class="comment"># 调用函数</span>
+</pre></figure></code></pre>
+<h4>2.2 文档字符串</h4>
+<pre><code><figure class="highlight"><pre><span class="function"><span class="keyword">def</span> <span class="title">printMax</span><span class="params">(x, y)</span>:</span>
+    <span class="string">'''Prints the maximum of two numbers.
+
+    The two values must be integers.'''</span>
+
+    ...... <span class="comment"># 函数体</span>
+</pre></figure></code></pre>
+<p>文档字符串的惯例是一个多行字符串，它的首行以大写字母开始，句号结尾。第二行是空行，从第三行开始是详细的描述。DocStrings也适用于模块和类。可使用<strong>doc</strong>（注意双下划线）调用。</p>
+<pre><code><figure class="highlight"><pre><span class="title">print</span> printMax.__doc__
+</pre></figure></code></pre>
+<h3>3. 模块</h3>
+<h4>3.1 模块的<strong>name</strong></h4>
+<p>在程序本身被使用的时候运行主块，而在它被别的模块输入的时候不运行主块，以通过模块的<strong>name</strong>属性完成。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">if</span> __name__ == '__main__':
+    print 'This program <span class="keyword">is</span> being <span class="command">run</span> <span class="keyword">by</span> itself'
+<span class="keyword">else</span>:
+    print 'I am being imported <span class="keyword">from</span> another module'
+</pre></figure></code></pre>
+<p>测试结果：</p>
+<pre><code><figure class="highlight"><pre><span class="variable">$ </span>python using_name.py
+<span class="constant">This</span> program is being run by itself
+
+<span class="variable">$ </span>python
+&gt;&gt;&gt; import using_name
+<span class="constant">I</span> am being imported from another <span class="class"><span class="keyword">module</span>
+&gt;&gt;&gt;</span>
+</pre></figure></code></pre>
+<h4>3.2 dir()函数</h4>
+<p>dir函数用来列出模块定义的属性和方法。</p>
+<pre><code><figure class="highlight"><pre>$ python
+&gt;&gt;&gt; <span class="import"><span class="keyword">import</span> sys</span>
+&gt;&gt;&gt; dir(sys) # get list <span class="keyword">of</span> attributes for sys <span class="module"><span class="keyword">module</span>
+</pre></figure></code></pre>
+<h4>3.3 其他内容</h4>
+<p>sys.argv变量是一个字符串的&quot;列表&quot;，它包含了 命令行参数 的列表，即使用命令行传递给你的程序的参数。</p>
+<p>sys.path包含输入模块的目录名列表。</p>
+<p>help()函数将打印 &quot;文档字符串&quot;内容。</p>
+<p>raw_input(&#39;Enter an integer:&#39;) 用于接收用户的输入。</p>
+<h3>4. 数据结构--列表、元组和字典</h3>
+<h4>4.1 列表</h4>
+<pre><code><figure class="highlight"><pre><span class="title">shoplist</span> = ['apple',<span class="string"> 'mango'</span>,<span class="string"> 'carrot'</span>,<span class="string"> 'banana'</span>] # 定义
+<span class="title">len</span>(shoplist)  # 内置的返回列表大小的函数
+
+<span class="title">for</span> item <span class="keyword">in</span> shoplist: # 循环打印列表元素内容
+    print item
+
+<span class="title">shoplist</span>.append('rice')
+
+<span class="title">shoplist</span>.sort()
+
+<span class="title">olditem</span> = shoplist[<span class="number">0</span>]
+
+<span class="title">del</span> shoplist[<span class="number">0</span>] # 删除列表中的元素
+</pre></figure></code></pre>
+<h4>4.2 元组</h4>
+<p>元组同字符串一样，是不可变的，无法修改的。</p>
+<pre><code><figure class="highlight"><pre>zoo = (<span class="attribute">'wolf</span>', <span class="attribute">'elephant</span>', <span class="attribute">'penguin</span>') # 定义元组
+new_zoo = (<span class="attribute">'monkey</span>', <span class="attribute">'dolphin</span>', zoo)
+new_zoo[<span class="number">2</span>][<span class="number">2</span>]
+</pre></figure></code></pre>
+<p>只有一个元素的元组这样写，必须加逗号</p>
+<pre><code><figure class="highlight"><pre><span class="setting">singleton = <span class="value">(<span class="number">2</span>,)</span></span>
+</pre></figure></code></pre>
+<p>元组最通常的用法是用在打印语句中</p>
+<pre><code><figure class="highlight"><pre>age = <span class="number">22</span>
+<span class="property">name</span> = 'Swaroop'
+print '%s <span class="keyword">is</span> %d years old' % (<span class="property">name</span>, age)
+print 'Why <span class="keyword">is</span> %s playing <span class="keyword">with</span> <span class="keyword">that</span> python?' % <span class="property">name</span>
+</pre></figure></code></pre>
+<h4>4.3 字典</h4>
+<p>字典类似&quot;键值对&quot;。</p>
+<pre><code><figure class="highlight"><pre>d = {key1 : value1, key2 : value2 } <span class="preprocessor"># 定义</span>
+d[key1]
+del d[key1]
+
+<span class="keyword">for</span> key,<span class="keyword">value</span> <span class="keyword">in</span> d:
+    print <span class="string">'%s is $s'</span>%(key,<span class="keyword">value</span>)
+
+<span class="keyword">if</span> key <span class="keyword">in</span> d:
+    ......
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-02-25T05:04:34.000Z"><a href="/My-Life/twitter-revolution-maintenance-of-stability-of-the-weibo.html">Feb 25 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/My-Life/twitter-revolution-maintenance-of-stability-of-the-weibo.html">安替：革命的推特、维稳的微博</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>来源：<a href="https://groups.google.com/forum/?fromgroups=#!topic/paste/XiVkV4msJG8">Google网上论坛</a></p>
+<p>2011年阿拉伯之春，社交媒体如推特（Twitter）和脸书（Facebook）在推翻突尼斯、埃及独裁政权上起到了重要作用，如果不是决定作用的话。所以全世界都把目光上转向了全球最大的非民主国家中国，和全球用户最多的社交媒体“微博”，大部分相关研究和报道，都在试图回答这样一个问题：微博对中国民主化进程的作用到底会是如何？</p>
+<p>简单地回答：只要中国政权不发生质变，微博不被新技术取代，它就一直在帮助中国政府把信息控制权集中到中央，对中国民主化的作用不但复杂，而且很可能会是负面。</p>
+<p>推特虽然诞生于2006年，但真正进入中国网友视界，是2009年2月的央视大火。很快大家发现，推特上每一条推的140字限制，简直就是在给中国人开后门：140个字母的英文大约20个单词，也就是一句话，而140个字的中文是完整一段话，不但可以完全涵盖新闻报道五元素，还可以当成BBS来简单讨论事情。根据统计，中文在推特上的信息有效性是英文的3.6倍。很快，推特和中国的第一个高度克隆产品“饭否”，被中国网友当成新闻工具。例如，当年7月发生新疆骚乱时，推特用户郭怡广（@kaiserkuo）和我联手第一个把消息在新华社之前用英文在推特上发了出去。</p>
+<p>也因为新疆骚乱，饭否被关（之前6月推特已经被“中华防火墙”GFW封锁）。8月，新浪推出“微博”，除了克隆推特基本功能之外，还创新地增加了评论区、自动显示图片，后来还把新浪博客的名人策略移植到了微博上，有了所谓的大V用户。当时负责微博的新浪副总裁陈彤本身就是管理四通利方BBS起家，经营新浪新闻门户和新浪博客风生水起，他把BBS、门户、博客的所有中国用户喜欢的特点都一股脑放在了微博上。</p>
+<p>对推特更大的打击是2011年2月-6月的茉莉花镇压，全国上百人因为推特上所谓的2月20日茉莉花街头运动被拘，特别是艾未未事件，对整个推特中文圈产生了“寒蝉效应”，很多和体制有关的用户心生退意，舍弃推特，全心投入微博。同时，推特本身的安全升级和GFW不断高耸，让中国用户上推难度大幅度增加。</p>
+<p>一边各种天时地利人和，一边各种打压和麻烦，很快全民上微博，结果就是今天，单新浪微博就号称3亿用户，而依然被封的推特，中文用户估计只有30万人以上，后者只有前者的千分之一。这三亿用户的微博，也的确成为中国民众言论自由实践的训练平台，揭黑不断，官不聊生。</p>
+<p>不过，任何人由此对微博在中国作用产生了乐观估计，认为最终会推动中国民主化进程，那就错了。因为虽然原始克隆自推特，微博和推特却因结构上的不同，对社会政治的作用，有了天差地别。</p>
+<p>推特、脸书、Youtube这些社会媒体，之所以能推动阿拉伯革命，关键在于两个因素：分散（De-centralized）信息产生机制和服务器独立于政权之外。Web 2.0的用户产生内容（UGC）这样的分散信息产生机制，让每一个埃及网友都成为记者和新闻官，而这些服务器一直放在信息自由的美国西岸，导致埃及总统穆巴拉克没办法控制这些网友的关系和信息。国家地理边界，因为这些Web 2.0服务，在虚拟空间拉开了一个大豁口，而这些服务器在海外的Web2.0服务，就成为一个“信息自由租界”，本国公民可以在此虚拟聚合、讨论和组织，政权之手鞭长莫及。</p>
+<p>微博却是不折不扣另外的东西。它虽然有分散信息产生机制，每个微博用户的确也像一个记者和新闻官，但微博服务器却是位于北京，被中国中央政府牢牢控制，不但对信息管理有牲杀大权，而且甚至有计算机接口可以直接操作服务器。</p>
+<p>互联网世界的权力斗争，本质上是服务器控制权之争。控制了3亿微博用户的服务器，就是控制了中国所有微博用户的所有信息和关系。这等于假设把维基解密的服务器放在白宫办公室里面，那样阿桑奇再厉害，也没办法对美国政府有任何造次。用网络分析、数据挖掘（Datamining）、地理标记这些计算机技术，中国中央政府不但能根据彼此互动情况准确画出全国异议人士的关系网，而且能通过关键字监控和语义分析，提前预测可能会发生的公民行动，乃至用户的意识形态倾向，通知各地公安机构，及早进行网格化布控，把对政权的威胁消灭在摇篮里。服务器放在言论自由法治国家的推特，是革命的工具，但服务器放在不民主国家的微博，却是《1984》的第一次实践。</p>
+<p>但这不是微博故事的全部。微博服务器，是被“中国中央政府”控制，所以，互联网进入中国后第一次，地方政府官员完全没办法删除批评自身的帖子，必须有求与中央。在中国，有事发生，删贴是常规，不删贴才是政治异动。2012年2月王立军叛逃时，重庆市当然希望删除微博上所有关于王立军甚至薄熙来的传闻，而采用“休假式治疗”的官方解释。但此刻政治斗争已经产生，负责舆论和互联网管理的宣传官员乐于围观，在之后两个月内，微博成了击毁薄熙来重庆派系的言论市场，流言四起，成了薄熙来王国覆灭的重大推力。</p>
+<p>不仅是地方政府，连一些不听话的部委也被中央微博监管机构抛弃。2011年7月温州动车事故发生后，五天之内没有任何删除命令，新浪微博用户对此事的讨论超过了1000万条，动员了几乎全部媒体对铁道部展开彻底批评，一直到温家宝去现场视察，禁令才到。这显然对前部长刘志军的处理有关，铁道部这样的独立王国，如果要打散，舆论的支持是必须的政治安排。</p>
+<p>和薄熙来与刘志军相比，“带表哥”、“房哥”、“房姐”那样的地方官员，自然更没资格获得中央微博舆论管理机构的奥援，在亿万网友的攻击下，如待宰羔羊。微博，正如十年多前的央视《焦点访谈》，成了中央治理地方、镇压派系的最佳舆论工具，简单说，微博就是央视2.0，而网友进入了一个几乎可以自由批评地方官员的时代。</p>
+<p>如果说1994年朱荣基税制改革，是实践陈云的主张“中央的政治权威，要有中央的经济权威作基础”的话，那么2009年后的微博管理，是“中央的政治权威，要有中央的信息控制权威作基础”，从此，只有中央政府，才能有效影响全国舆论，中国的舆论控制，比2009年之前更加“中央集中化（Centralized）”，从某种意义上说，微博是共产党政权控制地方的高级维稳工具。</p>
+<p>简单说，删微博，只有中央政府才能做。地方政府为了适应这样的变化，只能通过三个方法，第一是建立现代信息发布机制，雇佣专业上被成为Spin Doctor的“微博发言人”；第二，被迫接受压力，道歉，并且进行一定程度的改革和透明化努力；第三，如果地方领导人没有深厚中南海关系，就得雇佣专业上被成为Lobbyist的中央代理人，说服中央微博舆论管理机构删贴。《新世纪周刊》揭露的一些所谓“非法删贴”现象，就是这些中央代理人的生意，这个产业，每年都是数亿人民币。</p>
+<p>微博不是公民社会的福音。信息发布分散化造就了微博成为国民言论自由训练场，但信息控制精密化、中央集中化造成了公民社会空间缩小。政治改革转型，大都伴随着地方分权（Devolution）的过程，即便是中国的经济改革，也是从安徽农村和沿海城市开始，公民社会的成长，往往是对这些分权造成权力空隙的利用。但今天的中国，微博覆盖了全部舆论场，而能被审查通过的市民运动，也就是类似名人发起的慈善活动、以及针对地方政府的邻避环保运动。这种不会积累公民社会组织能力、不会损伤中央权威并且一切在中央可控之下的活动，能推动中国社会的程度也非常有限。</p>
+<p>微博的中国，是信息过载、愤怒漫溢，但行动受限、也无法组织的三亿网民。他们是活火山，随时会爆发，但却会毫无章法。这造就了一个危险并且无法完全预测的中国社会未来。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+
+<nav id="pagination">
+  
+    <a href="/page/4/" class="prev">Prev</a>
+  
+  
+    <a href="/page/6/" class="next">Next</a>
+  
+  <div class="clearfix"></div>
+</nav></div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/My-Work/after-install-ubuntu-1304.html">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/My-Work/java-programmers-in-the-eyes-of-javascript.html">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/My-Life/june-youth-future.html">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/My-Work/how-install-apache-24-and-php-54.html">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/My-Life/reasons-to-date-a-geek-boy.html">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>

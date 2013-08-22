@@ -1,0 +1,276 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>Ubuntu 12.04 ATI卡驱动安装 | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="Ubuntu 12.04 ATI卡驱动安装"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2012-05-01T07:57:24.000Z"><a href="/My-Life/ubuntu-1204-ati-driver.html">May 1 2012</a></time>
+    
+    
+  
+    <h1 class="title">Ubuntu 12.04 ATI卡驱动安装</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <h3>1.安装Ubuntu提供的 fglrx/Catalyst(催化剂)</h3>
+<p>在Ubuntu 12.04中将会安装催化剂Catalyst 8.960版本，这可能不是最新的版本，但是这样做更安全和稳定，它相当于AMD Catalyst 12-4。</p>
+<h3>2.手动安装AMD催化剂(推荐)</h3>
+<p>注意：在32位Ubuntu12.04上手动安装AMD提供的催化剂12-4版本将会需要一个补丁，你可以在<a href="http://ubuntuforums.org/showthread.php?t=1969827找到它。">http://ubuntuforums.org/showthread.php?t=1969827找到它。</a></p>
+<h4>2.1 开始之前</h4>
+<p>安装依赖的包</p>
+<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> apt-<span class="keyword">get</span> install build-essential cdbs dh-make dkms execstack dh-modaliases fakeroot
+</pre></figure></code></pre>
+<p>如果时64位的系统，请执行以下命令</p>
+<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> apt-<span class="keyword">get</span> install ia32-libs-multiarch:i386 lib32gcc1 libc6-i386
+cd /usr;</span> su<span class="operator"><span class="keyword">do</span> ln -svT lib /usr/lib64
+</pre></figure></code></pre>
+<p>这将会安装32位的编译器，并在库引用间建立软链接</p>
+<h4>2.2 下载催化剂12-4</h4>
+<pre><code><figure class="highlight"><pre>cd ~/<span class="comment">; mkdir catalyst12.4; cd catalyst12.4/</span>
+wget http://www2<span class="preprocessor">.ati</span><span class="preprocessor">.com</span>/drivers/linux/amd-driver-installer-<span class="number">12</span>-<span class="number">4</span>-x86<span class="preprocessor">.x</span>86_64<span class="preprocessor">.run</span>
+chmod +<span class="built_in">x</span> amd-driver-installer-<span class="number">12</span>-<span class="number">4</span>-x86<span class="preprocessor">.x</span>86_64<span class="preprocessor">.run</span>
+</pre></figure></code></pre>
+<h4>2.3 创建.deb文件</h4>
+<pre><code><figure class="highlight"><pre><span class="comment">sh</span> <span class="string">.</span><span class="comment">/amd</span>-<span class="comment">driver</span>-<span class="comment">installer</span>-<span class="comment">12</span>-<span class="comment">4</span>-<span class="comment">x86</span>.<span class="comment">x86_64</span>.<span class="comment">run</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">buildpkg</span> <span class="comment">Ubuntu/precise
+</pre></figure></code></pre>
+<p>创建时间可能比较慢且终端没有输出，请耐心等待...</p>
+<h4>2.4 安装.deb文件</h4>
+<pre><code><figure class="highlight"><pre><span class="title">sudo</span> dpkg -i fglrx<span class="regexp">*.deb</span>
+</pre></figure></code></pre>
+<h4>2.5 配置/etc/X11/xorg.conf文件</h4>
+<p>即使安装了驱动系统仍然无法识别你的显卡，还需要配置配置文件，系统将依靠配置文件来驱动显卡。 执行下面的命令初始化amd的配置文件</p>
+<pre><code><figure class="highlight"><pre><span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">initial</span> <span class="literal">-</span><span class="comment">f
+</pre></figure></code></pre>
+<p>打开/etc/X11/xorg.conf文件，找到以下内容</p>
+<pre><code><figure class="highlight"><pre><span class="title">Section</span> <span class="string">"Device"</span>
+Identifier <span class="string">"ATI radeon 6870"</span>
+Driver <span class="string">"fglrx"</span>
+EndSection
+</pre></figure></code></pre>
+<p>你的文件内容可能与以上内容不同，你需要知道自己显卡的型号将Identifier引号内的名称修改为你显卡的名称，保存。 如果你的GPU是双核的，请执行以下命令；但是如果你是双显卡就不需要执行了</p>
+<pre><code><figure class="highlight"><pre><span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">initial</span> <span class="literal">-</span><span class="comment">f</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">adapter=all
+</pre></figure></code></pre>
+<p>如果你时多屏的，请执行下面的命令</p>
+<pre><code><figure class="highlight"><pre><span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">initial</span> <span class="literal">-</span><span class="comment">f</span>
+<span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">set</span>-<span class="comment">pcs</span>-<span class="comment">str="DDX</span>,<span class="comment">EnableRandR12</span>,<span class="comment">FALSE"
+</pre></figure></code></pre>
+<h4>2.6 强制使用配置文件的设置</h4>
+<pre><code><figure class="highlight"><pre><span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">input=/etc/X11/xorg</span>.<span class="comment">conf</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">tls=1
+</pre></figure></code></pre>
+<h4>2.7 测试一下刚才的配置是否成功</h4>
+<pre><code><figure class="highlight"><pre><span class="attribute">fglrxinfo
+</pre></figure></code></pre>
+<p>你应该会看到以下类似内容</p>
+<pre><code><figure class="highlight"><pre><span class="method">display:</span> :<span class="number">0</span> <span class="method">screen:</span> <span class="number">0</span>
+<span class="class">OpenGL</span> vendor <span class="method">string:</span> <span class="class">Advanced</span> <span class="class">Micro</span> <span class="class">Devices</span>, <span class="class">Inc</span>.
+<span class="class">OpenGL</span> renderer <span class="method">string:</span> <span class="class">ATI</span> <span class="class">Mobility</span> <span class="class">Radeon</span> <span class="class">HD</span> <span class="number">4650</span>
+<span class="class">OpenGL</span> version <span class="method">string:</span> <span class="number">3.3</span><span class="number">.11631</span> <span class="class">Compatibility</span> <span class="class">Profile</span> <span class="class">Context</span>
+</pre></figure></code></pre>
+<p>再检测下显卡的帧率</p>
+<pre><code><figure class="highlight"><pre><span class="attribute">fgl_glxgears
+</pre></figure></code></pre>
+<p><img src="/media/2013/02/1965599216.png" alt="fg1-300x157.png" title="fg1-300x157.png"></p>
+<h4>2.8 启用显卡的硬解</h4>
+<p>显卡驱动了，GPU当然不能浪费，看高清硬接才是王道</p>
+<p>这里我使用的是xvba-va驱动</p>
+<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> apt-<span class="keyword">get</span> install xvba-va-driver libva-glx1 libva-x11-<span class="number">1</span> vainfo
+</pre></figure></code></pre>
+<p>重启电脑，执行</p>
+<pre><code><figure class="highlight"><pre><span class="attribute">vainfo
+</pre></figure></code></pre>
+<p>你将会看到以下内容</p>
+<pre><code><figure class="highlight"><pre><span class="label">libva:</span> VA-API version <span class="number">0.32</span><span class="number">.0</span>
+<span class="label">Xlib:</span> extension <span class="string">"XFree86-DRI"</span> missing on display <span class="string">":0"</span>.
+<span class="label">libva:</span> va_getDriverName() returns <span class="number">0</span>
+<span class="label">libva:</span> Trying to open /usr/lib/x86_64-linux-gnu/dri/fglrx_drv_video<span class="preprocessor">.so</span>
+<span class="label">libva:</span> va_openDriver() returns <span class="number">0</span>
+<span class="label">vainfo:</span> VA-API version: <span class="number">0.32</span> (libva <span class="number">1.0</span><span class="number">.15</span>)
+<span class="label">vainfo:</span> Driver version: Splitted-Desktop Systems XvBA backend for VA-API - <span class="number">0.7</span><span class="number">.8</span>
+<span class="label">vainfo:</span> Supported profile <span class="keyword">and</span> entrypoints
+VAProfileH264High : VAEntrypointVLD
+VAProfileVC1Advanced : VAEntrypointVLD
+</pre></figure></code></pre>
+<p>更多内容请移步<a href="http://wiki.cchtml.com/index.php/Ubuntu_Precise_Installation_Guide">这里</a>！</p>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/My-Life/">My Life</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/ubuntu/">ubuntu</a>, <a href="/tags/ATI/">ATI</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="Ubuntu 12.04 ATI卡驱动安装">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/My-Work/after-install-ubuntu-1304.html">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/My-Work/java-programmers-in-the-eyes-of-javascript.html">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/My-Life/june-youth-future.html">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/My-Work/how-install-apache-24-and-php-54.html">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/My-Life/reasons-to-date-a-geek-boy.html">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>
