@@ -92,66 +92,15 @@ rX
 <span class="preprocessor"># 保存并退出</span>
 ZZ
 </pre></figure></code></pre>
-<h4>1.3 重新载入LD配置(可选)</h4>
-<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> ldconfig
-</pre></figure></code></pre>
-<p>重新打开 Eclipse ，看是不是菜单已变成全局的了^_^</p>
-<h3>2. 创建 Unity 快捷图标</h3>
-<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> gedit /usr/share/applications/eclipse.desktop
-</pre></figure></code></pre>
-<p>添加以下内容：</p>
-<pre><code><figure class="highlight"><pre><span class="comment">#!/usr/bin/env xdg-open</span>
-
-[<span class="constant">Desktop</span> <span class="constant">Entry</span>]
-
-<span class="constant">Version</span>=<span class="number">1.0</span>
-<span class="constant">Name</span>=<span class="constant">Eclipse</span>
-<span class="constant">GenericName</span>=<span class="constant">Integrated</span> <span class="constant">Development</span> <span class="constant">Application</span>
-<span class="constant">Comment</span>=<span class="constant">Eclipse</span> <span class="constant">Juno</span>
-<span class="constant">Exec</span>=<span class="regexp">/home/username</span><span class="regexp">/[path]/eclipse</span>
-<span class="constant">TryExec</span>=<span class="regexp">/home/username</span><span class="regexp">/[path]/eclipse</span>
-<span class="constant">Icon</span>=eclipse
-<span class="constant">Terminal</span>=<span class="keyword">false</span>
-<span class="constant">Type</span>=<span class="constant">Application</span>
-<span class="constant">Categories</span>=<span class="constant">Development</span>;<span class="constant">IDE</span>;
-</pre></figure></code></pre>
-<p>注意，Icon的路径无需指向刚下载解压的 Eclipse 里的图标，使用系统自己的即可。</p>
-<p>好了，保存之后看一下 HUD 中是不是已经有了 Eclipse 了。</p>
-<h3>3. 修改 Eclipse 的外观</h3>
-<p>Eclipse 在 Win 下比较美观，然而在 Ubuntu 下可完全走了样，尤其是 Juno 版本，在 Ubuntu 和 Eclipse 论坛上一片 &quot;Very ugly!&quot; 之声。那巨大的 Tab,撑烂的 Toolbar，间距超大的的 TreeView 简直让人难以忍受。下面就带你一步步改变这些状况，拯救程序员本来就可怜的眼睛。</p>
-<p>之所以会有上述糟糕的表现，不是 Eclipse 的问题，是因为 GTK 2.0 中的控件间距太大原因导致的，而谷歌搜索的大部分解决方法也正是着力于修改 GTK 2.0 控件的表现形式，重新定义一些样式。大多数方法是在 <code>/home/username/</code> 下新建 <code>.gtkrc-2.0</code> 文件，并在其中添加CSS。然而这种方法会把系统全局的样式都改变，比如 Chrome 的，甚至系统的菜单。哪有没有一种方法只修改 Eclipse 的呢？答案是肯定的！我们可以专门在启动 Eclipse 时指定 GTK 2.0 使用的 gtkrc 文件，而别的应用直接启动就不会受影响了。</p>
-<p>自己定义实在是麻烦，好在已经有人为我们写好了，链接在<a href="https://github.com/nailgun/eclipse-gtkrc">这里</a>。你可以把它 git clone 到一个目录，然后修改，eclicp 脚本，比如我把它放在了 Public 下，eclipse 脚本内容如下：</p>
-<pre><code><figure class="highlight"><pre><span class="shebang">#!/bin/bash</span>
-
-myPATH=<span class="string">"$(dirname <span class="variable">$0</span>)"</span>
-PATH=<span class="variable">${PATH/$myPATH/}</span>
-eclipse=/home/xiaoxie/Work/eclipse/eclipse
-GTK2_RC_FILES=<span class="variable">$HOME</span>/Public/clearlooks.gtkrc exec <span class="variable">$eclipse</span>
-</pre></figure></code></pre>
-<p>你也可以修改 clearlooks.gtkrc 文件的内容，默认定义的字体实在太小，可以试着改大些，内容无非就是一些 CSS 样式，这里就不多说了。</p>
-<p>此外我还想推荐一个 Eclipse 主题 —— <a href="https://github.com/jeeeyul/eclipse-themes">Eclipse Chrome theme</a>,用起来实在是很爽！直接在 Eclipse Marketplace 里搜索安装即可。</p>
-<p>ToolTip 背景色的问题直接安装 gnome-color 工具在里面修改即可。</p>
-<p>最后展示下我的 Eclipse 最终效果吧！</p>
-<p><img src="/media/2013/06/002.png" alt="Eclipse截屏" title="Eclipse 截屏"></p>
-<h3>4. 安装 EGit 插件</h3>
-<p>安装 git :</p>
-<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> apt-<span class="keyword">get</span> install git
-</pre></figure></code></pre>
-<p>JavaEE 的项目在 GitHub 上，这个插件就是必须的。可以直接在 Eclipse Marketplace 里搜索安装，非常方便。</p>
-<h3>5. Sublime text 3 设置</h3>
-<p>启用 Package Control 功能的方法（Packages/ 目录在 ～/.config/sublime-text-3/Packages/ 下）：</p>
-<pre><code><figure class="highlight"><pre><span class="title">cd</span> <span class="type">Packages</span>/
-<span class="title">git</span> clone https://github.com/wbond/sublime_package_control.git <span class="string">"Package Control"</span>
-<span class="title">cd</span> <span class="string">"Package Control"</span>
-<span class="title">git</span> checkout python3
-</pre></figure></code></pre>
-<p>重启后 Ctrl + Shift + p 如果出现“没有可用包”的情况，那估计是伟大的天朝的问题。解决方法有两种，一种是修改 Preferences -&gt; Package setting -&gt; Package Control -&gt; Setting-Default 文件中的 channels 属性，将 https 改为 http；另一种方法是直接在 Setting-Default 文件中配置代理。</p>
-<p>还有很多地址可能被墙，可以使用简单有效的方法——修改 hosts ，这里是 hosts <a href="https://smarthosts.googlecode.com/svn/trunk/hosts">更新列表地址</a>，将内容添加到 /etc/hosts文件中即可。</p>
 
     
   </div>
   <footer class="end-sep">
     
+      
+        <div class="alignleft">
+          <a href="/My-Work/after-install-ubuntu-1304.html#more" class="more-link">Read More</a>
+        </div>
       
       
     
