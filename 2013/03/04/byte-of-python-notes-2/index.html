@@ -1,0 +1,284 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>简明 Python 教程笔记(下) | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="简明 Python 教程笔记(下)"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-04T05:14:24.000Z"><a href="/2013/03/04/byte-of-python-notes-2/">Mar 4 2013</a></time>
+    
+    
+  
+    <h1 class="title">简明 Python 教程笔记(下)</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>今天星期一，周末综合症发作，头痛不行，下班后休息了一会终于活了过来。继续上篇的笔记吧。</p>
+<h3>1. 类</h3>
+<h4>1.1 类的定义</h4>
+<pre><code><figure class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">Person</span>:</span>
+    <span class="keyword">pass</span> <span class="comment"># 空表达式</span>
+
+p = Person()
+<span class="keyword">print</span> p
+</pre></figure></code></pre>
+<h4>1.2 类的方法</h4>
+<pre><code><figure class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">Person</span>:</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">sayHi</span><span class="params">(self)</span>:</span>
+        <span class="keyword">print</span> <span class="string">'Hello, how are you?'</span>
+
+p = Person()
+p.sayHi()
+</pre></figure></code></pre>
+<p>在类中定义方法时，类的第一个参数必须是<code>self</code>。</p>
+<p><strong>init</strong>方法在类的一个对象被建立时，马上运行。这个方法可以用来对你的对象做一些你希望的初始化 。类似与Java中类的构造方法。</p>
+<pre><code><figure class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">Person</span>:</span>
+    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span>
+        self.name = name
+    <span class="function"><span class="keyword">def</span> <span class="title">sayHi</span><span class="params">(self)</span>:</span>
+        <span class="keyword">print</span> <span class="string">'Hello, my name is'</span>, self.name
+
+p = Person(<span class="string">'Swaroop'</span>)
+p.sayHi()
+</pre></figure></code></pre>
+<p>Python 中所有的类成员(包括数据成员)都是 公共的 ,所有的方法都是有效的 。只有一个例外:如果你使用的数据成员名称以 双下划线前缀 比如__privatevar,Python 的名称管理体系会有效地把它作为私有变量。</p>
+<p>当对象不再被使用时，<strong>del</strong>方法就会运行。</p>
+<h4>1.3 继承</h4>
+<pre><code><figure class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">SchoolMember</span>:</span>
+    ......
+<span class="class"><span class="keyword">class</span> <span class="title">Teacher</span><span class="params">(SchoolMember)</span>:</span>
+    ......
+<span class="class"><span class="keyword">class</span> <span class="title">Student</span><span class="params">(SchoolMember)</span>:</span>
+    ......
+</pre></figure></code></pre>
+<p>一个术语的注释——如果在继承元组中列了一个以上的类,那么它就被称作多重继承 。</p>
+<h3>2. 输入/输出操作</h3>
+<pre><code><figure class="highlight"><pre>f = file(<span class="string">'poem.txt'</span>,<span class="string">'w'</span>)  <span class="comment"># r读模式 w写模式 a追加模式 </span>
+f.<span class="keyword">write</span>(pome)
+f.<span class="keyword">close</span>()
+
+f = file(<span class="string">'poem.txt'</span>)
+
+<span class="keyword">while</span> True:
+    line = f.<span class="keyword">readline</span>()
+    <span class="keyword">if</span> len(line) == <span class="number">0</span>:
+        <span class="keyword">break</span>
+    <span class="keyword">print</span> line
+f.<span class="keyword">close</span>()
+</pre></figure></code></pre>
+<h3>3. 存储器pickle</h3>
+<p>Python提供一个标准的模块，称为pickle。使用它你可以在一个文件中储存任何Python对象，之后你又可以把它完整无缺地取出来。这被称为 持久地 储存对象。</p>
+<pre><code><figure class="highlight"><pre><span class="import"><span class="keyword">import</span> cPickle <span class="keyword">as</span> p</span>
+
+<span class="title">shoplist</span> = ['apple','mango','carrot']
+
+<span class="title">f</span> = file('shoplist.<span class="typedef"><span class="keyword">data</span>','w')</span>
+<span class="title">p</span>.dump(shoplist,f)
+<span class="title">f</span>.close
+
+<span class="title">del</span> shoplist
+
+<span class="title">f</span> = file('shoplist.<span class="typedef"><span class="keyword">data</span>')</span>
+<span class="title">storedlist</span> = p.load(f)
+<span class="title">print</span> storedlist
+</pre></figure></code></pre>
+<h3>4. 异常</h3>
+<h4>4.1 处理异常</h4>
+<pre><code><figure class="highlight"><pre><span class="comment">try:</span>
+    <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span>
+<span class="comment">except</span> <span class="comment">EOFError:</span>
+    <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span>
+<span class="comment">except:</span>
+    <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span>
+<span class="comment">finally:</span>
+    <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span>
+</pre></figure></code></pre>
+<h4>4.2 引发异常</h4>
+<p>使用 raise 语句 引发 异常。你还得指明错误/异常的名称和伴随异常触发的 异常对象。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">if</span> len(s) &lt; <span class="number">3</span>:
+    <span class="keyword">raise</span> ShortInputException(len(s), <span class="number">3</span>)
+<span class="comment">#参数：实际值/期望值</span>
+</pre></figure></code></pre>
+<p>类似于java中的throw</p>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/My-Work/">My Work</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/python/">python</a>, <a href="/tags/note/">note</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="简明 Python 教程笔记(下)">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2013/06/23/after-install-ubuntu-1304/">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/04/java-programmers-in-the-eyes-of-javascript/">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/02/june-youth-future/">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/28/how-install-apache-24-and-php-54/">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/27/reasons-to-date-a-geek-boy/">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>

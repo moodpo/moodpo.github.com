@@ -1,0 +1,421 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>Struts 2 的数据转移和类型转换机制(二) | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="Struts 2 的数据转移和类型转换机制(二)"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-13T05:56:26.000Z"><a href="/2013/03/13/struts-2-data-transfer-and-type-conversion-mechanism-2/">Mar 13 2013</a></time>
+    
+    
+  
+    <h1 class="title">Struts 2 的数据转移和类型转换机制(二)</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>本节将讲述Struts2内建的类型转换器的具体细节。通过配置，Struts2框架能够处理几乎所有你可能需要的类型转换。</p>
+<h3>1.内建的类型转换器</h3>
+<h4>1.1 立即可用的类型转换器</h4>
+<p>Struts2框架自带了对HTTP本地字符串和以下列出的Java类型之间转换的内建支持。</p>
+<pre><code><figure class="highlight"><pre>■ <span class="typename">String</span>—有时候字符串就是字符串。
+■ <span class="typename">boolean</span>/<span class="typename">Boolean</span>—true和false字符串可以被转换为<span class="typename">Boolean</span>的原始类型和对象类型。
+■ char/<span class="typename">Character</span>—原始类型或者对象类型。
+■ int/<span class="typename">Integer</span>, float/Float, long/Long, double/Double—原始类型或者对象类型
+■ Date—当前Locale的SHORT格式的字符串版本 (例如，<span class="number">12</span>/<span class="number">10</span>/<span class="number">97</span>)。
+■ <span class="keyword">array</span>—每一个字符串元素必须能够转换为数组的类型。
+■ List—默认情况下使用<span class="typename">String</span>填充。
+■ <span class="keyword">Map</span>—默认情况下使用<span class="typename">String</span>填充。
+</pre></figure></code></pre>
+<p>当框架定位到一个给定的OGNL表达式指向的Java属性时，它会查找这个类型的转换器。如果这个类型在前面的列表中，你不需要任何事情，等着接收数据即可。</p>
+<h4>1.2 使用OGNL表达式从表单字段名映射到属性</h4>
+<p>下面将按照上述类型转换器列表讲述每一个内建的类型转换器如何在两端建立对等的内容。</p>
+<p><strong>1.原始类型和包装类</strong></p>
+<p>指向ValueStack上特定属性的OGNL表达式例子：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h4</span>&gt;</span>Complete and submit the form to create your own portfolio.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"Register"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.username"</span> <span class="attribute">label</span>=<span class="value">"Username"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:password</span> <span class="attribute">name</span>=<span class="value">"user.password"</span> <span class="attribute">label</span>=<span class="value">"Password"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.portfolioName"</span> <span class="attribute">label</span>=<span class="value">"Enter a name "</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.age"</span> <span class="attribute">label</span>=<span class="value">"Enter your age as a double "</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.birthday"</span> <span class="attribute">label</span>=<span class="value">"Enter birthday. (mm/dd/yy)"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:submit</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+</pre></figure></code></pre>
+<p>以下是公开的User对象的JavaBean属性：</p>
+<pre><code><figure class="highlight"><pre>private <span class="keyword">User</span> <span class="keyword">user</span>;
+public <span class="keyword">User</span> getUser() {
+    return <span class="keyword">user</span>;
+}
+public void setUser(<span class="keyword">User</span> <span class="keyword">user</span>) {
+    this.<span class="keyword">user</span> = <span class="keyword">user</span>;
+}
+</pre></figure></code></pre>
+<p>而User对象也公开了相应的属性：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="id">User</span> {</span>
+    <span class="keyword">private</span> String username;
+    <span class="keyword">private</span> String password;
+    <span class="keyword">private</span> String portfolioName;
+    <span class="keyword">private</span> Double age;
+    <span class="keyword">private</span> Date birthday;
+    <span class="keyword">public</span> String getPassword() {
+        <span class="keyword">return</span> password;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setPassword(String password) {
+        <span class="keyword">this</span><span class="variable">.password</span> = password;
+    }
+    ......
+}
+</pre></figure></code></pre>
+<p>注意类型转换和验证之间的区别，以及类型转换错误和验证错误之间的区别。验证代码用来从动作的业务逻辑的视角验证数据是否是数据类型的一个合法实例，它通过validation拦截器或者workflow拦截器对validate()方法的调用而触发。类型转换在将HTTP字符串值绑定到Java类型时发生，如在param拦截器转移请求数据时发生。</p>
+<p>类型转换错误导致用户会被返回到输入页面，并展示一个默认的错误信息告知用户，你可以自定义类型转换问题的错误报告，将在以后章节学习。</p>
+<p><strong>2.处理多值请求参数</strong></p>
+<p>多个参数值可以被映射到传入请求中的一个参数名，一个表单有多种方式在一个参数名下提交多个值，也有多种方法将它们映射到Java端的类型，这意味着使用OGNL有很多种方式。Struts2提供了丰富的支持以便将多值的请求参数转移到Java端各种面向集合的数据类型，从数组到真正的Collection。下面将通过展示两端的示例说明怎样使用它。</p>
+<p><strong>3.数组</strong></p>
+<p>为数据转移指向数组属性(使用索引和不使用索引)：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"ArraysDataTransferTest"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"ages"</span> <span class="attribute">label</span>=<span class="value">"Ages"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"ages"</span> <span class="attribute">label</span>=<span class="value">"Ages"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"ages"</span> <span class="attribute">label</span>=<span class="value">"Ages"</span>/&gt;</span>
+
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"names[0]"</span> <span class="attribute">label</span>=<span class="value">"names"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"names[1]"</span> <span class="attribute">label</span>=<span class="value">"names"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"names[2]"</span> <span class="attribute">label</span>=<span class="value">"names"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">s:submit</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+</pre></figure></code></pre>
+<p>OGNL输入字段名指向的数组属性：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">private</span> Double[] ages ;
+<span class="keyword">public</span> Double[] getAges() {
+    <span class="keyword">return</span> ages;
+}
+<span class="keyword">public</span> <span class="keyword">void</span> setAges(Double[] ages) {
+    <span class="keyword">this</span><span class="variable">.ages</span> = ages;
+}
+<span class="keyword">private</span> String[] names = new String[<span class="number">10</span>];
+<span class="keyword">public</span> String[] getNames() {
+    <span class="keyword">return</span> names;
+}
+<span class="keyword">public</span> <span class="keyword">void</span> setNames(String[] names) {
+    <span class="keyword">this</span><span class="variable">.names</span> = names;
+}
+</pre></figure></code></pre>
+<p>注意这些属性不需要带索引参数的获取方法和设置方法，OGNL处理所有与索引相关的细节，我们只需通过一对获取方法和设置方法公开数组。</p>
+<p>请求转发的结果页面代码：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h5</span>&gt;</span>Congratulations! You have transferred and converted data to and from Arrays.<span class="tag">&lt;/<span class="title">h5</span>&gt;</span>
+<span class="tag">&lt;<span class="title">h3</span>&gt;</span>Age number 3 = <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"ages[2]"</span> /&gt;</span> <span class="tag">&lt;/<span class="title">h3</span>&gt;</span>
+<span class="tag">&lt;<span class="title">h3</span>&gt;</span>Name number 3 = <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"names[2]"</span> /&gt;</span> <span class="tag">&lt;/<span class="title">h3</span>&gt;</span>
+</pre></figure></code></pre>
+<p><strong>3.List</strong></p>
+<p>使用List与使用数组几乎完全相同，仅有的不同是在Java 5之前List不支持类型指定，List没有类型的特性对Struts 2的类型转换机制有着重要的影响。对List来说，没有方法能够自动发现内部元素的类型。使用List时用两种选择，为元素指定类型或者接受默认类型(String)。接受默认行为时页面代码和使用数组相同，不同的是在Java端，没有类型说明，List中元素都会是String类型。</p>
+<p>有些时候，除了使用String，你会想为List中的元素指定类型。这种情况下，我们只需告知OGNL某个给定属性我们希望的元素类型，这使用一个简单的属性文件实现。</p>
+<p>为了给动作对象上的List属性指定元素类型，我们根据下图中的命名约定创建一个文件。</p>
+<p><img src="/media/2013/03/344633058.png" alt="List指定类型命名约定.png" title="List指定类型命名约定.png"></p>
+<p>文件名约定是：动作名+-+conversion+属性文件扩展名，其中conversion是类型转换用的文件名后缀。之后把这个文件放在Java包中这个类的旁边。文件的内容约定如下图：</p>
+<p><img src="/media/2013/03/879049580.png" alt="List指定类型内容约定.png" title="List指定类型内容约定.png"></p>
+<p>文件内容约定是：Element+_+List类型属性的名字=元素类型(如：Element-weights=java.lang.Double)，这样List属性会像数组属性一样工作，每一个独立元素都会被转换为指定的元素类型。例如页面可以这样写：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[0]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[1]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[2]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>当然也可以不使用索引，这取决于你的偏好，在Java端，动作对象上的属性没有变化。需要记住的一点就是在给List或者其他Collection指定类型时注意不要预先初始化List。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">private</span> <span class="keyword">List</span> weights;
+<span class="keyword">public</span> <span class="keyword">List</span> getWeights() {
+    <span class="keyword">return</span> weights;
+}
+<span class="keyword">public</span> void setWeights(<span class="keyword">List</span> weight) {
+    <span class="keyword">this</span>.weights = weight;
+}
+</pre></figure></code></pre>
+<p>下面是一个更全的功能的示例</p>
+<pre><code><figure class="highlight"><pre>页面代码：
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"users[0].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"users[1].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"users[2].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+
+动作属性代码：
+private List users ;
+public List getUsers(){
+    return users;
+}
+public void setUsers ( List users ) {
+    this.users=users;
+}
+
+指定类型的属性文件内容：
+Element_users=manning.utils.User
+</pre></figure></code></pre>
+<p><strong>5.Map</strong></p>
+<p>Map使用关键字而非索引来关联到它的值，使用关键字的特性对Struts2类型转换过程有两点含义。一是引用它们的OGNL表达式语法与List不同；而是与为Map属性指定类型相关。对Map来说，可以为关键字对象指定类型，如果不指定默认是String。</p>
+<p>首先看一下页面代码，Java端代码和List的相同：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames.mary"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames.jane"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames.hellen"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames['beth']"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames['sharon']"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames['martha']"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>现在在看一下指定类型的示例：</p>
+<pre><code><figure class="highlight"><pre>指定类型属性文件内容
+Element_myUsers=manning.utils.User
+
+页面代码：
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers['chad'].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers['jimmy'].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers['elephant'].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers.chad.birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers.jimmy.birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers.elephant.birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+
+Java端代码：
+private Map myUsers ;
+public Map getMyUsers(){
+    return myUsers;
+}
+public void setMyUsers ( Map myUsers ) {
+    this.myUsers=myUsers;
+}
+</pre></figure></code></pre>
+<p>前面已经说了，除了为元素指定类型，使用Map属性时也可以为关键字对象指定类型。与值一样，OGNL也会把参数的名字当作应该尝试转换为指定类型的字符串。假如我们想使用Integer作为关键字的myUsers版本。应该在属性文件内这样写：</p>
+<pre><code><figure class="highlight"><pre><span class="setting">Key_myOrderedUsers=<span class="value">java.lang.Integer</span></span>
+<span class="setting">Element_myOrderedUsers=<span class="value">manning.utils.User</span></span>
+</pre></figure></code></pre>
+<p>以下是提交表单页面：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myOrderedUsers['1'].birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myOrderedUsers['2'].birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myOrderedUsers['3'].birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>最后，如果使用Java5或更高版本，可以使用泛型来类型化Collection和Map，在类型转换时Struts2可以使用这些信息，使得属性文件配置不再必要。</p>
+<h3>2.自定义类型转换</h3>
+<p>虽然内建的类型转换器功能强大且涵盖面广，但有时我们还是需要构建自定义的类型转化器。你可以指定一个转换逻辑将任何字符串翻译为任何Java类型。唯一需要做的就是创建字符串语法和对应的Java类，之后是使用一个类型转换器把他们连接起来。</p>
+<h4>2.1 实现类型转换器</h4>
+<p>类型转换器是OGNL的一部分，因此类型转换器必须实现ognl.TypeConverter接口。一般情况下，OGNL的类型转换器能实现任何两种数据类型之间的转换。在Web应用程序领域，我们只需实现所有Java类型和HTTP字符串之间的转换即可。</p>
+<p>Struts2提供了一个方便的基类：org.apache.struts2.util.StrutsTypeConverter作为自定义类型转换器的扩展点。下面代码是这个类所定义的抽象方法：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="built_in">Object</span> convertFromString(Map context, String[] values,Class toClass);
+<span class="keyword">public</span> <span class="keyword">abstract</span> String convertToString(Map context, <span class="built_in">Object</span> o);
+</pre></figure></code></pre>
+<p>第一个方法经请求转换为Java对象，第二个方法将Java对象转换为请求字符串。当你编写一个自定义的转换器时，你只需继承这个类并将自己的逻辑填充到这两个方法中即可。</p>
+<h4>2.2 在字符串和Java对象间转换</h4>
+<p><img src="/media/2013/03/2746878052.png" alt="自定义类型转换逻辑.png" title="自定义类型转换逻辑.png"></p>
+<p>以下代码实现了上图所示的转换规则：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CircleTypeConverter</span> <span class="keyword">extends</span> <span class="title">StrutsTypeConverter</span> {</span>
+    <span class="keyword">public</span> Object convertFromString(Map context, String[] values,Class toClass) {
+        String userString = values[<span class="number">0</span>];
+        Circle newCircle = parseCircle ( userString );
+        <span class="keyword">return</span> newCircle;
+    }
+    <span class="keyword">public</span> String convertToString(Map context, Object o) {
+        Circle circle = (Circle) o;
+        String userString = <span class="string">"C:r"</span> + circle.getRadius();
+        <span class="keyword">return</span> userString;
+    }
+    <span class="keyword">private</span> Circle parseCircle( String userString ) <span class="keyword">throws</span> TypeConversionException {
+        Circle circle = <span class="keyword">null</span>;
+        <span class="keyword">int</span> radiusIndex = userString.indexOf(<span class="string">'r'</span>) + <span class="number">1</span>;
+        <span class="keyword">if</span> (!userString.startsWith( <span class="string">"C:r"</span>) )
+            <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException ( <span class="string">"Invalid Syntax"</span>);
+        <span class="keyword">int</span> radius;
+        <span class="keyword">try</span> {
+            radius = Integer.parseInt( userString.substring( radiusIndex ) );
+        } <span class="keyword">catch</span> ( NumberFormatException e ) {
+            <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException ( <span class="string">"Invalid Value for Radius"</span>); 
+        }
+        circle = <span class="keyword">new</span> Circle();
+        circle.setRadius( radius );
+        <span class="keyword">return</span> circle;
+    }
+}
+</pre></figure></code></pre>
+<h4>2.3 配置框架使用自定义转换器</h4>
+<p>构造了自定义转换器之后，必须让框架知道什么时候、在哪里使用它。这里有两种选择，可以配置转换器用在一个给定动作的局部或者全局。前者将只告诉框架在处理特定动作的特定属性时才使用转换器，而后者在应用程序的任何地方，每次通过OGNL设置或者取得一个特定属性时都会使用它。</p>
+<p><strong>1.属性专用</strong></p>
+<p>与前面Map和List指定元素类型相同，在同样的文件中再添加以下内容：</p>
+<pre><code><figure class="highlight"><pre><span class="setting">circle=<span class="value">manning.utils.CircleTypeConverter</span></span>
+</pre></figure></code></pre>
+<p>这一行简单的内容将属性名circle和类型转换器关联起来。现在当OGNL想给Circle属性设置值时，它会自动使用我们定义的类型转换器。</p>
+<p><strong>2.全局类型转化</strong></p>
+<p>我们可以指定所有的Circle类型的属性都使用我们的转换器，这个过程和之前局部指定仅有一点不同：在定义全局类型转换器时，不使用动作名+-+conversion+属性文件扩展名的约定文件，而是使用xwork-conversion.properties，并且文件内容修改为如下：</p>
+<pre><code><figure class="highlight"><pre>manning<span class="variable">.utils</span><span class="variable">.Circle</span>=manning<span class="variable">.utils</span><span class="variable">.CircleTypeConverter</span>
+</pre></figure></code></pre>
+<p>此外，还需将xwork-conversion.properties文件放在类路径下，例如在WEB-INF/classess/中。</p>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/My-Work/">My Work</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/struts2/">struts2</a>, <a href="/tags/J2EE/">J2EE</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="Struts 2 的数据转移和类型转换机制(二)">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2013/06/23/after-install-ubuntu-1304/">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/04/java-programmers-in-the-eyes-of-javascript/">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/02/june-youth-future/">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/28/how-install-apache-24-and-php-54/">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/27/reasons-to-date-a-geek-boy/">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>

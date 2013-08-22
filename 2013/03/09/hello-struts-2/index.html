@@ -1,0 +1,336 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>Hello Struts 2 | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="Hello Struts 2"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-09T05:22:36.000Z"><a href="/2013/03/09/hello-struts-2/">Mar 9 2013</a></time>
+    
+    
+  
+    <h1 class="title">Hello Struts 2</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>本文主要复习Struts2的两种声明性架构：</p>
+<ul>
+<li>基于xml的声明性架构； </li>
+<li>基于java注解的声明性架构.</li>
+</ul>
+<p>需要的jar包：</p>
+<ul>
+<li>commons-fileupload-1.2.1.jar</li>
+<li>commons-io-1.3.2.jar</li>
+<li>commons-logging-1.0.4.jar</li>
+<li>commons-logging-api-1.1.jar</li>
+<li>freemarker-2.3.16.jar </li>
+<li>javassist-3.7.ga.jar</li>
+<li>ognl-3.0.jar</li>
+<li>struts2-core-2.2.1.1.jar</li>
+<li>xwork-core-2.2.1.1.jar</li>
+</ul>
+<h3>1.基于xml的声明性架构</h3>
+<p>web.xml配置：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">filter</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-name</span>&gt;</span>struts2<span class="tag">&lt;/<span class="title">filter-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-class</span>&gt;</span>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter<span class="tag">&lt;/<span class="title">filter-class</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">filter</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">filter-mapping</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-name</span>&gt;</span>struts2<span class="tag">&lt;/<span class="title">filter-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">url-pattern</span>&gt;</span>/*<span class="tag">&lt;/<span class="title">url-pattern</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">filter-mapping</span>&gt;</span>
+</pre></figure></code></pre>
+<p>struts.xml配置：</p>
+<pre><code><figure class="highlight"><pre><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="doctype">&lt;!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd"&gt;</span>
+<span class="tag">&lt;<span class="title">struts</span>&gt;</span>
+    <span class="comment">&lt;!-- 运行于开发者模式 --&gt;</span>
+    <span class="tag">&lt;<span class="title">constant</span> <span class="attribute">name</span>=<span class="value">"struts.devMode"</span> <span class="attribute">value</span>=<span class="value">"true"</span>&gt;</span><span class="tag">&lt;/<span class="title">constant</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"struts2demo1"</span> <span class="attribute">namespace</span>=<span class="value">"/demo1"</span> <span class="attribute">extends</span>=<span class="value">"struts-default"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"Name"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span>&gt;</span>/nameCollection.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"Hello"</span> <span class="attribute">class</span>=<span class="value">"xiaoxie.review.struts2demo.HelloworldAction"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span> <span class="attribute">name</span>=<span class="value">"SUCCESS"</span>&gt;</span>/helloworld.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">package</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">struts</span>&gt;</span>
+</pre></figure></code></pre>
+<p>这个示例中包含了两个动作(action),其中一个几乎什么都没做。package元素是一个重要的容器元素，示例中它声明了一个当框架将url映射到动作时需要使用的命名空间：</p>
+<pre><code><figure class="highlight"><pre><span class="method">http:</span>//+<span class="method">localhost:</span><span class="number">8080</span>/+struts2demo/+demo1/+helloworld.action
+协议+主机名：端口+servlet上下文+命名空间+动作
+</pre></figure></code></pre>
+<p>nameCollection.jsp</p>
+<pre><code><figure class="highlight"><pre>&lt;%@ page language=<span class="string">"java"</span> contentType=<span class="string">"text/html; charset=UTF-8"</span>
+    pageEncoding=<span class="string">"UTF-8"</span>%&gt;
+<span class="xml"><span class="vbscript">&lt;%@ taglib prefix=<span class="string">"s"</span> uri=<span class="string">"/struts-tags"</span> %&gt;</span>
+<span class="doctype">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"&gt;</span>
+<span class="tag">&lt;<span class="title">html</span>&gt;</span>
+<span class="tag">&lt;<span class="title">head</span>&gt;</span>
+<span class="tag">&lt;<span class="title">meta</span> <span class="attribute">http-equiv</span>=<span class="value">"Content-Type"</span> <span class="attribute">content</span>=<span class="value">"text/html; charset=UTF-8"</span>&gt;</span>
+<span class="tag">&lt;<span class="title">title</span>&gt;</span>Name Collection<span class="tag">&lt;/<span class="title">title</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">head</span>&gt;</span>
+<span class="tag">&lt;<span class="title">body</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">center</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">div</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">h4</span>&gt;</span>输入姓名<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"Hello"</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"name"</span> <span class="attribute">label</span>=<span class="value">"姓名"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">s:submit</span> <span class="attribute">value</span>=<span class="value">"Submit"</span>&gt;</span><span class="tag">&lt;/<span class="title">s:submit</span>&gt;</span>
+            <span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">center</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">body</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">html</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>helloworld.jsp</p>
+<pre><code><figure class="highlight"><pre>&lt;%@ page language=<span class="string">"java"</span> contentType=<span class="string">"text/html; charset=UTF-8"</span>
+    pageEncoding=<span class="string">"UTF-8"</span>%&gt;
+<span class="xml"><span class="vbscript">&lt;%@ taglib prefix=<span class="string">"s"</span> uri=<span class="string">"/struts-tags"</span> %&gt;</span>
+<span class="doctype">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"&gt;</span>
+<span class="tag">&lt;<span class="title">html</span>&gt;</span>
+<span class="tag">&lt;<span class="title">head</span>&gt;</span>
+<span class="tag">&lt;<span class="title">meta</span> <span class="attribute">http-equiv</span>=<span class="value">"Content-Type"</span> <span class="attribute">content</span>=<span class="value">"text/html; charset=UTF-8"</span>&gt;</span>
+<span class="tag">&lt;<span class="title">title</span>&gt;</span>HelloWorld<span class="tag">&lt;/<span class="title">title</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">head</span>&gt;</span>
+<span class="tag">&lt;<span class="title">body</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">center</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">h4</span>&gt;</span>Hello<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">div</span>&gt;</span><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"coutomeName"</span>/&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">center</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">body</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">html</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>HelloworldAction.java</p>
+<pre><code><figure class="highlight"><pre><span class="package"><span class="keyword">package</span> <span class="title">xiaoxie</span>.<span class="title">review</span>.<span class="title">struts2demo</span>;
+
+<span class="title">public</span> <span class="title">class</span> <span class="title">HelloworldAction</span> {</span>
+    <span class="keyword">private</span> String name;
+    <span class="keyword">private</span> String coutomeName;
+    <span class="keyword">public</span> String getName() {
+        <span class="keyword">return</span> name;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setName(String name) {
+        <span class="keyword">this</span>.name = name;
+    }
+
+    <span class="keyword">public</span> String getCoutomeName() {
+        <span class="keyword">return</span> coutomeName;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setCoutomeName(String coutomeName) {
+        <span class="keyword">this</span>.coutomeName = coutomeName;
+    }
+    <span class="keyword">public</span> String execute(){
+        setCoutomeName(<span class="string">"Hello "</span>+getName());
+        <span class="keyword">return</span> <span class="string">"SUCCESS"</span>;
+    }
+}
+</pre></figure></code></pre>
+<p>使用JavaBean的方式编写action使领域数据总是存储在action中,action的execute方法可以很方便的访问到数据；而为了在其他地方(比如jsp)也能访问到数据，框架底层也把数据放到了ValueStack中。ValueStack的机制是将action中的所有属性作为它的第一级属性公开出来，这样就可以使用ONGL来访问(<code><s:property value="coutomeName"/></code>).</p>
+<h3>2.基于java注解的声明性架构</h3>
+<p>在web.xml中添加以下代码</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">filter</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-name</span>&gt;</span>struts2<span class="tag">&lt;/<span class="title">filter-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-class</span>&gt;</span>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter<span class="tag">&lt;/<span class="title">filter-class</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">init-param</span>&gt;</span>
+        <span class="comment">&lt;!-- 扫描xiaoxie包，查找注解 --&gt;</span>
+        <span class="tag">&lt;<span class="title">param-name</span>&gt;</span>actionPackages<span class="tag">&lt;/<span class="title">param-name</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param-value</span>&gt;</span>xiaoxie<span class="tag">&lt;/<span class="title">param-value</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">init-param</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">filter</span>&gt;</span>
+</pre></figure></code></pre>
+<p>标记哪个类是action类有两种方法：</p>
+<ul>
+<li>让action类实现com.opensymphony.xwork2.Action接口</li>
+<li>使用命名约定，类名以Action结尾 </li>
+</ul>
+<p>例如：</p>
+<pre><code><figure class="highlight"><pre><span class="comment">@Result(name="SUCCESS"</span>,<span class="comment">location="/helloworld</span>.<span class="comment">jsp")</span>  
+<span class="comment">public</span> <span class="comment">class</span> <span class="comment">HelloworldAction{</span> <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="string">.</span> <span class="comment">}
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/My-Work/">My Work</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/struts2/">struts2</a>, <a href="/tags/J2EE/">J2EE</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="Hello Struts 2">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2013/06/23/after-install-ubuntu-1304/">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/04/java-programmers-in-the-eyes-of-javascript/">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/02/june-youth-future/">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/28/how-install-apache-24-and-php-54/">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/27/reasons-to-date-a-geek-boy/">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>

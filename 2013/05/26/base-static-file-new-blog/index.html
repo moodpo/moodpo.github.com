@@ -1,0 +1,253 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>基于静态文件的新博客 | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="基于静态文件的新博客"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-05-26T08:02:31.000Z"><a href="/2013/05/26/base-static-file-new-blog/">May 26 2013</a></time>
+    
+    
+  
+    <h1 class="title">基于静态文件的新博客</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>周五浏览网页时偶然看到别人用 <a href="https://github.com/lepture/liquidluck">Liquidluck</a> 搭建的静态博客站点：利用 <a href="https://github.com">GitHub</a> 的webhook功能进行自动部署，同时支持 Markdown 文件，可将其自动输出为静态文件，此外还支持一些博客常见的功能，如标签、分类、归档等，非常吸引人。</p>
+<p>于是，周末两天折腾，部署上之后，自己还做了套主题 <a href="https://github.com/moodpo/liquidluck-theme-moodpo">liquidluck-theme-moodpo</a> ，就是现在这个样子。期间遇到各种问题，趁还没忘记录下来。</p>
+<h2>一、安装过程</h2>
+<p>在安装 Liquidluck 之前需要安装 distribute 和 seuptools ，以便使用 pip 安装 Liquidluck。</p>
+<pre><code><figure class="highlight"><pre><span class="variable">$ </span>wget <span class="symbol">http:</span>/<span class="regexp">/pypi.python.org/packages</span><span class="regexp">/source/d</span><span class="regexp">/distribute/distribute</span>-<span class="number">0</span>.<span class="number">6.28</span>.tar.gz
+
+<span class="variable">$ </span>tar xvzf distribute-<span class="number">0</span>.<span class="number">6.28</span>.tar.gz
+
+<span class="variable">$ </span>cd distribute-<span class="number">0</span>.<span class="number">6.28</span>
+
+<span class="variable">$ </span>python setup.py install
+
+
+<span class="variable">$ </span>wget <span class="symbol">https:</span>/<span class="regexp">/pypi.python.org/packages</span><span class="regexp">/2.4/s</span><span class="regexp">/setuptools/setuptools</span>-<span class="number">0</span>.<span class="number">6</span>c11-py2.<span class="number">4</span>.egg
+
+<span class="variable">$ </span>wget <span class="symbol">https:</span>/<span class="regexp">/raw.github.com/pypa</span><span class="regexp">/pip/master</span><span class="regexp">/contrib/get</span>-pip.py
+
+<span class="variable">$ </span>python get-pip.py
+
+<span class="variable">$ </span>pip -<span class="constant">U</span> install liquidluck
+</pre></figure></code></pre>
+<h2>二、部署 Liquidluck</h2>
+<p>部署的过程相对简单，但还是有一些细节 <a href="http://liquidluck.readthedocs.org/en/latest/">Liquidluck 文档</a>中没有写：</p>
+<h3>1. 在 GitHub 上建立博客的 repo</h3>
+<p>使用 webhook 的话一般直接把整个部署目录都放在 hook 范围之内，因此先使用 git 把目录下载下来，当然在此之前你应该在 GitHub 上先建立一个 repo，repo的大致内容如下：</p>
+<pre><code><figure class="highlight"><pre><span class="comment">blog</span>
+    <span class="literal">-</span><span class="literal">-</span> <span class="comment">content</span>
+        <span class="literal">-</span><span class="literal">-</span> <span class="comment">helloword</span>.<span class="comment">md</span>
+        <span class="literal">-</span><span class="literal">-</span> <span class="comment">media</span>
+            <span class="literal">-</span><span class="literal">-</span> <span class="comment">author</span>.<span class="comment">jpg</span>
+    <span class="literal">-</span><span class="literal">-</span> <span class="comment">settings</span>.<span class="comment">py</span> <span class="comment">#</span> <span class="comment">你可以到</span> <span class="comment">Liquidluck</span> <span class="comment">的</span> <span class="comment">GitHub</span> <span class="comment">地址去下载一份</span> <span class="comment">然后改一下相关配置</span>
+    <span class="literal">-</span><span class="literal">-</span> <span class="comment">README</span>.<span class="comment">md
+</pre></figure></code></pre>
+<p>然后 git 这个 repo:</p>
+<pre><code><figure class="highlight"><pre><span class="variable">$ </span>git clone <span class="symbol">git:</span>/<span class="regexp">/github.com/user</span><span class="regexp">/repo blog
+</pre></figure></code></pre>
+<h3>2. 配置 webhook</h3>
+<p>首先在 GitHub 上配置好 webhook，具体操作可以看<a href="http://liquidluck.readthedocs.org/en/latest/">这里</a>，然后启动本地 webhook 服务：</p>
+<pre><code><figure class="highlight"><pre><span class="variable">$ </span>cd blog
+
+<span class="variable">$ </span>liquidluck webhook start -p <span class="number">9876</span>
+</pre></figure></code></pre>
+<p>这样就完成了 webhook 的配置，你可以先 push 一个文件到 GitHub 上，看有没有同步过来。</p>
+<p>需要注意的一点是，如果你要安装主题，不要再 webhook 的目录内 git ，否则 webhook 功能将失效</p>
+<h3>3. 部署 Liquidluck</h3>
+<p>部署并启动服务：</p>
+<pre><code><figure class="highlight"><pre><span class="variable">$ </span>cd blog
+
+<span class="variable">$ </span>liquidluck bulid
+
+<span class="variable">$ </span>liquidluck server -p <span class="number">80</span>
+
+<span class="variable">$ </span>nohup liquidluck server -p <span class="number">80</span> &gt; access.log <span class="number">2</span>&gt;&amp;<span class="number">1</span> &amp;             <span class="comment">#后台运行</span>
+</pre></figure></code></pre>
+<p>关于 Liquidluck 的安装与部署的细节就是这些，更详细的内容请看<a href="http://liquidluck.readthedocs.org/en/latest/">官方文档</a>。</p>
+<p>Update: Liquidluck 文件名、标签和分类不支持中文！</p>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/Other-Things/">Other Things</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/blog/">blog</a>, <a href="/tags/python/">python</a>, <a href="/tags/liquidluck/">liquidluck</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="基于静态文件的新博客">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2013/06/23/after-install-ubuntu-1304/">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/04/java-programmers-in-the-eyes-of-javascript/">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/02/june-youth-future/">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/28/how-install-apache-24-and-php-54/">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/27/reasons-to-date-a-geek-boy/">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>

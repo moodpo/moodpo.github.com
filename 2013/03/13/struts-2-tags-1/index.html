@@ -1,0 +1,248 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>Struts 2 标签（一） | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="Struts 2 标签（一）"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-13T02:59:50.000Z"><a href="/2013/03/13/struts-2-tags-1/">Mar 13 2013</a></time>
+    
+    
+  
+    <h1 class="title">Struts 2 标签（一）</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>在讲解Struts2标签库之前，本节将首先关注数据通过Struts2标签API离开框架的环境下的OGNL表达式语言。我们会浏览OGNL表达式的语法，并研究它可以取出数据的位置，尤其要深入研究ValueStack和ActionContext。</p>
+<h3>1.入门</h3>
+<p>当一个请求到达框架时，Struts2首先要做的事情是创建存储请求的所有重要数据的对象。应用程序的特定领域数据(使用标签最常访问的数据)会存储在ValueStack中，而另一些更基础的数据也必须存储起来，所有的这些数据连通ValueStack都存储在一个叫做ActionContext的对象中。</p>
+<h4>1.1 ActionContext和OGNL</h4>
+<p>实际上，OGNL表达式可以根据任何一系列对象求值，而ValueStack只是这些对象中的一个，默认的那个。OGNL可用来求值的更宽泛的一系列对象叫做ActionContext。ActionContex包含了框架的请求处理过程可以访问的所有数据，包含内容从应用程序数据到会话作用域或者应用程序作用域的映射。默认情况下OGNL解析会选择ValueStack，但你可以指定其他的对象的名字，例如会话作用域。</p>
+<p>下图展示了ActionContext和它包含的对象，可以把OGNL解析指向其中的任何对象：</p>
+<p><img src="/media/2013/03/3539674110.png" alt="ActionContex包含的对象.png" title="ActionContex包含的对象.png"></p>
+<ul>
+<li>parameters:当前请求中请求参数的映射</li>
+<li>request:请求作用域的属性的映射</li>
+<li>session:会话作用域的属性的映射</li>
+<li>application:应用程序作用域的属性的映射</li>
+<li>attr:按照page、request、session、application作用域的顺序，返回第一个出现的属性</li>
+<li>ValueStack:包含当前请求的应用程序特定领域的所有数据</li>
+</ul>
+<p>每一个OGNL表达式的解析都需要一个根对象，有了它才能开始引用的解析。现在让我们看看如何选择ActionContext中的对象让OGNL基于此对象解析。</p>
+<p><strong>为OGNL选择根对象</strong></p>
+<p>OGNL表达式可以以一个特殊的语法开始，从上下中命名一个解析表达式所根据的对象：</p>
+<pre><code><figure class="highlight"><pre><span class="id">#session</span><span class="attr_selector">['user']</span>
+</pre></figure></code></pre>
+<p>OGNL表达式通过表达式语言的#操作符主动命名ActionContext中的会话映射。#操作符告诉OGNL表达式使用位于上下文中的命名对象作为初始对象解析表达式的剩余部分。</p>
+<h4>1.2 虚拟对象ValueStack</h4>
+<p>当Struts2接收到一个请求时，它立即创佳一个ActionContext、一个ValueStack和一个动作对象。作为应用程序数据的承载者，动作被马上放在ValueStack中，以便框架可以通过OGNL访问它的属性。</p>
+<p>ValueStack只有一个微妙的地方，当OGNL表达式根据ValueStack解析时，它装作一个对象。这个虚拟对象包含放在上面的所有对象的所有属性。如果相同的属性出现多次，栈下面对象的属性会被栈上层的同名属性覆盖。</p>
+<p><img src="/media/2013/03/1296015878.png" alt="ValueStack是OGNL表达式默认解析对象.png" title="ValueStack是OGNL表达式默认解析对象.png"></p>
+<p>如上图所示，一个给定属性的引用的解析指向栈中最高位置出现的属性。以name为例，ValueStack总会返回对象栈中出现在最顶层的name属性。在上述的情况下，动作对象有一个name属性，但由于上层模型对象也有一个name属性，所以动作对象中的name属性永远不能被访问到。</p>
+<h3>2. Struts2标签概要</h3>
+<p>Struts2标签API通过使用条件呈现以继承ValueStack上应用程序的域模型数据，提供了动态创建健壮的网页功能。这些标签可分为4类：数据标签、流程控制标签、UI标签和其他标签。现在我们先不看UI标签，先研究另外3种标签。</p>
+<h4>2.1 Struts 2标签API语法</h4>
+<p>Struts2标签定义在比任何具体的视图层技术更高的层。使用这些标签与调用API一样简单，标签API指定了标签公开的属性和参数。标签API的接口已经全部在(JSP、Velocity和FreeMarker)中实现。</p>
+<p><strong>1.JSP语法</strong></p>
+<p>Struts2标签的JSP版本与其他JSP标签一样。异侠是property标签的简单语法：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"name"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>其他唯一需要说明的是，在使用Struts 2标签之前，在页面的开始部分必须声明包含property标签库的声明：</p>
+<pre><code><figure class="highlight"><pre>&lt;<span class="variable">%@</span> page contentType=<span class="string">"text/html; charset=UTF-8"</span> <span class="variable">%&gt;</span>
+&lt;<span class="variable">%@</span> taglib prefix=<span class="string">"s"</span> uri=<span class="string">"/struts-tags"</span> <span class="variable">%&gt;</span>
+</pre></figure></code></pre>
+<h4>2.2 使用OGNL设置标签属性</h4>
+<p>向标签的属性设置值时，这个属性期望一个字符串字面值，还是一个指向ValueStack上有具体类型的值的OGNL表达式呢？下面我们就讲解这个问题。</p>
+<p>在JSP页面中，所有的内容都是字符串，我们应该很熟悉使用某种转义字符序列来强制这些属性作为表达式解析而不是字符串字面值解析，例如EL表达式的写法${expression}的写法。但是这样会导致标签的边界难于阅读，导出都是EL表达式。为了让OGNL在标签中使用更加直观、可读性更强，Struts2会假定每一个属性都期望得到什么类型的数据，尤其在处理标签的属性时，会区分谁的类型是String，谁的类型不是String。</p>
+<p><strong>1.字符串和字符串类型的属性</strong></p>
+<p>如果一个属性的类型是String，那么在真实的JSP页面中，写入属性的值会被作为字符串字面值解析。如果一个属性不是String类型，那么属性中写入的值会被当作OGNL表达式解析。</p>
+<p>例如下面两个标签，value的值会默认作为OGNL表达式解析，而default的值则会作为字符串解析。</p>
+<pre><code><figure class="highlight"><pre>nonExistingProperty on the ValueStack = <span class="xml"><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"nonExistingProperty"</span> /&gt;</span>
+nonExistingProperty on the ValueStack = <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"nonExistingProperty"</span> <span class="attribute">default</span>=<span class="value">"doesNotExist"</span> /&gt;</span></span>
+</pre></figure></code></pre>
+<p><strong>2.强制使用OGNL解析</strong></p>
+<p>但是，假如前面的例子，我们想使用一个来源于ValueStack的String属性作为标签的default属性值。这时候就需要强制使用OGNL解析的方式了，写法如下，有些像EL表达式，但不同的是使用%:</p>
+<pre><code><figure class="highlight"><pre>nonExistingProperty on the ValueStack =<span class="xml"><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"nonExistingProperty"</span> <span class="attribute">default</span>=<span class="value">"%{myDefaultString}"</span> /&gt;</span></span>
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/My-Work/">My Work</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/struts2/">struts2</a>, <a href="/tags/J2EE/">J2EE</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="Struts 2 标签（一）">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2013/06/23/after-install-ubuntu-1304/">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/04/java-programmers-in-the-eyes-of-javascript/">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/02/june-youth-future/">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/28/how-install-apache-24-and-php-54/">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/27/reasons-to-date-a-geek-boy/">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>

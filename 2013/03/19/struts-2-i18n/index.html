@@ -1,0 +1,250 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>Struts 2 的国际化 | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="Struts 2 的国际化"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-03-19T07:17:47.000Z"><a href="/2013/03/19/struts-2-i18n/">Mar 19 2013</a></time>
+    
+    
+  
+    <h1 class="title">Struts 2 的国际化</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>本节我们将快速浏览Struts 2的国际化机制，重点在于怎样使用国际化方法满足我们的各种需求，而不深究其内部详细的原理。</p>
+<h3>1. Struts 2 框架和Java i18n</h3>
+<p>Java平台早已内置了对i18n的支持，Struts 2提供了一个高层的、极其方便的本地Java对i18n支持的封装。首先我们先简要介绍下Java的基础概念。</p>
+<h4>1.1 使用ResourceBundle和Locale取得本地化文本</h4>
+<p><strong>1. 在ResourceBundle中存储资源</strong></p>
+<p>Java的ResourceBundle是一个抽象类，其子类的实现管理包中包含了资源。ResourceBundle的子类能按照它们喜欢的任意方式管理它们的资源。Java平台提供了两个方便的子类供你使用，其中最常用的是PropertyResourceBundle，这个类从普通文本属性文件中加载资源，这些资源包括了各种版本内容的文件。</p>
+<p><strong>2. 使用本地Java ResourceBundle</strong></p>
+<p>如果我们想去的一个本地化文本，必须先获取对包含这个文本的包的引用。以下代码展示了这个功能：</p>
+<pre><code><figure class="highlight"><pre><span class="title">Locale</span> currentLocale = new Locale( <span class="string">"tr"</span>);
+<span class="title">ResourceBundle</span> myMessages = ResourceBundle.getBundle(<span class="string">"EmailClientMessages"</span>,currentLocale);
+<span class="title">String</span> greetingLabel = myMessages.getString( <span class="string">"greeting"</span>);
+</pre></figure></code></pre>
+<p>getBundle()方法获取参数后会在其拥有的资源中进行查找，这个过程包含两个阶段。首先，它查找与接收到的包名参数匹配的属性文件，之后它会查找包的Java类实现。这些类实现由与属性文件命名相似的Java类来实现，例如EmailClientMessages_tr.java，最后她会发现这些属性文件，并使用这些属性文件创建一个ResourceBundle实例。</p>
+<h4>1.2 Struts 2如何解决本地Java对i18n支持的问题</h4>
+<p>Struts 2框架为i18n付出了很多努力。框架仍然使用我们刚刚看过的Java类，但事情变得更容易了。首先，不需要实例化ResourceBundle，Struts 2会自动创建它，并处理确定需要哪个包的所有琐碎内容。另一方面，框架也处理确定正确地域的过程，它通过检查来源于浏览器的HTTP头信息自动确定当前的Locale。当然，你也可以覆盖这个行为，并使用其他方式确定地域信息。</p>
+<p>Struts 2包创建的过程使用约定和配置混合的方法来定位属性文件，它是一个双向的通道。Struts 2告诉你它在哪里查找属性文件，同时你也可以告诉它在哪里查找属性文件。</p>
+<h4>1.3 Struts 2的i18n如何工作</h4>
+<p>框架驱动国际化功能的机制由如下步骤完成：</p>
+<ol>
+<li>让动作扩展ActionSupport，以便它们继承默认的TextProvider实现， </li>
+<li>将一些属性文件放在默认的TextProvider可以发现的位置， </li>
+<li>使用Struts 2的text标签或者通过OGNL直接调用getText()方法将消息取到页面中。</li>
+</ol>
+<h4>1.4 Struts 2 默认的TextProvider ResourceBundle搜索算法</h4>
+<p>TextProvider的默认实现会在几个常见的地方搜索开发人员创建的属性文件以创建ResourceBundle，这些位置中有很多都遵循与超类或实现的接口的命名相似的模式。以下展示了Struts 2尝试填充的ResourceBundle的名字和出处：</p>
+<ol>
+<li>ActionClass——是否有一个ResourceBundle与当前动作类的名字相同？换句话说就是是否有一系列的属性文件命名为ActionClass.properties、ActionClass*es.properties等？ </li>
+<li>MyInterface——如果动作实现了任何接口，有没有与这些接口关联的ResourceBundle?也就是说，如果当前类实现了MyInterface接口，是否有一系列的属性文件命名为MyInterface.properties、MyInterface*es.properties等？并且每一个接口的超接口也会被查找，更具体的接口优先于更高层的超接口。 </li>
+<li>MySuperClass——如果动作扩展了一个父类，那么是否有一个ResourceBundle与这个超类关联？这和接口的查找类似。但在继承链上低级别类的ResourceBundle优先于高级别类的ResourceBundle。也就是说，如果Object.properties存在，那么它是最后一个。 </li>
+<li>如果动作实现了ModelDriven接口，那么会使用模型对象的类查找ResourceBundle。也就是说，如果模型对象是User类，那么User.properties文件会被加载。 </li>
+<li>package.properties——接着，搜索过程会尝试加载当前动作类所在包的ResourceBundle，以及这个链上的每一个父包。注意这些属性文件都叫做package.properties。 </li>
+<li>通过关键字引用的ValueStack上的域模型对象，这与第4步的ModelDriven很相似。对于一个给定的关键字，如user.username，如果ValueStack上公开了一个叫做user的属性，那么这个属性的类会用来加载ResourceBundle。</li>
+<li>默认的ResourceBundle——Struts 2允许指定全局包，这个包总是可以访问的。</li>
+</ol>
+<p>包搜索顺序中的前6步列出了Struts 2搜索属性文件过程中基于的约定位置，如果基于约定的包都不存在，那么就会使用默认包，也就是第7步所说的全局包。我们可以在struts.properties文件中或者某一个XML配置文件(例如struts.xml或者它包含的一个文件)的constant元素中设置这个属性和所有Struts 2属性。以下是具体的使用方法；</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">constant</span> <span class="attribute">name</span>=<span class="value">"struts.custom.i18n.resources"</span> <span class="attribute">value</span>=<span class="value">"global-messages"</span> /&gt;</span>
+</pre></figure></code></pre>
+<p>以下是在struts.properties文件中配置的相同内容：</p>
+<pre><code><figure class="highlight"><pre><span class="transposed_variable">struts.</span><span class="transposed_variable">custom.</span><span class="transposed_variable">i18n.</span>resources=<span class="keyword">global</span>-messages
+</pre></figure></code></pre>
+<p>可以指定使用逗号分隔的一系列包，这些包按照给定的顺序被搜索，也可以使用包空间指定包的位置，如下所示：</p>
+<pre><code><figure class="highlight"><pre><span class="transposed_variable">struts.</span><span class="transposed_variable">custom.</span><span class="transposed_variable">i18n.</span>resources=<span class="keyword">global</span>-messages,<span class="transposed_variable">manning.</span><span class="transposed_variable">utils.</span>otherBundle  
+</pre></figure></code></pre>
+<p>注意，如果同时使用这两种方式，struts.properties文件优于XML文件中的constant元素。</p>
+<h3>2. 从包中取得消息文本</h3>
+<p>在前面几节的讲解中我们已经捎带着说明了怎样从保重取得消息文本的方法，包括：使用UI组件标签的key属性、验证框架中使用、validate()方法中使用getText()方法、页面中使用text标签等，就剩下本地化类型转换错误消息的国际化了，下面我们就讲解它。</p>
+<p><strong>本地化类型转换错误消息的国际化</strong></p>
+<p>例如页面中有一个Age字段，当用户输入字母在后台会发生类型转换错误，为了给Age字段追加自定义类型转换错误消息，你只需要在某个可访问的保重追加一个属性，这个属性遵循的命名约定为invalid.fieldvalue.fieldname。以下属性为Age字段定义的一个错误消息：</p>
+<pre><code><figure class="highlight"><pre><span class="transposed_variable">invalid.</span><span class="transposed_variable">fieldvalue.</span>age=Please enter a numerical value <span class="keyword">for</span> your <span class="transposed_variable">age.</span>
+</pre></figure></code></pre>
+<p>只需把上述内容追加到Register动作可访问的包(例如Register.properties文件)就可以使用了。此外，你可能想改变本地化默认的类型转换消息。你可以在默认的global-message保重追加以下属性：</p>
+<pre><code><figure class="highlight"><pre><span class="title">xwork</span>.default.invalid.fieldvalue=<span class="type">We</span> can <span class="keyword">not</span> convert that to a <span class="type">Java</span> <span class="typedef"><span class="keyword">type</span>.</span>
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/My-Work/">My Work</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/struts2/">struts2</a>, <a href="/tags/J2EE/">J2EE</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="Struts 2 的国际化">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+    
+    
+
+<div class="widget tag first">
+  <h3 class="title">Categories</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/My-Life/">My Life</a><small>12</small></li>
+  
+    <li><a href="/categories/My-Work/">My Work</a><small>20</small></li>
+  
+    <li><a href="/categories/Other-Things/">Other Things</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+  
+    
+    
+
+<div class="widget tagcloud">
+  <h3 class="title">Tag Cloud</h3>
+  <div class="entry">
+    <a href="/tags/2012/" style="font-size: 11.52px;">2012</a><a href="/tags/ATI/" style="font-size: 17.58px;">ATI</a><a href="/tags/J2EE/" style="font-size: 19.70px;">J2EE</a><a href="/tags/VPS/" style="font-size: 11.21px;">VPS</a><a href="/tags/aireplay-ng/" style="font-size: 12.42px;">aireplay-ng</a><a href="/tags/apache/" style="font-size: 16.97px;">apache</a><a href="/tags/axis2/" style="font-size: 10.00px;">axis2</a><a href="/tags/blog/" style="font-size: 18.48px;">blog</a><a href="/tags/eclipse/" style="font-size: 12.73px;">eclipse</a><a href="/tags/font/" style="font-size: 13.03px;">font</a><a href="/tags/geek/" style="font-size: 16.06px;">geek</a><a href="/tags/graduation/" style="font-size: 15.76px;">graduation</a><a href="/tags/java/" style="font-size: 10.91px;">java</a><a href="/tags/javascript/" style="font-size: 10.30px;">javascript</a><a href="/tags/june/" style="font-size: 14.24px;">june</a><a href="/tags/liquidluck/" style="font-size: 16.67px;">liquidluck</a><a href="/tags/love/" style="font-size: 14.55px;">love</a><a href="/tags/note/" style="font-size: 17.88px;">note</a><a href="/tags/php/" style="font-size: 17.27px;">php</a><a href="/tags/python/" style="font-size: 18.79px;">python</a><a href="/tags/select/" style="font-size: 15.15px;">select</a><a href="/tags/source/" style="font-size: 16.36px;">source</a><a href="/tags/struts2/" style="font-size: 19.39px;">struts2</a><a href="/tags/sublime/" style="font-size: 12.12px;">sublime</a><a href="/tags/summary/" style="font-size: 11.82px;">summary</a><a href="/tags/time/" style="font-size: 10.61px;">time</a><a href="/tags/twitter/" style="font-size: 13.33px;">twitter</a><a href="/tags/ubuntu/" style="font-size: 19.09px;">ubuntu</a><a href="/tags/was/" style="font-size: 14.85px;">was</a><a href="/tags/weibo/" style="font-size: 13.64px;">weibo</a><a href="/tags/wifi/" style="font-size: 18.18px;">wifi</a><a href="/tags/work/" style="font-size: 15.45px;">work</a><a href="/tags/youth/" style="font-size: 13.94px;">youth</a>
+  </div>
+</div>
+
+  
+    
+    
+
+<div class="widget recent-posts">
+  <h3 class="title">Recent Posts</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2013/06/23/after-install-ubuntu-1304/">Ubuntu 13.04 安装后要做的几件事</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/04/java-programmers-in-the-eyes-of-javascript/">JavaScript的模块化：封装（闭包），继承（原型）</a>
+      </li>
+    
+      <li>
+        <a href="/2013/06/02/june-youth-future/">六月，青春，未来</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/28/how-install-apache-24-and-php-54/">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a>
+      </li>
+    
+      <li>
+        <a href="/2013/05/27/reasons-to-date-a-geek-boy/">和 geek 男谈恋爱的好处若干</a>
+      </li>
+    
+  </ul>
+</div>
+
+  
+    
+    
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>
