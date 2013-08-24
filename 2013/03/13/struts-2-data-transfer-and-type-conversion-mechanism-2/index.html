@@ -164,9 +164,9 @@ public void setUser(<span class="keyword">User</span> <span class="keyword">user
 <p>使用List与使用数组几乎完全相同，仅有的不同是在Java 5之前List不支持类型指定，List没有类型的特性对Struts 2的类型转换机制有着重要的影响。对List来说，没有方法能够自动发现内部元素的类型。使用List时用两种选择，为元素指定类型或者接受默认类型(String)。接受默认行为时页面代码和使用数组相同，不同的是在Java端，没有类型说明，List中元素都会是String类型。</p>
 <p>有些时候，除了使用String，你会想为List中的元素指定类型。这种情况下，我们只需告知OGNL某个给定属性我们希望的元素类型，这使用一个简单的属性文件实现。</p>
 <p>为了给动作对象上的List属性指定元素类型，我们根据下图中的命名约定创建一个文件。</p>
-<p><img src="/media/2013/03/344633058.png" alt="List指定类型命名约定.png" title="List指定类型命名约定.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/344633058.png" alt="List指定类型命名约定.png" title="List指定类型命名约定.png"></p>
 <p>文件名约定是：动作名+-+conversion+属性文件扩展名，其中conversion是类型转换用的文件名后缀。之后把这个文件放在Java包中这个类的旁边。文件的内容约定如下图：</p>
-<p><img src="/media/2013/03/879049580.png" alt="List指定类型内容约定.png" title="List指定类型内容约定.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/879049580.png" alt="List指定类型内容约定.png" title="List指定类型内容约定.png"></p>
 <p>文件内容约定是：Element+_+List类型属性的名字=元素类型(如：Element-weights=java.lang.Double)，这样List属性会像数组属性一样工作，每一个独立元素都会被转换为指定的元素类型。例如页面可以这样写：</p>
 <pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[0]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
 <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[1]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
@@ -250,7 +250,7 @@ public void setMyUsers ( Map myUsers ) {
 </pre></figure></code></pre>
 <p>第一个方法经请求转换为Java对象，第二个方法将Java对象转换为请求字符串。当你编写一个自定义的转换器时，你只需继承这个类并将自己的逻辑填充到这两个方法中即可。</p>
 <h4>2.2 在字符串和Java对象间转换</h4>
-<p><img src="/media/2013/03/2746878052.png" alt="自定义类型转换逻辑.png" title="自定义类型转换逻辑.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/2746878052.png" alt="自定义类型转换逻辑.png" title="自定义类型转换逻辑.png"></p>
 <p>以下代码实现了上图所示的转换规则：</p>
 <pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CircleTypeConverter</span> <span class="keyword">extends</span> <span class="title">StrutsTypeConverter</span> {</span>
     <span class="keyword">public</span> Object convertFromString(Map context, String[] values,Class toClass) {

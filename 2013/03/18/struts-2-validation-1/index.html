@@ -73,7 +73,7 @@
 <p>数据验证框架早已成为了Web应用程序框架的一部分，但是Struts 2将它在优化、模块化、整洁继承方面带到了一个权限的水平。</p>
 <h4>1.1 验证框架的架构</h4>
 <p>下图展示了验证框架的主要组件：</p>
-<p><img src="/media/2013/03/1475721437.png" alt="Struts 2 验证框架.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/1475721437.png" alt="Struts 2 验证框架.png"></p>
 <p>如上图所示，在验证框架中有3个主要的组件：域数据、验证元数据和验证器。在验证工作中每一个组件都扮演了至关重要的角色，我们将一一解释这些内容。</p>
 <p><strong>1.域数据</strong></p>
 <p>首先，必须有一些验证数据，这些数据以属性的方式驻留在Struts 2的动作中，数据来自对象或者模型驱动对象。</p>
@@ -90,7 +90,7 @@
 <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>/&gt;</span>
 </pre></figure></code></pre>
 <p>我们需要注意validation拦截器，workflow拦截器调用validate()方法来实施基本验证还没有参与。当validation拦截器触发时，它会通过前一节提到的元数据实施所有已经定义的验证。一下是验证框架的工作流程，数据验证框架在数据转移、类型转换之后，workflow拦截器之前运行：</p>
-<p><img src="/media/2013/03/1923682797.png" alt="验证框架的工作流程.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/1923682797.png" alt="验证框架的工作流程.png"></p>
 <p>从图中可以看出整个流程有两个数据验证机制，一种是validation拦截器即数据验证框架的验证，一种是workflow调用validate()方法的验证。我们将会有两种选择，如果能够预测到一个验证逻辑将来还会被重用，那么使用一个自定义验证器来实现会更有意义。然而，如果验证逻辑确实是一个生僻的需求，并且很可能只适用于一次的情况，那么把它放在validate()方法中会更有意义。</p>
 <h3>2.将动作关联到验证框架</h3>
 <h4>2.1 使用ActionClass-validations.xml声明验证元数据</h4>

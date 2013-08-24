@@ -165,9 +165,9 @@ public void setUser(<span class="keyword">User</span> <span class="keyword">user
 <p>使用List与使用数组几乎完全相同，仅有的不同是在Java 5之前List不支持类型指定，List没有类型的特性对Struts 2的类型转换机制有着重要的影响。对List来说，没有方法能够自动发现内部元素的类型。使用List时用两种选择，为元素指定类型或者接受默认类型(String)。接受默认行为时页面代码和使用数组相同，不同的是在Java端，没有类型说明，List中元素都会是String类型。</p>
 <p>有些时候，除了使用String，你会想为List中的元素指定类型。这种情况下，我们只需告知OGNL某个给定属性我们希望的元素类型，这使用一个简单的属性文件实现。</p>
 <p>为了给动作对象上的List属性指定元素类型，我们根据下图中的命名约定创建一个文件。</p>
-<p><img src="/media/2013/03/344633058.png" alt="List指定类型命名约定.png" title="List指定类型命名约定.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/344633058.png" alt="List指定类型命名约定.png" title="List指定类型命名约定.png"></p>
 <p>文件名约定是：动作名+-+conversion+属性文件扩展名，其中conversion是类型转换用的文件名后缀。之后把这个文件放在Java包中这个类的旁边。文件的内容约定如下图：</p>
-<p><img src="/media/2013/03/879049580.png" alt="List指定类型内容约定.png" title="List指定类型内容约定.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/879049580.png" alt="List指定类型内容约定.png" title="List指定类型内容约定.png"></p>
 <p>文件内容约定是：Element+_+List类型属性的名字=元素类型(如：Element-weights=java.lang.Double)，这样List属性会像数组属性一样工作，每一个独立元素都会被转换为指定的元素类型。例如页面可以这样写：</p>
 <pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[0]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
 <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[1]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
@@ -251,7 +251,7 @@ public void setMyUsers ( Map myUsers ) {
 </pre></figure></code></pre>
 <p>第一个方法经请求转换为Java对象，第二个方法将Java对象转换为请求字符串。当你编写一个自定义的转换器时，你只需继承这个类并将自己的逻辑填充到这两个方法中即可。</p>
 <h4>2.2 在字符串和Java对象间转换</h4>
-<p><img src="/media/2013/03/2746878052.png" alt="自定义类型转换逻辑.png" title="自定义类型转换逻辑.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/2746878052.png" alt="自定义类型转换逻辑.png" title="自定义类型转换逻辑.png"></p>
 <p>以下代码实现了上图所示的转换规则：</p>
 <pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CircleTypeConverter</span> <span class="keyword">extends</span> <span class="title">StrutsTypeConverter</span> {</span>
     <span class="keyword">public</span> Object convertFromString(Map context, String[] values,Class toClass) {
@@ -328,7 +328,7 @@ public void setMyUsers ( Map myUsers ) {
 <h4>1.1 ActionContext和OGNL</h4>
 <p>实际上，OGNL表达式可以根据任何一系列对象求值，而ValueStack只是这些对象中的一个，默认的那个。OGNL可用来求值的更宽泛的一系列对象叫做ActionContext。ActionContex包含了框架的请求处理过程可以访问的所有数据，包含内容从应用程序数据到会话作用域或者应用程序作用域的映射。默认情况下OGNL解析会选择ValueStack，但你可以指定其他的对象的名字，例如会话作用域。</p>
 <p>下图展示了ActionContext和它包含的对象，可以把OGNL解析指向其中的任何对象：</p>
-<p><img src="/media/2013/03/3539674110.png" alt="ActionContex包含的对象.png" title="ActionContex包含的对象.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/3539674110.png" alt="ActionContex包含的对象.png" title="ActionContex包含的对象.png"></p>
 <ul>
 <li>parameters:当前请求中请求参数的映射</li>
 <li>request:请求作用域的属性的映射</li>
@@ -346,7 +346,7 @@ public void setMyUsers ( Map myUsers ) {
 <h4>1.2 虚拟对象ValueStack</h4>
 <p>当Struts2接收到一个请求时，它立即创佳一个ActionContext、一个ValueStack和一个动作对象。作为应用程序数据的承载者，动作被马上放在ValueStack中，以便框架可以通过OGNL访问它的属性。</p>
 <p>ValueStack只有一个微妙的地方，当OGNL表达式根据ValueStack解析时，它装作一个对象。这个虚拟对象包含放在上面的所有对象的所有属性。如果相同的属性出现多次，栈下面对象的属性会被栈上层的同名属性覆盖。</p>
-<p><img src="/media/2013/03/1296015878.png" alt="ValueStack是OGNL表达式默认解析对象.png" title="ValueStack是OGNL表达式默认解析对象.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/1296015878.png" alt="ValueStack是OGNL表达式默认解析对象.png" title="ValueStack是OGNL表达式默认解析对象.png"></p>
 <p>如上图所示，一个给定属性的引用的解析指向栈中最高位置出现的属性。以name为例，ValueStack总会返回对象栈中出现在最顶层的name属性。在上述的情况下，动作对象有一个name属性，但由于上层模型对象也有一个name属性，所以动作对象中的name属性永远不能被访问到。</p>
 <h3>2. Struts2标签概要</h3>
 <p>Struts2标签API通过使用条件呈现以继承ValueStack上应用程序的域模型数据，提供了动态创建健壮的网页功能。这些标签可分为4类：数据标签、流程控制标签、UI标签和其他标签。现在我们先不看UI标签，先研究另外3种标签。</p>
@@ -421,7 +421,7 @@ nonExistingProperty on the ValueStack = <span class="tag">&lt;<span class="title
 <p>基于字符串的HTML世界和框架的本地Java类型之间移动数据时类型转换是如何发生的呢？除了表达式语言，我们也一直在使用OGNL类型转换器。数据转移时类型转换必定发生，即使是两端类型(是字符串时)相同，这仅仅意味着类型转换比较容易。</p>
 <h6>1.1.2 OGNL如何融入框架</h6>
 <p>数据进入和离开框架时，数据在不同的区域间移动时，OGNL如何帮助绑定和转换数据呢？下图展示了整个过程。</p>
-<p><img src="/media/2013/03/272061022.png" alt="数据转移和类型转换过程.png" title="数据转移和类型转换过程.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/272061022.png" alt="数据转移和类型转换过程.png" title="数据转移和类型转换过程.png"></p>
 <p><strong>1.数据进入</strong></p>
 <p>用户输入名字和年龄，并提交了表单，数据的旅程就开始了。当数据进入框架后，它作为一个HttpServletRequest对象公开给Java语言。Struts2经请求参数作为名/值对存储，名和值都是String类型。接下来框架开始处理这些参数的数据转移以及类型转换。</p>
 <p>如图所示，在开始时，Struts2就会将动作对象置于叫做ValueStack的对象上，而User对象作为动作的组件的JavaBean属性也被公开出来。而另一方面，当用户发出请求时，params拦截器会把请求对象中的数据转移到ValueStack上。于是，用户提交的数据属性和Struts2公开的属性就会在ValueStack上出现重复。此时神奇的事情发生了，接下来就是见证奇迹的时刻：</p>
@@ -458,7 +458,7 @@ nonExistingProperty on the ValueStack = <span class="tag">&lt;<span class="title
   
   <div class="entry">
     
-      <p><img src="/media/2013/03/2759728019.jpg" alt="拦截器.jpg" title="拦截器.jpg"></p>
+      <p><img src="http://meiseku.com/moodpo/2013/03/2759728019.jpg" alt="拦截器.jpg" title="拦截器.jpg"></p>
 <h3>1.声明拦截器</h3>
 <p>XML是声明拦截器的唯一选择，注解机制现在还不支持声明拦截器。</p>
 <h4>1.1 声明独立的拦截器和拦截器栈</h4>
@@ -604,7 +604,7 @@ nonExistingProperty on the ValueStack = <span class="tag">&lt;<span class="title
 <p>拦截器消除了动作组件中的横切任务。日志记录功能是典型的横切任务，它不是某一个动作所特有的，而是横向关联所有动作。作为软件工程师，我们会把这个任务提到更高的层面，让它处在任何需要日志记录的请求上(或者说之前)，达到将MVC关注点分离的目的。</p>
 <p>拦截器承担的另一些任务被称为预处理或者后加工。预处理任务的一个很好的示例就是常见的数据转移，它通过params拦截器实现。</p>
 <p>在Struts2中没有一个动作被单独调用，动作调用是一个分层的过程，总是包含一系列的拦截器在动作执行之前或者之后执行。框架不直接调用动作的execute()方法，而是创建一个叫做ActionInvocation的对象，它封装了动作的一系列被配置的动作执行之前之后触发的拦截器。下图展示了ActionInvocation类封装的完整的动作执行过程。</p>
-<p><img src="/media/2013/03/3358556227.png" alt="ActionInvocation 流程.png" title="ActionInvocation 流程.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/3358556227.png" alt="ActionInvocation 流程.png" title="ActionInvocation 流程.png"></p>
 <p>拦截器的强大功能之一是改变调用工作流。有时候某个拦截器会决定动作不应该执行，此时，拦截器可以自己返回一个控制字符串，从而终止工作流。以workflow拦截器为例，这个拦截器做两件事情。首先，如果动作实现了Validateable接口，那么调用动作的validate()方法。其次，检查动作上是否出现了错误信息。如果出现了错误信息，它返回控制字符串并终止后续执行。</p>
 <h4>1.2 拦截器的好处</h4>
 <p>使用拦截器分层让软件更整洁，并增加了可读性和可测试性，也提高了灵活性。从这种灵活性中得到的两个主要益处是可重用和可配置。</p>

@@ -100,7 +100,7 @@
 <p>UI组件也能够接入国际化机制为UI组件提供本地化的标签名字。这个特性需要使用所有UI组件都有的key属性，只需设置这个属性，UI组件就能够从框架的ResourceBundle中取得本地化的标签，并能智能的推算出name属性和value属性来完成组件的数据绑定。</p>
 <h3>2. 标签、模板和主题</h3>
 <p>现在我们来学习UI组件标签独一无二的架构。UI组件的迷你MVC架构最大的好处是可以重用自定义的内容。</p>
-<p><img src="/media/2013/03/2197838678.png" alt="UI组件架构.png" title="UI组件架构.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/2197838678.png" alt="UI组件架构.png" title="UI组件架构.png"></p>
 <p>UI组件构建在分层的架构上。组件API被公开为页面中的JSP标签，它会被作为JSP标签处理。本地标签仅仅是框架对应的UI组件API的包装，如JSP类型的Struts 2 textfield标签就是对org.apache.struts2.components.TextField组件类的包装。如图，本地标签很快将控制转交给对应的组件API做实际处理。UI组件层处理标签的逻辑并准备数据，之后组件将呈现的任务交给底层的FreeMarker模板。</p>
 <p>以这种方式将标签API输出的标记与实现逻辑的Java类分层，这样我们就有了迷你MVC架构。像所有的MVC架构一样，最主要的好处就是能够很容易的修改标签的视图而不需要修改嵌入在标签组件类中的业务逻辑。</p>
 <h4>2.1 标签</h4>

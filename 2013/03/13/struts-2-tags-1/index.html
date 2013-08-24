@@ -74,7 +74,7 @@
 <h4>1.1 ActionContext和OGNL</h4>
 <p>实际上，OGNL表达式可以根据任何一系列对象求值，而ValueStack只是这些对象中的一个，默认的那个。OGNL可用来求值的更宽泛的一系列对象叫做ActionContext。ActionContex包含了框架的请求处理过程可以访问的所有数据，包含内容从应用程序数据到会话作用域或者应用程序作用域的映射。默认情况下OGNL解析会选择ValueStack，但你可以指定其他的对象的名字，例如会话作用域。</p>
 <p>下图展示了ActionContext和它包含的对象，可以把OGNL解析指向其中的任何对象：</p>
-<p><img src="/media/2013/03/3539674110.png" alt="ActionContex包含的对象.png" title="ActionContex包含的对象.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/3539674110.png" alt="ActionContex包含的对象.png" title="ActionContex包含的对象.png"></p>
 <ul>
 <li>parameters:当前请求中请求参数的映射</li>
 <li>request:请求作用域的属性的映射</li>
@@ -92,7 +92,7 @@
 <h4>1.2 虚拟对象ValueStack</h4>
 <p>当Struts2接收到一个请求时，它立即创佳一个ActionContext、一个ValueStack和一个动作对象。作为应用程序数据的承载者，动作被马上放在ValueStack中，以便框架可以通过OGNL访问它的属性。</p>
 <p>ValueStack只有一个微妙的地方，当OGNL表达式根据ValueStack解析时，它装作一个对象。这个虚拟对象包含放在上面的所有对象的所有属性。如果相同的属性出现多次，栈下面对象的属性会被栈上层的同名属性覆盖。</p>
-<p><img src="/media/2013/03/1296015878.png" alt="ValueStack是OGNL表达式默认解析对象.png" title="ValueStack是OGNL表达式默认解析对象.png"></p>
+<p><img src="http://meiseku.com/moodpo/2013/03/1296015878.png" alt="ValueStack是OGNL表达式默认解析对象.png" title="ValueStack是OGNL表达式默认解析对象.png"></p>
 <p>如上图所示，一个给定属性的引用的解析指向栈中最高位置出现的属性。以name为例，ValueStack总会返回对象栈中出现在最顶层的name属性。在上述的情况下，动作对象有一个name属性，但由于上层模型对象也有一个name属性，所以动作对象中的name属性永远不能被访问到。</p>
 <h3>2. Struts2标签概要</h3>
 <p>Struts2标签API通过使用条件呈现以继承ValueStack上应用程序的域模型数据，提供了动态创建健壮的网页功能。这些标签可分为4类：数据标签、流程控制标签、UI标签和其他标签。现在我们先不看UI标签，先研究另外3种标签。</p>
