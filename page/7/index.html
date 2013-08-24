@@ -58,6 +58,44 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2012-08-14T02:51:28.000Z"><a href="/2012/08/14/apache-axis2-deploy-websphere/">Aug 14 2012</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2012/08/14/apache-axis2-deploy-websphere/">Apache Axis2在WAS上的部署</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>在WebSphere Application Server上部署Axis2需要修改几个配置，否则，Axis2服务可以访问，但大多数功能是无法使用的。</p>
+<p>由于在WebSphere Application Server 7.0 中，加入了对JAX-WS的支持，它是基于一个Axis2的修改版本的，当WAS启动时，它的类加载器将会加载这些类。于是当真正部署Axis2 1.6时就会发生冲突，怎么解决这种冲突呢，很简单：</p>
+<ol>
+<li><p>在部署axis2.war之前，修改war包中的<code>axis2.xml</code>文件。找到<code>EnableChildFirstClassLoading</code>参数,将其修改为<code>true</code>(默认为<code>false</code>)。这个参数只支持axis2的1.5.5以上版本。</p>
+</li>
+<li><p>在部署完axis2.war之后，修改应用模块的类加载方式为父类最后：在WebSphere的管理员控制台，找到企业级应用的配置页面，点击Manage Modules，定位到包含Axis2的模块，将<code>Class loader order</code>项修改为 <code>Classes loaded with local class loader first (parent last)</code></p>
+</li>
+</ol>
+<p>经过以上配置之后，重启axis2应用即可。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2012-07-29T02:50:57.000Z"><a href="/2012/07/29/three-oclock-in-the-afternoon/">Jul 29 2012</a></time>
     
     

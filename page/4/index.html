@@ -58,6 +58,1055 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-03-14T05:59:55.000Z"><a href="/2013/03/14/struts-2-tags-2/">Mar 14 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/03/14/struts-2-tags-2/">Struts 2 标签（二）</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>本节将学习Struts2标签库的详细内容，包括数据标签，流程控制标签和其他标签。</p>
+<h3>1.数据标签</h3>
+<p>数据标签能从ValueStack上取得数据，或者将变量、对象放在ValueStack上。本小节将讨论property、set、push、bean和action标签，并演示这些标签的常见用例。</p>
+<h4>1.1 property标签</h4>
+<p>property标签提供了一种将属性写入呈现的HTML页面的快速、方便的方法。下面是这个标签的重要属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      默认值
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      栈最顶端
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      被显示的值
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      default
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      空(null)
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      值为空时使用的默认值
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      escape
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      true
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      是否转义HTML
+    </td>
+  </tr>
+</table>
+
+<p>实际的使用很简单，代码如下：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h4</span>&gt;</span>Property Tag<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+The current user is <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"user.username"</span>/&gt;</span>.
+</pre></figure></code></pre>
+<h4>1.2 set标签</h4>
+<p>在标签的上下文中，set意味着给一个属性指定一个别名。有时候一个属性需要使用一个很长的、复杂的OGNL表达式才能引用到它，通过为这个属性重新指定一个顶层的名字可以更容易、更快捷的访问它。默认情况下，这个属性会变成ActionContext中的一个命名对象，与ValueStack、会话映射齐名。所以你可以使用如#myObjec这样的OGNL表达式把它作为一个顶层的命名对象引用。当然，你也可以指定这个新引用被放置在ActionContext中的某个作用域中。下面是set标签的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      被设置在指定作用域内的变量的引用名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      scope
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      application、session、request、page或者action，默认是action
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      设置值的表达式
+    </td>
+  </tr>
+</table>
+
+<p>下面是实际的使用：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:set</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">value</span>=<span class="value">"user.username"</span>/&gt;</span>
+Hello, <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#username"</span>/&gt;</span>. How are you?    
+</pre></figure></code></pre>
+<p>以下代码经把新引用设置为application作用域映射内的一个实体：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:set</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">scope</span>=<span class="value">"application"</span> <span class="attribute">value</span>=<span class="value">"user.username"</span>/&gt;</span>
+Hello, <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#application['username']"</span>/&gt;</span>. How are you?
+</pre></figure></code></pre>
+<h4>1.3 push标签</h4>
+<p>set标签允许你创建指向值的新引用，而push标签允许你把属性放到ValueStack上。当你需要对一个对象进行很多操作时这个标签会很有用。将对象放在ValueStack顶端之后，它的所有属性可以通过第一级别的OGNL表达式访问。</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      放到ValueStack中的值
+    </td>
+  </tr>
+</table>
+
+<p>以下是使用这个标签的示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:push</span> <span class="attribute">value</span>=<span class="value">"user"</span>&gt;</span>
+    This is the "<span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"portfolioName"</span>/&gt;</span>" portfolio,
+    created by none other than <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"username"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:push</span>&gt;</span>
+</pre></figure></code></pre>
+<p>push标签把user属性放到ValueStack的顶端，这是我们就可以把user的属性当作ValueStack这个虚对象上的顶级属性访问，这样OGNL表达式就变简单了。最后push的结束标签把user从ValueStack顶端删除。</p>
+<h4>1.4 bean标签</h4>
+<p>bean标签像是set标签和push标签的混合标签。主要的不同是不需要使用一个已经存在的对象，bean标签会自己new这个对象，并把它放到ValueStack上或者设置为ActionContext的顶级引用。默认是将对象放在ValueStack上，并在标签存在期间一直保留在ValueStack上。以下是bean标签的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      被传入bean的包名和类名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      var
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      在结束标签作用域外引用这个bean时使用的变量名
+    </td>
+  </tr>
+</table>
+
+<p>下面示例展示了如何创建和存储一个bean作为ActionContext中的命名参数：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:bean</span> <span class="attribute">name</span>=<span class="value">"org.apache.struts2.util.Counter"</span> <span class="attribute">var</span>=<span class="value">"counter"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:param</span> <span class="attribute">name</span>=<span class="value">"last"</span> <span class="attribute">value</span>=<span class="value">"7"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:bean</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:iterator</span> <span class="attribute">value</span>=<span class="value">"#counter"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">li</span>&gt;</span><span class="tag">&lt;<span class="title">s:property</span>/&gt;</span><span class="tag">&lt;/<span class="title">li</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">s:iterator</span>&gt;</span>
+</pre></figure></code></pre>
+<p>默认情况下创建的对象会存储在ValueStack中，使用var后会在ActionContext中存储这个对象的引用，正是因为如此，在iterator标签中，我们使用它的方式需要用#操作符，即OGNL表达式#counter。在许多Struts2标签中，都存在可选的var属性，它的作用与此类似。</p>
+<p>bean标签是我们研究的第一个参数化标签。现在看看如何使用bean标签将新创建的bean放在ValueStack上而不是存储在ActionContext上。而且我们我们还是用param标签演示怎样向自定义对象提供参数。</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:bean</span> <span class="attribute">name</span>=<span class="value">"manning.utils.JokeBean"</span> &gt;</span>
+    <span class="tag">&lt;<span class="title">s:param</span> <span class="attribute">name</span>=<span class="value">"jokeType"</span>&gt;</span>knockknock<span class="tag">&lt;/<span class="title">s:param</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"startAJoke()"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:bean</span>&gt;</span>
+</pre></figure></code></pre>
+<p>上面我们使用了OGNL方法调用语法starAJoke()，bean标签不需要完全遵守JavaBean标准，但是OGNL能够使用这个方法，我们将在OGNL详解中讲解它的机制。</p>
+<p>最后，注意我们向JokenBean传递了一个参数，这个参数用来控制这个bean讲述的笑话的类型。只要这个对象实现了一个与这个参数同名的属性，它就能自动接收传入的参数。</p>
+<h4>1.5 action标签</h4>
+<p>这个标签允许我们从当前的视图层调用其他的动作。action标签的实际使用很简单，只需指定其他需要调用的动作。</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      动作名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      namespace
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      动作的命名空间，默认使用当前页面的命名空间
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      var
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      在页面后续代码中使用的动作对象的引用名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      executeResult
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      设置为true时排除动作的结果(默认值为false)
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      flush
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      设置为true时在action标签的结尾会刷新写出缓冲(默认为true)
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      ignoreConte xtParams
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      设置为true时动作被调用时不包含请求参数(默认值为false)
+    </td>
+  </tr>
+</table>
+
+<p>以下是一个选择包含辅助动作结果的示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h3</span>&gt;</span>Action Tag<span class="tag">&lt;/<span class="title">h3</span>&gt;</span>
+<span class="tag">&lt;<span class="title">h4</span>&gt;</span>This line is from the ActionTag action's result.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:action</span> <span class="attribute">name</span>=<span class="value">"TargetAction"</span> <span class="attribute">executeResult</span>=<span class="value">"true"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>通常情况下，你希望辅助动作被触发，但不写结果，而是提供一个在ActionContext上某个地方存储域数据，在控制返回后，主动作可以访问这些数据，下面示例正是如此：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h4</span>&gt;</span>This line is before the ActionTag invokes the secondary action.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:action</span> <span class="attribute">name</span>=<span class="value">"TargetAction"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">h4</span>&gt;</span>Secondary action has fired now.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
+<span class="tag">&lt;<span class="title">h5</span>&gt;</span>Request attribute set by secondary action = <span class="tag">&lt;/<span class="title">h5</span>&gt;</span>
+<span class="tag">&lt;<span class="title">pre</span>&gt;</span> <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#request.dataFromSecondAction"</span>/&gt;</span><span class="tag">&lt;/<span class="title">pre</span>&gt;</span>
+</pre></figure></code></pre>
+<h3>2.控制标签</h3>
+<p>Struts2中有一系列的标签可以容易的控制页面执行的流程，包括iterator标签和if/else标签等。</p>
+<h4>2.1 iterator标签</h4>
+<p>使用iterator表亲啊可以很容易的便利集合对象。下面是这个标签的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      被遍历的对象
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      status
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      如果被指定，IteratorStatus对象会使用这个属性指定的名字被放在ActionContext中
+    </td>
+  </tr>
+</table>
+
+<p>下面是一个使用示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:iterator</span> <span class="attribute">value</span>=<span class="value">"users"</span> <span class="attribute">status</span>=<span class="value">"itStatus"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">li</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#itStatus.count"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"portfolioName"</span>/&gt;</span>
+    <span class="tag">&lt;/<span class="title">li</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">s:iterator</span>&gt;</span>
+</pre></figure></code></pre>
+<p>上面的代码很直观，在标签内部，每一个对象会轮流被放在ValueStack顶端，我们可以很容易的访问用户属性。注意，iterator标签通过指定status属性，也声明了IteratorStatus对象。你为status属性指定的名字会用来作为关键字从ActionContext中取得遍历状态对象。</p>
+<p><strong>使用IteratorStatus</strong></p>
+<p>有时候我们非常想知道当前发生的循环的状态信息。如果定义了status属性，那么会在ActionContext中提供一个IteratorStatus对象，这个对象可以提供诸如集合大小、当前索引、当前对象的索引是奇数还是偶数的简单信息。下面是IteratorStatus的共有方法：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      方法名
+    </td>
+
+    <td>
+      返回值
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      getCount
+    </td>
+
+    <td>
+      int
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      getIndex
+    </td>
+
+    <td>
+      int
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      isEven
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      isFirst
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      isLast
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      isOdd
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      modulus(int operand)
+    </td>
+
+    <td>
+      boolean
+    </td>
+  </tr>
+</table>
+
+<h4>2.2 if和else标签</h4>
+<p>很多语言都提供了熟悉的if和else控制逻辑，Struts2标签亦是如此。使用这些标签很容易，它们都只有一个属性，即布尔型test:</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      test
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      被求值和测试的布尔表达式
+    </td>
+  </tr>
+</table>
+
+<p>以下是如何使用这个标签的示例：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:if</span> <span class="attribute">test</span>=<span class="value">"user.age &gt; 35"</span>&gt;</span>This user is too old.<span class="tag">&lt;/<span class="title">s:if</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:elseif</span> <span class="attribute">test</span>=<span class="value">"user.age &lt; 35"</span>&gt;</span>This user is too young<span class="tag">&lt;/<span class="title">s:elseif</span>&gt;</span>
+<span class="tag">&lt;<span class="title">s:else</span>&gt;</span>This user is just right<span class="tag">&lt;/<span class="title">s:else</span>&gt;</span>
+</pre></figure></code></pre>
+<h3>3.其他标签</h3>
+<p>这一节将讨论Struts2的inclued标签、URL标签、i18n标签和text标签，最后了解下详细的param标签的使用。这些标签很有用，但是不太容易分类。</p>
+<h4>3.1 inclued标签</h4>
+<p>虽然JSP有自己的包含标签<jsp:include>，但是Struts2提供了一个与Struts2集成的更好、有更多高级特性的include标签。简而言之，这个标签可以执行Servlet API样式的包含。下面是其唯一的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      页面、动作、Servlet以及其他可以被引用的URL的名字
+    </td>
+  </tr>
+</table>
+
+<p>这个标签很简单，无须展示例子了吧。include标签的行为很想JSP的include标签，但是它与框架集成的更好并且提供了对ValueStack(使用%{...}从ValueStack取值)和可扩展参数模型的本地访问(使用<s:param>标签传递查询字符串参数)。</p>
+<h4>3.2 URL标签</h4>
+<p>Struts2提供了URL标签来帮助管理URL，这个标签支持与URL相关的所有操作，从控制参数到Cookie缺失时自动持久化会话。下面是它的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      基础URL，默认为呈现当前页面的URL
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      action
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      生成的URL指向的动作名，使用声明性架构中配置的动作名(不带.action扩展名)
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      var
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      如果指定，这个URL不会被重写，而会存储在ActionContext留待后用
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      includeParams
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      从all、get、none中选择参数，默认值为get
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      includeContext
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      如果为true，那么生成的URL会使用应用程序的Context作为前缀，默认值为true
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      encode
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Boolean
+    </td>
+
+    <td>
+      如果用户浏览器不支持Cookie，会将session ID追加到生成的URL中
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      scheme
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      指定协议，默认使用当前协议(HTTP或HTTPS)
+    </td>
+  </tr>
+</table>
+
+<p>下面是两个示例：</p>
+<pre><code><figure class="highlight"><pre>URL = <span class="xml"><span class="tag">&lt;<span class="title">s:url</span> <span class="attribute">value</span>=<span class="value">"IteratorTag.action"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">'&lt;s:url value="IteratorTag.action" /&gt;'</span>&gt;</span> Click Me <span class="tag">&lt;/<span class="title">a</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>URL标签只是把生成URL输出为字符串，下面是页面输出：</p>
+<pre><code><figure class="highlight"><pre>URL = IteratorTag.action
+<span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">'IteratorTag.action'</span>&gt;</span> Click Me <span class="tag">&lt;/<span class="title">a</span>&gt;</span>
+</pre></figure></code></pre>
+<p>如果我们想指向一个动作，那么应该使用action属性：</p>
+<pre><code><figure class="highlight"><pre>URL = <span class="xml"><span class="tag">&lt;<span class="title">s:url</span> <span class="attribute">action</span>=<span class="value">"IteratorTag"</span> <span class="attribute">var</span>=<span class="value">"myUrl"</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">s:param</span> <span class="attribute">name</span>=<span class="value">"id"</span> <span class="attribute">value</span>=<span class="value">"2"</span>/&gt;</span>
+            <span class="tag">&lt;/<span class="title">s:url</span>&gt;</span>
+<span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">'&lt;s:property value="#myUrl" /&gt;'</span>&gt;</span> Click Me <span class="tag">&lt;/<span class="title">a</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>这样页面输出会是这样：</p>
+<pre><code><figure class="highlight"><pre>URL =
+<span class="xml"><span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">'/manningHelloWorld/chapterSix/IteratorTag.action?id=2'</span>&gt;</span>
+    Click Me
+<span class="tag">&lt;/<span class="title">a</span>&gt;</span></span>
+</pre></figure></code></pre>
+<h4>3.3 i18n和text标签</h4>
+<p>这两个标签被用在国际化功能中，它们使用name属性指定关键字，通过这个关键字取得对应的文本消息。</p>
+<p>下面是text标签支持的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      在ResourceBundle中查找用的关键字
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      var
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      如果找到，文本会使用这个名字保存在ActionContext中
+    </td>
+  </tr>
+</table>
+
+<p>如果你想手动指定应该使用的ResourceBundle，可以使用i18n标签，下面是i18n的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      是
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      ResourceBundle的名字
+    </td>
+  </tr>
+</table>
+
+<p>下面是一个示例，它展示了如何使用i18n标签设置ResourceBundle，以及如何使用text标签从中取出文本消息：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:i18n</span> <span class="attribute">name</span>=<span class="value">"manning.chapterSix.myResourceBundle_tr"</span>&gt;</span>
+    In <span class="tag">&lt;<span class="title">s:text</span> <span class="attribute">name</span>=<span class="value">"language"</span>/&gt;</span>,
+    <span class="tag">&lt;<span class="title">s:text</span> <span class="attribute">name</span>=<span class="value">"girl"</span> <span class="attribute">var</span>=<span class="value">"foreignWord"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">s:i18n</span>&gt;</span>
+"<span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"#foreignWord"</span>/&gt;</span>" means girl.
+</pre></figure></code></pre>
+<h4>3.4 param标签</h4>
+<p>param标签什么也不做，但它是最重要的标签之一。它不仅在上述标签中起重要作用，而且在许多UI组件标签中也起重要作用。下面是它的属性：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      属性
+    </td>
+
+    <td>
+      是否必须
+    </td>
+
+    <td>
+      类型
+    </td>
+
+    <td>
+      描述
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      name
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      String
+    </td>
+
+    <td>
+      参数名
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      value
+    </td>
+
+    <td>
+      否
+    </td>
+
+    <td>
+      Object
+    </td>
+
+    <td>
+      参数值
+    </td>
+  </tr>
+</table>
+
+<p>在之前的例子中已经展示了param标签的作用，包括作为一种自定义的工具对象传递参数的方法。只要有了这个整体思路，剩下的就是细读标签API看看哪个标签可以接受参数。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-03-13T05:56:26.000Z"><a href="/2013/03/13/struts-2-data-transfer-and-type-conversion-mechanism-2/">Mar 13 2013</a></time>
     
     
@@ -569,150 +1618,6 @@ nonExistingProperty on the ValueStack = <span class="tag">&lt;<span class="title
 <span class="tag">&lt;/<span class="title">package</span>&gt;</span>
 </pre></figure></code></pre>
 <p>首先，我们必须使用一个interceptors元素来包含所有的interceptor和interceptor-stack的声明。我们必须使用一个interceptor元素将Java类映射到一个逻辑名(yourInterceptor)。其次，我们构建了一个新栈，这个栈使用defaultStack并且把新拦截器追加到它的上面(当然根据业务的不同，也可以放在下面)。最后，我们把myStack声明为这个包的默认拦截器栈。以上这样做的好处是拦截器与动作代码完全分离，并且实现了可重用。</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-03-10T05:48:55.000Z"><a href="/2013/03/10/struts-2-interceptor-1/">Mar 10 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/03/10/struts-2-interceptor-1/">Struts 2 拦截器(一)</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p>从开发人员日常工作的角度来看，动作组件可能是框架的核心和灵魂，然而在后台工作的默默无闻的拦截器却可以说是真正的英雄——拦截器负责完成了框架的大部分处理工作。</p>
-<h3>1.拦截请求的意义</h3>
-<h4>1.1 清理MVC</h4>
-<p>拦截器消除了动作组件中的横切任务。日志记录功能是典型的横切任务，它不是某一个动作所特有的，而是横向关联所有动作。作为软件工程师，我们会把这个任务提到更高的层面，让它处在任何需要日志记录的请求上(或者说之前)，达到将MVC关注点分离的目的。</p>
-<p>拦截器承担的另一些任务被称为预处理或者后加工。预处理任务的一个很好的示例就是常见的数据转移，它通过params拦截器实现。</p>
-<p>在Struts2中没有一个动作被单独调用，动作调用是一个分层的过程，总是包含一系列的拦截器在动作执行之前或者之后执行。框架不直接调用动作的execute()方法，而是创建一个叫做ActionInvocation的对象，它封装了动作的一系列被配置的动作执行之前之后触发的拦截器。下图展示了ActionInvocation类封装的完整的动作执行过程。</p>
-<p><img src="http://meiseku.com/moodpo/2013/03/3358556227.png" alt="ActionInvocation 流程.png" title="ActionInvocation 流程.png"></p>
-<p>拦截器的强大功能之一是改变调用工作流。有时候某个拦截器会决定动作不应该执行，此时，拦截器可以自己返回一个控制字符串，从而终止工作流。以workflow拦截器为例，这个拦截器做两件事情。首先，如果动作实现了Validateable接口，那么调用动作的validate()方法。其次，检查动作上是否出现了错误信息。如果出现了错误信息，它返回控制字符串并终止后续执行。</p>
-<h4>1.2 拦截器的好处</h4>
-<p>使用拦截器分层让软件更整洁，并增加了可读性和可测试性，也提高了灵活性。从这种灵活性中得到的两个主要益处是可重用和可配置。</p>
-<p>每一个人都想重用软件，想达到可重用很简单，只需将想重用的逻辑隔离到清晰分割的单元。把这些逻辑隔离到拦截器之后，我们可以把它们放在任何地方，应用到所有动作类上。例如我们通常通过继承defaultstack获得的代码重用。</p>
-<p>除代码重用之外，拦截器分层的能力还给我们带来了另外一些非常重要的好处。我们能够很容易的配置它们的顺序和数量。</p>
-<h3>2.拦截器的工作原理</h3>
-<h4>2.1 总指挥 ActionInvocation</h4>
-<p>ActionInvocation封装了与特定动作执行相关的所有处理细节，所以知道ActionInvocation做什么就等于知道Struts2如何处理请求。当框架收到一个请求时，它首先必须决定这个URL映射到哪个动作，这个动作的一个实例会被加入到一个新创建的ActionInvocation示例中。接着，框架咨询声明性架构(通过xml或者Java注解)，以发现哪些拦截器应该触发，指向这些拦截器的引用将被加入到ActionInvocation中。</p>
-<h4>2.2 如何触发拦截器</h4>
-<p>框架创建了ActionInvocation，并填充了需要的所有对象和信息，通过调用ActionInvocation公开的invoke()方法开始动作的执行，此时拦截器栈中的第一个拦截器开始调用过程。ActionInvation负责跟踪执行过程达到的状态，并把控制交给栈中合适的拦截器。ActionInvation通过调用拦截器的intercept()方法将控制转交给拦截器。后续拦截器继续执行，最终执行动作。这些都是通过递归调用ActionInvocation的invoke()方法实现。</p>
-<ol>
-<li>调用ActionInvocation对象的invoke()方法</li>
-<li>开始调用第一个拦截器</li>
-<li>调用拦截器的intercept()方法，并把ActionInvocation实例作为参数传递</li>
-<li>拦截器调用传递的参数即ActionInvocation实例的invoke()方法</li>
-<li>开始调用第二个拦截器
-......
-N. 栈中没有拦截器开始触发动作</li>
-</ol>
-<p>在此过程中，ActionInvocation在内部管理处理状态，它总是能知道现在处在栈的哪里。</p>
-<p>拦截器有一个三阶段的、有条件的执行周期，如下所述：</p>
-<ol>
-<li>做一些预处理</li>
-<li>通过调用invoke()方法将控制转移给后续的拦截器，最后直到动作；或者通过返回一个控制字符串终端执行</li>
-<li>做一些后加工</li>
-</ol>
-<h3>3.Struts2 内置的拦截器</h3>
-<p>Struts2框架自带了一系列功能强大的内置拦截器，它们提供了你想从Web框架得到的大部分功能。除了defaultStack这个拦截器栈，框架还自带了很多拦截器和已经预先配置好的拦截器栈。</p>
-<h4>3.1工具拦截器</h4>
-<p>这些拦截器提供了辅助开发、调优及解决问题的简单工具。</p>
-<h5>3.1.1 timer拦截器</h5>
-<p>这个简单的拦截器只记录执行花费的时间，在拦截器栈中的位置决定了它实际测量什么时间。</p>
-<h5>3.1.2 logger拦截器</h5>
-<p>这个拦截器提供了一个简单的日志记录机制，记录了在预处理事的进入声明以及在后加工时的退出声明。</p>
-<h4>3.2 数据转移拦截器</h4>
-<h5>3.2.1 params拦截器(defaultStack)</h5>
-<p>这个熟悉的拦截器将请求参数转移到通过ValueStack公开的属性(包括ModelDriven动作通过域模型对象提供的属性)上。params拦截器不知道这些数据最终会去哪里，它只是把数据转移到在ValueStack上发现的第一个匹配的属相上。</p>
-<p>动作总是在请求处理周期开始时被放到ValueStack上。ModelDriven动作则被modelDriven拦截器放在ValueStack上。</p>
-<h5>3.2.2 static-params拦截器(defaultStack)</h5>
-<p>这个拦截器也将参数转移到ValueStack公开的属性上，不同的是参数来源于声明性框架(XML)的动作元素中。</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"Upload"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.action.Upload"</span>&gt;</span>
-    <span class="comment">&lt;!-- 上传路径 --&gt;</span>
-    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"storePath"</span>&gt;</span>E:\temp\<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">result</span>&gt;</span>/Uploaded.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">result</span> <span class="attribute">name</span>=<span class="value">"input"</span>&gt;</span>/UploadForm.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">action</span>&gt;</span>
-</pre></figure></code></pre>
-<p>注意一点，defaultStack中static-params拦截器在params拦截器之前触发，这意味着请求参数会覆盖XML中param元素的值。</p>
-<h5>3.2.3 autowiring拦截器</h5>
-<p>这个拦截器为使用Spring管理应用程序资源提供了一个集成点。复习Spring的时候再说吧。</p>
-<h5>3.2.4 servlet-config拦截器(defaultStack)</h5>
-<p>这个拦截器将来源于Servlet API的各种对象注入到动作中，动作只需实现必要的接口即可。以下的接口可以用来取得与Servlet环境相关的不同对象。</p>
-<pre><code><figure class="highlight"><pre>ServletContextAware设置ServletContext
-ServletRequestAware设置HttpServletRequest
-ServletResponseAware设置HttpServletResponse
-ParameterAware设置<span class="keyword">Map</span>类型的请求参数
-RequestAware设置<span class="keyword">Map</span>类型的请求属性
-SessionAware设置<span class="keyword">Map</span>类型的会话属性
-ApplicationAware设置<span class="keyword">Map</span>类型的应用程序领域属性
-PrincipalAware设置Principal对象(安全相关)
-</pre></figure></code></pre>
-<p>每一个接口包含一个方法——当前资源的设置方法。最佳实践建议避免使用Servlet API对象，因为他们会将动作代码绑定到Servlet API.</p>
-<h5>3.2.5 fileUpload拦截器(defaultStack)</h5>
-<p>fileUpload拦截器将文件和元数据从多重请求转换为常规的请求参数，以便能够将它们像普通参数一样设置到动作上。</p>
-<h4>3.3 工作流拦截器</h4>
-<p>工作流拦截器提供改变请求处理的工作流的机会，这里的工作流是指贯穿拦截器、动作、结果，最后又回到拦截器的处理路径。工作流拦截器检查处理的状态，有条件的干涉、改变正常路径。</p>
-<h5>3.3.1 workflow拦截器(defaultStack)</h5>
-<p>确实有一个拦截器就叫workflow。它与动作协作，提供数据验证以及验证错误发生时改变后续工作流的功能。workflow拦截器还引入了另一个重要的拦截器概念——使用params调整拦截器的执行。workflow拦截器可以使用以下几个参数：</p>
-<pre><code><figure class="highlight"><pre><span class="function"><span class="title">alwaysInvokeValidate</span><span class="params">(true或者false,默认是true，意味着<span class="function_name">validate</span>()方法会被调用)</span>
-<span class="title">inputResultName</span><span class="params">(验证失败时选择的结果的名字，默认值是<span class="variable">Action</span>.<span class="variable">INPUT</span>)</span>
-<span class="title">excludeMethods</span><span class="params">(workflow拦截器不应执行的方法名，这样可以略过一个特定入口方法的验证检查)</span>
-</pre></figure></code></pre>
-<p>这些内容在defaultStack中进行了配置，如下来源于struts-default.xml的代码片段：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
-    ......
-    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
-        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
-    <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
-</pre></figure></code></pre>
-<p>这样配置将排除input,back,cancel,browse方法上的validate()验证。</p>
-<h5>3.3.2 validation拦截器(defaultStack)</h5>
-<p>validation拦截器是Struts2验证框架的一部分，提供了声明性的方式验证你的数据。不用编写验证代码，验证框架让你使用XML或者Java注解描述数据的验证规则。</p>
-<p>注意：validation拦截器在workflow拦截器之前触发。</p>
-<h5>3.3.3 prepare拦截器(defaultStack)</h5>
-<p>prepare拦截器提供了一种向动作追加额外工作流处理的通用入口点。当prepare拦截器执行时，它在动作上查找prepare()方法(首先查找是否实现了Preparable接口)，它允许执行任何类型的预处理。</p>
-<p>prepare拦截器也很灵活，例如它可以在一个动作上为不同的执行方法定义特别的预备方法。以下是预备方法的命名约定：</p>
-<pre><code><figure class="highlight"><pre>动作方法名    预处理方法<span class="number">1</span>                  预处理方法<span class="number">2</span> 
-<span class="function"><span class="title">input</span><span class="params">()</span>        <span class="title">prepareInput</span><span class="params">()</span>          <span class="title">prepareDoInput</span><span class="params">()</span> 
-<span class="title">update</span><span class="params">()</span>     <span class="title">prepareUpdate</span><span class="params">()</span>       <span class="title">prepareDoUpdate</span><span class="params">()</span>
-</pre></figure></code></pre>
-<h5>3.3.4 modelDriven(defaultStack)</h5>
-<p>modelDriven拦截器通过调用getModel()方法改变执行的工作流，并将模型对象放在ValueStack上从请求接受参数。在不使用这个拦截器的情况下，参数会被params拦截器直接转移到动作对象上。</p>
-<h4>3.4 其他拦截器</h4>
-<h5>3.4.1 exception拦截器(defaultStack)</h5>
-<p>exception拦截器在defaultStack中出现在第一位，也应该在任何你创建的自定义栈中出现在第一位。exception拦截器捕获异常，并根据类型将它们映射到用户自定义的错误页面。它的位置在栈的顶端，这样可以保证它能够捕获动作调用所有阶段可能生成的所有异常，而在后加工阶段又会最后一个触发，因此能够捕获所有的异常。当捕获异常时，exception拦截器会创建一个ExceptionHolder对象，并将其放在ValueStack的最顶端，ExceptionHolder是一个异常的包装器，它把跟踪栈和异常作为JavaBean属性公开出来，可以在错误页面中通过标签访问这些属性。</p>
-<h5>3.4.2 token拦截器和token-session拦截器</h5>
-<p>token和token-session拦截器可以作为避免表单重复提交系统的一部分。token拦截器用来向被拦截器检查的请求传入一个令牌，如果唯一的令牌再次来到拦截器，那么这个请求被视为重复的。</p>
-<h5>3.4.3 scoped-modelDriven拦截器(defaultStack)</h5>
-<p>这个拦截器为动作的模型对象提供跨请求的向导式的持久性，它增加了modelDriven拦截器的功能，允许你将模型对象存储到绘画作用域中。</p>
-<h5>3.4.4 execAndWait拦截器</h5>
-<p>当一个请求需要执行很长时间时，最好能给用户一些反馈，execAndWait拦截器可帮助用户避免急躁。</p>
-<h4>3.5 内置的拦截器栈</h4>
-<p>大部分可能会用到的其他内置拦截器栈都是defaultStack的简化版本，这些较小的栈是为了成为模块化的构建单元，用来构建更大的栈。</p>
-<p>一般情况下推荐使用defaultStack，在某些情况下，多余的拦截器并不会那么影响性能，况且混乱的组织拦截器可能会迅速增加调试的复杂度，因此还是使用内置的最容易的途径——defaultStack吧。</p>
-<blockquote>
-<p>Struts2不仅非常灵活，而且它也代表着更多的开箱即用。</p>
-</blockquote>
 
     
   </div>
