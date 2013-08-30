@@ -60,6 +60,38 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-08-30T13:24:26.000Z"><a href="/2013/08/30/the-good-parts-of-javascript/">Aug 30 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/08/30/the-good-parts-of-javascript/">JavaScript 规范编程：前言</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p><img src="http://meiseku.com/moodpo/2013/08/04.png" alt="JavaScript 规范编程"></p>
+<p>我一直努力去写高可维护性、高扩展性的JavaScript程序，但结果往往是令人沮丧的。从自己修改程序以及其他开发人员维护那些代码时的反馈来看，离高可维护性和高可扩展性还很远。JavaScript是一门令人惊讶的强大语言，它不按常规出牌，往往在其它编程语言那里获得的经验在它这里往往是走不通甚至是相反的。但是它又是一门轻量级的语言，在对这门语言没有太多了解，甚至对编程都没有太多了解的情况下，你也能用它来完成工作。它是一门拥有极强表达能力的语言。当你知道要做什么时，它甚至能表现得更好。然而，编程毕竟是很困难的事情，绝不应该在对此一无所知时便开始你的工作。</p>
+<p>“JavaScript 规范编程” 的大部分内容来自Douglas Crockford所著的《JavaScript 语言精粹》，此书剥开了JavaScript玷污的外衣，抽离出一个具有更好可靠性、可读性和可维护性的JavaScript子集，让你看到一门优雅的、轻量级的和非常富有表现力的语言。这样精心抽离的子集不拿来作为之后开发的规范，岂不是暴殄天物。故此，我以“JavaScript 规范编程”将写一系列文章，也可以说是这本书的读书笔记吧。 </p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-08-24T12:16:12.000Z"><a href="/2013/08/24/ren-jian-bu-chai/">Aug 24 2013</a></time>
     
     
@@ -357,40 +389,6 @@ console<span class="preprocessor">.log</span>(ticker2<span class="preprocessor">
 <p>所以，为了维持对象的封装性，我的建议是，将对数据的操作解耦为尽可能小的单元函数，在构造函数中定义为依赖于实例的（很多地方也称之为“私有”的），而将复杂的逻辑实现在原型上（即“公有”的）。</p>
 <p>最后再说一些关于继承的话。实际上，当我们在原型上定义函数时，我们就已经用到了继承！ JavaScript 中的继承比 C++ 中的更……呃……简单，或者说简陋。在 C++ 中，我们可能会定义一个 animal 类表示动物，然后再定义 bird 类继承 animal 类表示鸟类，但我想讨论的不是这样的继承（虽然这样的继承在 JavaScript 中也可以实现）；我想讨论的继承在 C++ 中将是，定义一个 animal 类，然后实例化了一个 myAnimal 对象。对，这在 C++ 里就是实例化，但在 JavaScript 中是作为继承来对待的。</p>
 <p>JavaScript 并不支持类，浏览器只管当前有哪些对象，而不会额外费心思地去管，这些对象是什么 class 的，应该具有怎样的结构。在我们的例子中， TICKER() 是个函数对象，我们可以对其赋值（TICKER=1），将其删掉（TICKER=undefined），但是正因为当前有 ticker1 和 ticker2 两个对象是通过 new 运算符调用它而来的， TICKER() 就充当了构造函数的作用，而 TICKER.prototype 对象，也就充当了类的作用。</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-06-02T08:25:00.000Z"><a href="/2013/06/02/june-youth-future/">Jun 2 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/06/02/june-youth-future/">六月，青春，未来</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p><img src="http://meiseku.com/moodpo/2013/06/001.jpg" alt="六月"></p>
-<p>六一儿童节，网络上到处是“致我们终将逝去的童年”，K酷和北辰都在搞活动。今天我也趁六一活动期间在淘宝上买了几件小孩东西，无非就是各种小衣服，还有奶瓶，隔尿垫等。时间真是快，我无数遍在心里重复。</p>
-<p>季节不停的更迭，我的人生从一个阶段进入另一个阶段，而我还是不知道自己的未来。但我从未放弃努力放弃抗争，也许如大酒神所说，即使我们终究默默无名，但我们的一生终将是抗争的一生。这也许就是最好的未来。</p>
-<p>前几天李辉同学还问我程序的问题，我就想起约定的西藏青海之行。不知道到时候我能否完成约定，也实现自己的梦想，这种不确定，带来的是无尽的惆怅，计划总不如变化。晚上的时候在优酷看到一个视频，男主因一条描述云南大理风光的微博而只身前往了大理，并在那里巧遇爱情，甚至到最后也留了下来。对此我只能说这只是个故事，只发生在电影里的故事。现实中是很少有人放弃大城市的生活而到美丽而遥远的村落居住的。</p>
-<p>大学的时候，我也许是我们班逃课最多的人吧。逃课去香山，去婚纱摄影基地，去凤凰公园，去凤栖湾，去天外村，甚至去龙氏山；而当看那个视频的时候，我也在问自己“我多久没看过风景了？”。是啊，我已多久没有看过风景了？来北京不知不觉已两年，活动范围一直在五公里内，呵呵。</p>
 
     
   </div>
