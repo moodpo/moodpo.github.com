@@ -60,6 +60,114 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2012-05-01T07:57:24.000Z"><a href="/2012/05/01/ubuntu-1204-ati-driver/">May 1 2012</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2012/05/01/ubuntu-1204-ati-driver/">Ubuntu 12.04 ATI卡驱动安装</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <h3>1.安装Ubuntu提供的 fglrx/Catalyst(催化剂)</h3>
+<p>在Ubuntu 12.04中将会安装催化剂Catalyst 8.960版本，这可能不是最新的版本，但是这样做更安全和稳定，它相当于AMD Catalyst 12-4。</p>
+<h3>2.手动安装AMD催化剂(推荐)</h3>
+<p>注意：在32位Ubuntu12.04上手动安装AMD提供的催化剂12-4版本将会需要一个补丁，你可以在<a href="http://ubuntuforums.org/showthread.php?t=1969827找到它。">http://ubuntuforums.org/showthread.php?t=1969827找到它。</a></p>
+<h4>2.1 开始之前</h4>
+<p>安装依赖的包</p>
+<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> apt-<span class="keyword">get</span> install build-essential cdbs dh-make dkms execstack dh-modaliases fakeroot
+</pre></figure></code></pre>
+<p>如果时64位的系统，请执行以下命令</p>
+<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> apt-<span class="keyword">get</span> install ia32-libs-multiarch:i386 lib32gcc1 libc6-i386
+cd /usr;</span> su<span class="operator"><span class="keyword">do</span> ln -svT lib /usr/lib64
+</pre></figure></code></pre>
+<p>这将会安装32位的编译器，并在库引用间建立软链接</p>
+<h4>2.2 下载催化剂12-4</h4>
+<pre><code><figure class="highlight"><pre>cd ~/<span class="comment">; mkdir catalyst12.4; cd catalyst12.4/</span>
+wget http://www2<span class="preprocessor">.ati</span><span class="preprocessor">.com</span>/drivers/linux/amd-driver-installer-<span class="number">12</span>-<span class="number">4</span>-x86<span class="preprocessor">.x</span>86_64<span class="preprocessor">.run</span>
+chmod +<span class="built_in">x</span> amd-driver-installer-<span class="number">12</span>-<span class="number">4</span>-x86<span class="preprocessor">.x</span>86_64<span class="preprocessor">.run</span>
+</pre></figure></code></pre>
+<h4>2.3 创建.deb文件</h4>
+<pre><code><figure class="highlight"><pre><span class="comment">sh</span> <span class="string">.</span><span class="comment">/amd</span>-<span class="comment">driver</span>-<span class="comment">installer</span>-<span class="comment">12</span>-<span class="comment">4</span>-<span class="comment">x86</span>.<span class="comment">x86_64</span>.<span class="comment">run</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">buildpkg</span> <span class="comment">Ubuntu/precise
+</pre></figure></code></pre>
+<p>创建时间可能比较慢且终端没有输出，请耐心等待...</p>
+<h4>2.4 安装.deb文件</h4>
+<pre><code><figure class="highlight"><pre><span class="title">sudo</span> dpkg -i fglrx<span class="regexp">*.deb</span>
+</pre></figure></code></pre>
+<h4>2.5 配置/etc/X11/xorg.conf文件</h4>
+<p>即使安装了驱动系统仍然无法识别你的显卡，还需要配置配置文件，系统将依靠配置文件来驱动显卡。 执行下面的命令初始化amd的配置文件</p>
+<pre><code><figure class="highlight"><pre><span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">initial</span> <span class="literal">-</span><span class="comment">f
+</pre></figure></code></pre>
+<p>打开/etc/X11/xorg.conf文件，找到以下内容</p>
+<pre><code><figure class="highlight"><pre><span class="title">Section</span> <span class="string">"Device"</span>
+Identifier <span class="string">"ATI radeon 6870"</span>
+Driver <span class="string">"fglrx"</span>
+EndSection
+</pre></figure></code></pre>
+<p>你的文件内容可能与以上内容不同，你需要知道自己显卡的型号将Identifier引号内的名称修改为你显卡的名称，保存。 如果你的GPU是双核的，请执行以下命令；但是如果你是双显卡就不需要执行了</p>
+<pre><code><figure class="highlight"><pre><span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">initial</span> <span class="literal">-</span><span class="comment">f</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">adapter=all
+</pre></figure></code></pre>
+<p>如果你时多屏的，请执行下面的命令</p>
+<pre><code><figure class="highlight"><pre><span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">initial</span> <span class="literal">-</span><span class="comment">f</span>
+<span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">set</span>-<span class="comment">pcs</span>-<span class="comment">str="DDX</span>,<span class="comment">EnableRandR12</span>,<span class="comment">FALSE"
+</pre></figure></code></pre>
+<h4>2.6 强制使用配置文件的设置</h4>
+<pre><code><figure class="highlight"><pre><span class="comment">sudo</span> <span class="comment">amdconfig</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">input=/etc/X11/xorg</span>.<span class="comment">conf</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">tls=1
+</pre></figure></code></pre>
+<h4>2.7 测试一下刚才的配置是否成功</h4>
+<pre><code><figure class="highlight"><pre><span class="attribute">fglrxinfo
+</pre></figure></code></pre>
+<p>你应该会看到以下类似内容</p>
+<pre><code><figure class="highlight"><pre><span class="method">display:</span> :<span class="number">0</span> <span class="method">screen:</span> <span class="number">0</span>
+<span class="class">OpenGL</span> vendor <span class="method">string:</span> <span class="class">Advanced</span> <span class="class">Micro</span> <span class="class">Devices</span>, <span class="class">Inc</span>.
+<span class="class">OpenGL</span> renderer <span class="method">string:</span> <span class="class">ATI</span> <span class="class">Mobility</span> <span class="class">Radeon</span> <span class="class">HD</span> <span class="number">4650</span>
+<span class="class">OpenGL</span> version <span class="method">string:</span> <span class="number">3.3</span><span class="number">.11631</span> <span class="class">Compatibility</span> <span class="class">Profile</span> <span class="class">Context</span>
+</pre></figure></code></pre>
+<p>再检测下显卡的帧率</p>
+<pre><code><figure class="highlight"><pre><span class="attribute">fgl_glxgears
+</pre></figure></code></pre>
+<p><img src="http://meiseku.com/moodpo/2012/02/1965599216.png" alt="fg1-300x157.png" title="fg1-300x157.png"></p>
+<h4>2.8 启用显卡的硬解</h4>
+<p>显卡驱动了，GPU当然不能浪费，看高清硬接才是王道</p>
+<p>这里我使用的是xvba-va驱动</p>
+<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> apt-<span class="keyword">get</span> install xvba-va-driver libva-glx1 libva-x11-<span class="number">1</span> vainfo
+</pre></figure></code></pre>
+<p>重启电脑，执行</p>
+<pre><code><figure class="highlight"><pre><span class="attribute">vainfo
+</pre></figure></code></pre>
+<p>你将会看到以下内容</p>
+<pre><code><figure class="highlight"><pre><span class="label">libva:</span> VA-API version <span class="number">0.32</span><span class="number">.0</span>
+<span class="label">Xlib:</span> extension <span class="string">"XFree86-DRI"</span> missing on display <span class="string">":0"</span>.
+<span class="label">libva:</span> va_getDriverName() returns <span class="number">0</span>
+<span class="label">libva:</span> Trying to open /usr/lib/x86_64-linux-gnu/dri/fglrx_drv_video<span class="preprocessor">.so</span>
+<span class="label">libva:</span> va_openDriver() returns <span class="number">0</span>
+<span class="label">vainfo:</span> VA-API version: <span class="number">0.32</span> (libva <span class="number">1.0</span><span class="number">.15</span>)
+<span class="label">vainfo:</span> Driver version: Splitted-Desktop Systems XvBA backend for VA-API - <span class="number">0.7</span><span class="number">.8</span>
+<span class="label">vainfo:</span> Supported profile <span class="keyword">and</span> entrypoints
+VAProfileH264High : VAEntrypointVLD
+VAProfileVC1Advanced : VAEntrypointVLD
+</pre></figure></code></pre>
+<p>更多内容请移步<a href="http://wiki.cchtml.com/index.php/Ubuntu_Precise_Installation_Guide">这里</a>！</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2012-02-03T02:37:34.000Z"><a href="/2012/02/03/ubuntu-1204-fonts-config/">Feb 3 2012</a></time>
     
     
@@ -284,40 +392,6 @@
 <p>终于她出来了，穿了校服，梳着小辫，起初我没看到，只是她左右的寻找，让我辨别出来。我走上前说：“你是……吗？”声音不高，但我很确定她能听见，那一瞬我内心甚至都要去感谢空气了，感谢它做了介质把我的声音传递过去，她没有回答，只是像刚才那女生那样笑了，但那是确定的笑，而刚才那笑刚应该是嘲笑吧……</p>
 <p>人生有许多无法想象的事情，无聊和寂寞并肩而行，当你感兴趣的事情中有一样受到了限制，所有的情绪都会投入到这个受限制的兴趣上，这是叛逆者的通性。大学说白了，就是思想最分散的时期，当你走上社会也就走向思想中的某一点，而别的点都在固化或淡化。</p>
 <p>我说：咱们走走吧！她双手掏在口袋里点头默许，这时的天空已然变黑，校园中夜色渐浓，想不到她走起路来这么快，我只得跟在其后了，过了行政楼，过了同力桥走到了体育馆那条路……</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2010-05-06T08:22:01.000Z"><a href="/2010/05/06/about-ubuntu-and-win7-uuid/">May 6 2010</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2010/05/06/about-ubuntu-and-win7-uuid/">关于ubuntu和win7 uuid</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p>今天重装win7之后，grub菜单没了，这是意料之中的事,不过用livecd把菜单弄回来后，进入选择菜单后出现开机画面后就停在那了，不能进ubuntu,然后我又试了下win7也进不去了，根据提示信息是 说<code>can&#39;t find dev</code>了，找不到设备了，我想了一下，重装win7之后都是什么发生了变化，无非就是硬盘分区了，而且也就只是重装win7的那个分区，影响到别的分区的可能性不大，于是我就到网上找ubuntu的硬盘分区管理方法，才知道uuid的事。 </p>
-<p>我在ubuntu上为了方便把所有的分区设置成了自动挂载，包括重装系统的这个分区， 用livecd进了系统，用命令 </p>
-<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> ls -l /dev/disk/<span class="keyword">by</span>-uuid
-</pre></figure></code></pre>
-<p>查看现在实际的各个分区的uuid 然后在打开<code>/etc/fstab</code>文件看里面的内容是否对应，果然win7所在的uuid不一样了，把它改回来后，然后在把<code>grub.cfg</code>也改了一下，重启之后就全好了，其实如果不设置自动挂载的话，这事就不会发生了，不过话又说回来了，因为一个分区无法自动挂载就进不去系统，ubuntu还是很脆弱的，还有待改进，呵。</p>
 
     
   </div>

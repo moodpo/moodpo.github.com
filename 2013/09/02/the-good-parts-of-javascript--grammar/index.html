@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>JavaScript 规范编程笔记：语法 | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="JavaScript 规范编程笔记：语法"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-43415414-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-09-02T11:47:11.000Z"><a href="/2013/09/02/the-good-parts-of-javascript--grammar/">Sep 2 2013</a></time>
+    
+    
+  
+    <h1 class="title">JavaScript 规范编程笔记：语法</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p><img src="http://meiseku.com/moodpo/2013/09/20130901.jpg" alt="JavaScript Grammar"></p>
+<p>本节将简要介绍JavaScript的语法，并简要地概述其语言结构。</p>
+<h3>1. 注释</h3>
+<p>JavaScript提供了两种注释形式，一种是用<code>/* */</code>包围的块状注释，另一种是以<code>//</code>为开头的行注释。注释应该被充分用来提高程序的可读性。必须注意的是，注释一定要精确的描述代码。没有用的注释比没有注释更糟糕。</p>
+<p>其中，块注释对于被注释的代码块来说是不安全的额。例如下面的代码将导致一个语法错误：</p>
+<pre><code><figure class="highlight"><pre><span class="comment">/*
+    var rm_a = /a*/</span><span class="preprocessor">.match</span>(s)<span class="comment">;</span>
+*/
+</pre></figure></code></pre>
+<p>因此应避免使用<code>/* */</code>注释，而用<code>//</code>注释代替它。</p>
+<h3>2. 标识符</h3>
+<p>JavaScript保留字列表：</p>
+<table><tbody><tr valign="top"><td>break</td><td>delete</td><td>function</td><td>return</td><td>typeof</td></tr><tr valign="top"><td>case</td><td>do</td><td>if</td><td>switch</td><td>var</td></tr><tr valign="top"><td>catch</td><td>else</td><td>in</td><td>this</td><td>void</td></tr><tr valign="top"><td>continue</td><td>false</td><td>instanceof</td><td>throw</td><td>while</td></tr><tr valign="top"><td>debugger</td><td>finally</td><td>new</td><td>true</td><td>with</td></tr><tr valign="top"><td>default</td><td>for</td><td>null</td><td>try</td><td>&nbsp;</td></tr></tbody></table>
+
+<p>JavaScript未来保留字（这些单词虽然现在没有用到JavaScript中，但将来有可能用到）：</p>
+<table><tbody><tr valign="top"><td>abstract</td><td>double</td><td>goto</td><td>native</td><td>static</td></tr><tr valign="top"><td>boolean</td><td>enum</td><td>implements</td><td>package</td><td>super</td></tr><tr valign="top"><td>byte</td><td>export</td><td>import</td><td>private</td><td>synchronized</td></tr><tr valign="top"><td>char</td><td>extends</td><td>int</td><td>protected</td><td>throws</td></tr><tr valign="top"><td>class</td><td>final</td><td>interface</td><td>public</td><td>transient</td></tr><tr valign="top"><td>const</td><td>float</td><td>long</td><td>short</td><td>volatile</td></tr></tbody></table>
+
+<p>注意，其中不包括<code>undefined</code>、<code>NaN</code>和<code>Infinity</code>等这些本应被保留的字。</p>
+<h3>3. 数字</h3>
+<p>JavaScript中只有一个单一的数字类型，它在内部被表示为64位的浮点数，和Java的<code>double</code>一样。因此<code>1</code>和<code>1.0</code>是相同的值。</p>
+<p>指数表示法，如<code>100</code>可表示为<code>1e2</code>。负数可以用前缀运算符<code>-</code>来构成。值<code>NaN</code>是一个数值，它表示一个不能产生正常结果的运算结果。<code>NaN</code>不等于任何值，包括它自己。你可以使用函数<code>isNaN(number)</code>检测<code>NaN</code>。值<code>Infinity</code>表示所有大于1.79769313486231570e+308的值。JavaScript提供了一个对象<code>Math</code>,它包括一套作用于数字的方法。</p>
+<h3>4. 字符串</h3>
+<p>字符串字面量使用单引号或双引号包围，它可能包含0个或多个字符。\（反斜杠）是转义符。JavaScript在被创建的时候，Unicode是一个16位的字符集，因此JavaScript中德所有字符都是16位的。</p>
+<p>字符串有一个<code>length</code>属性，例如<code>&quot;seven&quot;.length</code>是5。字符串使用<code>+</code>运算符进行连接，此外JavaScript还为字符串提供了一些方法。</p>
+<h3>5. 语句</h3>
+<p>一个编译单元包含一组可执行的语句。在web浏览器中，每个<code>&lt;script&gt;</code>标签都提供一个被编译且立即执行的编译单元。因为缺少链接器，JavaScript把它们一起抛入一个公共的全局名字空间中。</p>
+<p>代码块是包在一对花括号的一组语句。不像许多其他的语言，JavaScript中德代码块不会创建一个新的作用域，因此变量应该被定义在函数的顶端，而不是代码块中。</p>
+<p>当<code>var</code>语句被用在函数的内部时，它定义了这个函数的私有变量。</p>
+<p>下面的值被当作假(false):</p>
+<ul>
+<li>false</li>
+<li>null</li>
+<li>undefined</li>
+<li>空字符串 &#39;&#39;</li>
+<li>数字 0</li>
+<li>数字 NaN</li>
+</ul>
+<p>其他所有的值都被当作真，包括<code>true</code>、字符串<code>&quot;false&quot;</code>，以及所有的对象。</p>
+<p>for in 语句会枚举一个对象的所有属性名（或键名），在每次循环中，对象的另一个属性名字符串被赋值给for和in之间的变量。通常你需要通过检测<code>object.hasOwnProperty(variable)</code>来确定这个属性名就是该对象的成员，还是从其原型链里找到的。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">for</span>(myvar <span class="keyword">in</span> obj){
+    <span class="keyword">if</span>(obj.hasOwnProperty(myvar)){
+        <span class="keyword">...</span>
+    }
+}
+</pre></figure></code></pre>
+<h3>6. 表达式</h3>
+<p>最简单的表达式是字面量值（比如字符串或数字）、变量、内置的值（true、false、null、undefined、NaN和Infinity）、以new前导的调用表达式、以delete前导的属性存取表达式、包在圆括号中德表达式、以一个前缀运算符作为前导的表达式，或者表达式后面跟着：</p>
+<ul>
+<li>一个插入运算符与另一个表达式；</li>
+<li>三元运算符?后面跟着另一个表达式，然后接一个:，再然后接第三个表达式；</li>
+<li>一个函数调用；</li>
+<li>一个属性存取表达式。</li>
+</ul>
+<p>函数调用引发函数的执行，函数调用运算符是跟随在函数名后面的一对圆括号。圆括号中可能包含将会传递给这个函数的参数。一个属性存取表达式用于指定一个对象或数组的属性或元素。</p>
+<h3>7. 字面量</h3>
+<p>对象字面量是一种方便指定新对象的表示法。属性名可以是标示符或字符串。这些名字被当作字面量名而不是变量名来对待，所以对象的属性名在编译时才能知道。属性的值就是表达式。</p>
+<h3>8. 函数</h3>
+<p>函数字面量定义了函数值，它可以有一个可选的名字，用于递归的调用自己。它可以指定一个参数列表，这些参数将作为变量由调用时传递的实际参数（arguments）初始化。函数的主体包括变量定义的语句。</p>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/My-Work/">My Work</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/javascript/">javascript</a>, <a href="/tags/grammar/">grammar</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="JavaScript 规范编程笔记：语法">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>
