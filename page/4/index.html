@@ -60,6 +60,233 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-03-18T06:24:59.000Z"><a href="/2013/03/18/struts-2-validation-2/">Mar 18 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/03/18/struts-2-validation-2/">Struts 2 的验证框架(二)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>前一节中我们介绍了Struts2的验证框架及怎样自定义验证器，本节将介绍一些使用验证框架的高级主题。一些高级主题只研究了验证机制的细微差别，而另一些高级主题则展示了如何将验证框架应用到一些更特殊的Struts 2开发模式。这些内容将涵盖验证器的继承，将验证映射到域模型对象而不是动作，验证器失败时短路跳出验证等。</p>
+<h3>1. 在域对象级别验证</h3>
+<p>在域对象级别是指动作把整个User对象作为JavaBean属性公开出来。在域对象级别验证，首先需要做的是定义元数据，以下是User-validation.xml文件的全部内容：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="doctype">&lt;!DOCTYPE validators PUBLIC "-//OpenSymphony Group//XWork Validator </span><span class="number">1.0</span><span class="xml"></span><span class="number">.2</span><span class="xml">//EN"
+       "http://www.opensymphony.com/xwork/xwork-validator-</span><span class="number">1.0</span><span class="xml"></span><span class="number">.2</span><span class="xml">.dtd"&gt;
+<span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"password"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">10</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">6</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password should be </span><span class="number">6</span><span class="xml">-</span><span class="number">10</span><span class="xml"> characters.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"passwordintegrity"</span>&gt;</span>
+          <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"specialCharacters"</span>&gt;</span>$!@#?<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+          <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password must contain one letter, one number, and one of the following "</span><span class="variable">${specialCharacters}</span><span class="xml">".<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"username"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">8</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">5</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">message</span>&gt;</span>While </span><span class="variable">${username}</span><span class="xml"> is a nice name, a valid username must be between </span><span class="variable">${minLength}</span><span class="xml"> and </span><span class="variable">${maxLength}</span><span class="xml"> characters long. <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+     <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"email"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+          <span class="tag">&lt;<span class="title">message</span>&gt;</span>You must enter a value for email.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+       <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"email"</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">message</span> <span class="attribute">key</span>=<span class="value">"email.invalid"</span>/&gt;</span>
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+   <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">validator</span> <span class="attribute">type</span>=<span class="value">"expression"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"expression"</span>&gt;</span>username != password<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">message</span>&gt;</span>Username and password can't be the same.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>这个文件与之前的Register-validation.xml文件完全相同，但是我们需要把它放在User类同级目录下。User验证数据就绪后，我们需要把使用User的动作和这些验证元数据连接起来。这由visitor验证器完成。以下代码片段展示了UpdateAccount-validation.xml文件的简要内容，此文件将放在与UpdateAccount动作相同目录下：</p>
+<pre><code><figure class="highlight"><pre><span class="doctype">&lt;!DOCTYPE validators PUBLIC "-//OpenSymphony Group//XWork Validator 1.0.2//EN"
+       "http://www.opensymphony.com/xwork/xwork-validator-1.0.2.dtd"&gt;</span>
+<span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+   <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"user"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"visitor"</span>&gt;</span>
+         <span class="tag">&lt;<span class="title">message</span>&gt;</span>User:  <span class="tag">&lt;/<span class="title">message</span>&gt;</span>     
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>    
+  <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span>
+</pre></figure></code></pre>
+<p>这个文件仅仅使用visitor验证器将验证细节全部转交给在这个指定的字段名的类上定义的验证元数据，即指定了user字段。visitor验证器使用这个信息找到User-validation.xml并使用这个文件描述的验证逻辑验证user属性上所有的数据。而在message元素上我们只定义了验证产生的错误信息的前缀。</p>
+<p><strong>ModelDriven动作中使用验证框架</strong></p>
+<p>当动作实现ModelDriven接口时，也可以使用上述技术，对于UpdateAccount-validation.xml文件我们只需要做一下轻微的改变：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+   <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"model"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"visitor"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"appendPrefix"</span>&gt;</span>false<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>User:  <span class="tag">&lt;/<span class="title">message</span>&gt;</span>      
+      <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>    
+  <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span>
+</pre></figure></code></pre>
+<p>做了两处变更，首先，由于ModelDriven动作的域对象通过getModel()获取方法公开出来，所以现在我们需要改变指向model的字段名。其次，我们需要添加appendPrefix参数告诉visitor验证器不需要在字段前添加user前缀来获取字段值。</p>
+<h3>2. 使用验证上下文优化验证</h3>
+<p>有时候可能需要一种更加细粒度的对什么时候运行哪些验证的控制级别，为了控制这些内容，验证框架引入了上下文的概念。数据验证上下文提供了一种简单的方法来识别我们想验证的数据，在使用这些数据的应用程序中的具体位置。</p>
+<p>如果一个动作类中包含了多个方法作为动作的路口点时，我们就需要使用验证上下文。具体的做法是为这几个方法分别建立遵循：类名+-+方法名+-+validation.xml这个规则的文件，并在文件中定义验证逻辑。如果你仍然定义了一个类名+-+validation.xml的文件，那么这个文件中定义的验证也会被加载。</p>
+<p>与visitor验证器和域对象一起使用验证上下文时，方法与此相同，比如只需在User类所在的目录下定义类名+-+方法名+-+validation.xml的文件分别添加验证规则即可。</p>
+<p>显然这种方式很可能会发生冲突而不适合，幸运的是，我们可以在visitor验证器中使用context属性定义一个上下文名称来替换之前文件名中的方法名。使用如下：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"user"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"visitor"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"context"</span>&gt;</span>admin<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>User: <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+</pre></figure></code></pre>
+<p>于是我们就可以使用User-admin-validation.xml的名称命名文件而避免冲突。</p>
+<h3>3. 验证继承</h3>
+<p>我们已经知道验证可以被声明在不同级别的不同上下文中，现在我们简要的描述一下验证声明的继承。下面展示了当框架开始处理时收集验证文件位置的顺序：</p>
+<ul>
+<li>SuperClass-validation.xml</li>
+<li>SuperClass-aliasName-validation.xml</li>
+<li>Interface-validation.xml</li>
+<li>Interface-aliasName-validation.xml</li>
+<li>ActionClass-validation.xml</li>
+<li>ActionClass-aliasName-validation.xml</li>
+</ul>
+<p>在定义验证时，应该基于这个结构在这个搜索列表的更高层定义通用的验证，这样允许你重用这些定义。</p>
+<h3>4. 验证短路效应</h3>
+<p>验证框架的一个有用特性是当一个给定的验证失败时，它能够像短路一样停止后续验证。下面是一个用例：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"password"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span> <span class="attribute">short-circuit</span>=<span class="value">"true"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">10</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">6</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password should be </span><span class="number">6</span><span class="xml">-</span><span class="number">10</span><span class="xml"> characters.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"passwordintegrity"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"specialCharacters"</span>&gt;</span>$!@#?<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password must contain one letter, one number, and one of the following "</span><span class="variable">${specialCharacters}</span><span class="xml">".
+        <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">field</span>&gt;</span> </span>
+</pre></figure></code></pre>
+<p>这里我们追加的唯一内容是short-circuit属性，把它设置为true。这样做的目的是想在stringlength检查失败的情况下不让passwordintegrity检查运行。注意，虽然这个short-circuit定义在一个字段验证器上，但是这个字段剩余的验证都会成为短路的。如果在动作级别定义短路，那么所有的验证都将成为短路的。</p>
+<h3>5. 使用注解声明验证</h3>
+<p>使用注解声明验证和使用XML没有什么不同，下面是一个完整示例：</p>
+<pre><code><figure class="highlight"><pre><span class="annotation">@Validation</span>
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RegisterValidationAnnotated</span> <span class="keyword">extends</span> <span class="title">ActionSupport</span> <span class="keyword">implements</span> <span class="title">SessionAware</span> {</span>
+
+    <span class="annotation">@ExpressionValidator</span>(expression = <span class="string">"username != password"</span>, message = <span class="string">"Username and password can't be the same."</span>)
+    <span class="keyword">public</span> String execute(){
+        <span class="comment">/*
+         * Create and move the data onto our application domain object, user.
+         */</span>
+        User user = <span class="keyword">new</span> User();
+        user.setPassword( getPassword() );
+        Portfolio newPort = <span class="keyword">new</span> Portfolio();
+        newPort.setName( getPortfolioName() );
+        user.getPortfolios().add( newPort );
+        user.setUsername( getUsername() );
+
+        <span class="comment">/* Login the newly created user */</span>
+        getPortfolioService().persistUser( user );
+        session.put( Struts2PortfolioConstants.USER, user );
+
+        <span class="keyword">return</span> SUCCESS;
+    }
+
+    <span class="comment">/* JavaBeans Properties to Receive Request Parameters */</span>
+    <span class="keyword">private</span> String username;
+    <span class="keyword">private</span> String password;
+    <span class="keyword">private</span> String portfolioName;
+    <span class="keyword">private</span> <span class="keyword">boolean</span> receiveJunkMail;
+    <span class="keyword">private</span> String email;
+
+    <span class="annotation">@RequiredStringValidator</span>(type = ValidatorType.FIELD, message=<span class="string">"Email is required."</span>)
+    <span class="annotation">@EmailValidator</span>(type = ValidatorType.FIELD, key=<span class="string">"email.invalid"</span>, message=<span class="string">"Email no good."</span>)
+    <span class="keyword">public</span> <span class="keyword">void</span> setEmail(String email) {
+        <span class="keyword">this</span>.email = email;
+    }
+    <span class="keyword">public</span> String getEmail() {
+        <span class="keyword">return</span> email;
+    }
+
+    <span class="annotation">@RequiredStringValidator</span>(type = ValidatorType.FIELD, message = <span class="string">"Portfolio name is required."</span>)
+    <span class="keyword">public</span> String getPortfolioName() {
+        <span class="keyword">return</span> portfolioName;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setPortfolioName(String portfolioName) {
+        <span class="keyword">this</span>.portfolioName = portfolioName;
+    }
+
+    <span class="annotation">@StringLengthFieldValidator</span>(type = ValidatorType.FIELD, minLength=<span class="string">"5"</span> , maxLength = <span class="string">"8"</span>,  message = <span class="string">"Password must be between ${minLength} and ${maxLength} characters."</span>)
+    <span class="annotation">@RequiredStringValidator</span>(type = ValidatorType.FIELD, message = <span class="string">"Password is required."</span>)
+    <span class="keyword">public</span> String getPassword() {
+        <span class="keyword">return</span> password;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setPassword(String password) {
+        <span class="keyword">this</span>.password = password;
+    }
+
+    <span class="annotation">@RequiredStringValidator</span>(type = ValidatorType.FIELD, message = <span class="string">"Username is required."</span>)
+    <span class="annotation">@StringLengthFieldValidator</span>(type = ValidatorType.FIELD, minLength=<span class="string">"5"</span> , maxLength = <span class="string">"8"</span>,  message = <span class="string">"Username must be between ${minLength} and ${maxLength} characters."</span>)
+    <span class="keyword">public</span> String getUsername() {
+        <span class="keyword">return</span> username;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setUsername(String username) {
+        <span class="keyword">this</span>.username = username;
+    }
+
+    <span class="keyword">public</span> <span class="keyword">boolean</span> isReceiveJunkMail() {
+        <span class="keyword">return</span> receiveJunkMail;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> setReceiveJunkMail(<span class="keyword">boolean</span> receiveJunkMail) {
+        <span class="keyword">this</span>.receiveJunkMail = receiveJunkMail;
+    }
+
+    <span class="keyword">private</span> PortfolioServiceInterface portfolioService;
+
+    <span class="keyword">public</span> PortfolioServiceInterface getPortfolioService( )     {
+
+        <span class="keyword">return</span> portfolioService;
+
+    }
+
+    <span class="keyword">public</span> <span class="keyword">void</span> setPortfolioService( PortfolioServiceInterface portService){
+        portfolioService = portService;
+    }
+
+    <span class="keyword">private</span> Map session;
+
+    <span class="keyword">public</span> <span class="keyword">void</span> setSession(Map session) {
+
+        <span class="keyword">this</span>.session = session;
+    }
+
+}
+</pre></figure></code></pre>
+<p>一个细微的不同是消息处理方式。message属性是这些注解必须的属性。如果想使用来自于属性文件资源包的消息，你不需要把关键字作为message属性的值。相反，向注解添加key属性即可，但你仍然需要在message中指定消息的值，当key查找失败时，将使用它作为默认消息。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-03-18T06:24:53.000Z"><a href="/2013/03/18/struts-2-validation-1/">Mar 18 2013</a></time>
     
     
@@ -2642,259 +2869,6 @@ Hello, <span class="tag">&lt;<span class="title">s:property</span> <span class="
 </table>
 
 <p>在之前的例子中已经展示了param标签的作用，包括作为一种自定义的工具对象传递参数的方法。只要有了这个整体思路，剩下的就是细读标签API看看哪个标签可以接受参数。</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-03-13T05:56:26.000Z"><a href="/2013/03/13/struts-2-data-transfer-and-type-conversion-mechanism-2/">Mar 13 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/03/13/struts-2-data-transfer-and-type-conversion-mechanism-2/">Struts 2 的数据转移和类型转换机制(二)</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p>本节将讲述Struts2内建的类型转换器的具体细节。通过配置，Struts2框架能够处理几乎所有你可能需要的类型转换。</p>
-<h3>1.内建的类型转换器</h3>
-<h4>1.1 立即可用的类型转换器</h4>
-<p>Struts2框架自带了对HTTP本地字符串和以下列出的Java类型之间转换的内建支持。</p>
-<pre><code><figure class="highlight"><pre>■ <span class="typename">String</span>—有时候字符串就是字符串。
-■ <span class="typename">boolean</span>/<span class="typename">Boolean</span>—true和false字符串可以被转换为<span class="typename">Boolean</span>的原始类型和对象类型。
-■ char/<span class="typename">Character</span>—原始类型或者对象类型。
-■ int/<span class="typename">Integer</span>, float/Float, long/Long, double/Double—原始类型或者对象类型
-■ Date—当前Locale的SHORT格式的字符串版本 (例如，<span class="number">12</span>/<span class="number">10</span>/<span class="number">97</span>)。
-■ <span class="keyword">array</span>—每一个字符串元素必须能够转换为数组的类型。
-■ List—默认情况下使用<span class="typename">String</span>填充。
-■ <span class="keyword">Map</span>—默认情况下使用<span class="typename">String</span>填充。
-</pre></figure></code></pre>
-<p>当框架定位到一个给定的OGNL表达式指向的Java属性时，它会查找这个类型的转换器。如果这个类型在前面的列表中，你不需要任何事情，等着接收数据即可。</p>
-<h4>1.2 使用OGNL表达式从表单字段名映射到属性</h4>
-<p>下面将按照上述类型转换器列表讲述每一个内建的类型转换器如何在两端建立对等的内容。</p>
-<p><strong>1.原始类型和包装类</strong></p>
-<p>指向ValueStack上特定属性的OGNL表达式例子：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h4</span>&gt;</span>Complete and submit the form to create your own portfolio.<span class="tag">&lt;/<span class="title">h4</span>&gt;</span>
-<span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"Register"</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.username"</span> <span class="attribute">label</span>=<span class="value">"Username"</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:password</span> <span class="attribute">name</span>=<span class="value">"user.password"</span> <span class="attribute">label</span>=<span class="value">"Password"</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.portfolioName"</span> <span class="attribute">label</span>=<span class="value">"Enter a name "</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.age"</span> <span class="attribute">label</span>=<span class="value">"Enter your age as a double "</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.birthday"</span> <span class="attribute">label</span>=<span class="value">"Enter birthday. (mm/dd/yy)"</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:submit</span>/&gt;</span>
-<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
-</pre></figure></code></pre>
-<p>以下是公开的User对象的JavaBean属性：</p>
-<pre><code><figure class="highlight"><pre>private <span class="keyword">User</span> <span class="keyword">user</span>;
-public <span class="keyword">User</span> getUser() {
-    return <span class="keyword">user</span>;
-}
-public void setUser(<span class="keyword">User</span> <span class="keyword">user</span>) {
-    this.<span class="keyword">user</span> = <span class="keyword">user</span>;
-}
-</pre></figure></code></pre>
-<p>而User对象也公开了相应的属性：</p>
-<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="id">User</span> {</span>
-    <span class="keyword">private</span> String username;
-    <span class="keyword">private</span> String password;
-    <span class="keyword">private</span> String portfolioName;
-    <span class="keyword">private</span> Double age;
-    <span class="keyword">private</span> Date birthday;
-    <span class="keyword">public</span> String getPassword() {
-        <span class="keyword">return</span> password;
-    }
-    <span class="keyword">public</span> <span class="keyword">void</span> setPassword(String password) {
-        <span class="keyword">this</span><span class="variable">.password</span> = password;
-    }
-    ......
-}
-</pre></figure></code></pre>
-<p>注意类型转换和验证之间的区别，以及类型转换错误和验证错误之间的区别。验证代码用来从动作的业务逻辑的视角验证数据是否是数据类型的一个合法实例，它通过validation拦截器或者workflow拦截器对validate()方法的调用而触发。类型转换在将HTTP字符串值绑定到Java类型时发生，如在param拦截器转移请求数据时发生。</p>
-<p>类型转换错误导致用户会被返回到输入页面，并展示一个默认的错误信息告知用户，你可以自定义类型转换问题的错误报告，将在以后章节学习。</p>
-<p><strong>2.处理多值请求参数</strong></p>
-<p>多个参数值可以被映射到传入请求中的一个参数名，一个表单有多种方式在一个参数名下提交多个值，也有多种方法将它们映射到Java端的类型，这意味着使用OGNL有很多种方式。Struts2提供了丰富的支持以便将多值的请求参数转移到Java端各种面向集合的数据类型，从数组到真正的Collection。下面将通过展示两端的示例说明怎样使用它。</p>
-<p><strong>3.数组</strong></p>
-<p>为数据转移指向数组属性(使用索引和不使用索引)：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:form</span> <span class="attribute">action</span>=<span class="value">"ArraysDataTransferTest"</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"ages"</span> <span class="attribute">label</span>=<span class="value">"Ages"</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"ages"</span> <span class="attribute">label</span>=<span class="value">"Ages"</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"ages"</span> <span class="attribute">label</span>=<span class="value">"Ages"</span>/&gt;</span>
-
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"names[0]"</span> <span class="attribute">label</span>=<span class="value">"names"</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"names[1]"</span> <span class="attribute">label</span>=<span class="value">"names"</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"names[2]"</span> <span class="attribute">label</span>=<span class="value">"names"</span>/&gt;</span>
-    <span class="tag">&lt;<span class="title">s:submit</span>/&gt;</span>
-<span class="tag">&lt;/<span class="title">s:form</span>&gt;</span>
-</pre></figure></code></pre>
-<p>OGNL输入字段名指向的数组属性：</p>
-<pre><code><figure class="highlight"><pre><span class="keyword">private</span> Double[] ages ;
-<span class="keyword">public</span> Double[] getAges() {
-    <span class="keyword">return</span> ages;
-}
-<span class="keyword">public</span> <span class="keyword">void</span> setAges(Double[] ages) {
-    <span class="keyword">this</span><span class="variable">.ages</span> = ages;
-}
-<span class="keyword">private</span> String[] names = new String[<span class="number">10</span>];
-<span class="keyword">public</span> String[] getNames() {
-    <span class="keyword">return</span> names;
-}
-<span class="keyword">public</span> <span class="keyword">void</span> setNames(String[] names) {
-    <span class="keyword">this</span><span class="variable">.names</span> = names;
-}
-</pre></figure></code></pre>
-<p>注意这些属性不需要带索引参数的获取方法和设置方法，OGNL处理所有与索引相关的细节，我们只需通过一对获取方法和设置方法公开数组。</p>
-<p>请求转发的结果页面代码：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">h5</span>&gt;</span>Congratulations! You have transferred and converted data to and from Arrays.<span class="tag">&lt;/<span class="title">h5</span>&gt;</span>
-<span class="tag">&lt;<span class="title">h3</span>&gt;</span>Age number 3 = <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"ages[2]"</span> /&gt;</span> <span class="tag">&lt;/<span class="title">h3</span>&gt;</span>
-<span class="tag">&lt;<span class="title">h3</span>&gt;</span>Name number 3 = <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"names[2]"</span> /&gt;</span> <span class="tag">&lt;/<span class="title">h3</span>&gt;</span>
-</pre></figure></code></pre>
-<p><strong>3.List</strong></p>
-<p>使用List与使用数组几乎完全相同，仅有的不同是在Java 5之前List不支持类型指定，List没有类型的特性对Struts 2的类型转换机制有着重要的影响。对List来说，没有方法能够自动发现内部元素的类型。使用List时用两种选择，为元素指定类型或者接受默认类型(String)。接受默认行为时页面代码和使用数组相同，不同的是在Java端，没有类型说明，List中元素都会是String类型。</p>
-<p>有些时候，除了使用String，你会想为List中的元素指定类型。这种情况下，我们只需告知OGNL某个给定属性我们希望的元素类型，这使用一个简单的属性文件实现。</p>
-<p>为了给动作对象上的List属性指定元素类型，我们根据下图中的命名约定创建一个文件。</p>
-<p><img src="http://meiseku.com/moodpo/2013/03/344633058.png" alt="List指定类型命名约定.png" title="List指定类型命名约定.png"></p>
-<p>文件名约定是：动作名+-+conversion+属性文件扩展名，其中conversion是类型转换用的文件名后缀。之后把这个文件放在Java包中这个类的旁边。文件的内容约定如下图：</p>
-<p><img src="http://meiseku.com/moodpo/2013/03/879049580.png" alt="List指定类型内容约定.png" title="List指定类型内容约定.png"></p>
-<p>文件内容约定是：Element+_+List类型属性的名字=元素类型(如：Element-weights=java.lang.Double)，这样List属性会像数组属性一样工作，每一个独立元素都会被转换为指定的元素类型。例如页面可以这样写：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[0]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[1]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"weights[2]"</span> <span class="attribute">label</span>=<span class="value">"weights"</span>/&gt;</span>
-</pre></figure></code></pre>
-<p>当然也可以不使用索引，这取决于你的偏好，在Java端，动作对象上的属性没有变化。需要记住的一点就是在给List或者其他Collection指定类型时注意不要预先初始化List。</p>
-<pre><code><figure class="highlight"><pre><span class="keyword">private</span> <span class="keyword">List</span> weights;
-<span class="keyword">public</span> <span class="keyword">List</span> getWeights() {
-    <span class="keyword">return</span> weights;
-}
-<span class="keyword">public</span> void setWeights(<span class="keyword">List</span> weight) {
-    <span class="keyword">this</span>.weights = weight;
-}
-</pre></figure></code></pre>
-<p>下面是一个更全的功能的示例</p>
-<pre><code><figure class="highlight"><pre>页面代码：
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"users[0].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"users[1].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"users[2].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
-
-动作属性代码：
-private List users ;
-public List getUsers(){
-    return users;
-}
-public void setUsers ( List users ) {
-    this.users=users;
-}
-
-指定类型的属性文件内容：
-Element_users=manning.utils.User
-</pre></figure></code></pre>
-<p><strong>5.Map</strong></p>
-<p>Map使用关键字而非索引来关联到它的值，使用关键字的特性对Struts2类型转换过程有两点含义。一是引用它们的OGNL表达式语法与List不同；而是与为Map属性指定类型相关。对Map来说，可以为关键字对象指定类型，如果不指定默认是String。</p>
-<p>首先看一下页面代码，Java端代码和List的相同：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames.mary"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames.jane"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames.hellen"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames['beth']"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames['sharon']"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"maidenNames['martha']"</span> <span class="attribute">label</span>=<span class="value">"Maiden Name"</span>/&gt;</span>
-</pre></figure></code></pre>
-<p>现在在看一下指定类型的示例：</p>
-<pre><code><figure class="highlight"><pre>指定类型属性文件内容
-Element_myUsers=manning.utils.User
-
-页面代码：
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers['chad'].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers['jimmy'].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers['elephant'].username"</span> <span class="attribute">label</span>=<span class="value">"Usernames"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers.chad.birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers.jimmy.birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myUsers.elephant.birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
-
-Java端代码：
-private Map myUsers ;
-public Map getMyUsers(){
-    return myUsers;
-}
-public void setMyUsers ( Map myUsers ) {
-    this.myUsers=myUsers;
-}
-</pre></figure></code></pre>
-<p>前面已经说了，除了为元素指定类型，使用Map属性时也可以为关键字对象指定类型。与值一样，OGNL也会把参数的名字当作应该尝试转换为指定类型的字符串。假如我们想使用Integer作为关键字的myUsers版本。应该在属性文件内这样写：</p>
-<pre><code><figure class="highlight"><pre><span class="setting">Key_myOrderedUsers=<span class="value">java.lang.Integer</span></span>
-<span class="setting">Element_myOrderedUsers=<span class="value">manning.utils.User</span></span>
-</pre></figure></code></pre>
-<p>以下是提交表单页面：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myOrderedUsers['1'].birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myOrderedUsers['2'].birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
-<span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"myOrderedUsers['3'].birthday"</span> <span class="attribute">label</span>=<span class="value">"birthday"</span>/&gt;</span>
-</pre></figure></code></pre>
-<p>最后，如果使用Java5或更高版本，可以使用泛型来类型化Collection和Map，在类型转换时Struts2可以使用这些信息，使得属性文件配置不再必要。</p>
-<h3>2.自定义类型转换</h3>
-<p>虽然内建的类型转换器功能强大且涵盖面广，但有时我们还是需要构建自定义的类型转化器。你可以指定一个转换逻辑将任何字符串翻译为任何Java类型。唯一需要做的就是创建字符串语法和对应的Java类，之后是使用一个类型转换器把他们连接起来。</p>
-<h4>2.1 实现类型转换器</h4>
-<p>类型转换器是OGNL的一部分，因此类型转换器必须实现ognl.TypeConverter接口。一般情况下，OGNL的类型转换器能实现任何两种数据类型之间的转换。在Web应用程序领域，我们只需实现所有Java类型和HTTP字符串之间的转换即可。</p>
-<p>Struts2提供了一个方便的基类：org.apache.struts2.util.StrutsTypeConverter作为自定义类型转换器的扩展点。下面代码是这个类所定义的抽象方法：</p>
-<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="built_in">Object</span> convertFromString(Map context, String[] values,Class toClass);
-<span class="keyword">public</span> <span class="keyword">abstract</span> String convertToString(Map context, <span class="built_in">Object</span> o);
-</pre></figure></code></pre>
-<p>第一个方法经请求转换为Java对象，第二个方法将Java对象转换为请求字符串。当你编写一个自定义的转换器时，你只需继承这个类并将自己的逻辑填充到这两个方法中即可。</p>
-<h4>2.2 在字符串和Java对象间转换</h4>
-<p><img src="http://meiseku.com/moodpo/2013/03/2746878052.png" alt="自定义类型转换逻辑.png" title="自定义类型转换逻辑.png"></p>
-<p>以下代码实现了上图所示的转换规则：</p>
-<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CircleTypeConverter</span> <span class="keyword">extends</span> <span class="title">StrutsTypeConverter</span> {</span>
-    <span class="keyword">public</span> Object convertFromString(Map context, String[] values,Class toClass) {
-        String userString = values[<span class="number">0</span>];
-        Circle newCircle = parseCircle ( userString );
-        <span class="keyword">return</span> newCircle;
-    }
-    <span class="keyword">public</span> String convertToString(Map context, Object o) {
-        Circle circle = (Circle) o;
-        String userString = <span class="string">"C:r"</span> + circle.getRadius();
-        <span class="keyword">return</span> userString;
-    }
-    <span class="keyword">private</span> Circle parseCircle( String userString ) <span class="keyword">throws</span> TypeConversionException {
-        Circle circle = <span class="keyword">null</span>;
-        <span class="keyword">int</span> radiusIndex = userString.indexOf(<span class="string">'r'</span>) + <span class="number">1</span>;
-        <span class="keyword">if</span> (!userString.startsWith( <span class="string">"C:r"</span>) )
-            <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException ( <span class="string">"Invalid Syntax"</span>);
-        <span class="keyword">int</span> radius;
-        <span class="keyword">try</span> {
-            radius = Integer.parseInt( userString.substring( radiusIndex ) );
-        } <span class="keyword">catch</span> ( NumberFormatException e ) {
-            <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException ( <span class="string">"Invalid Value for Radius"</span>); 
-        }
-        circle = <span class="keyword">new</span> Circle();
-        circle.setRadius( radius );
-        <span class="keyword">return</span> circle;
-    }
-}
-</pre></figure></code></pre>
-<h4>2.3 配置框架使用自定义转换器</h4>
-<p>构造了自定义转换器之后，必须让框架知道什么时候、在哪里使用它。这里有两种选择，可以配置转换器用在一个给定动作的局部或者全局。前者将只告诉框架在处理特定动作的特定属性时才使用转换器，而后者在应用程序的任何地方，每次通过OGNL设置或者取得一个特定属性时都会使用它。</p>
-<p><strong>1.属性专用</strong></p>
-<p>与前面Map和List指定元素类型相同，在同样的文件中再添加以下内容：</p>
-<pre><code><figure class="highlight"><pre><span class="setting">circle=<span class="value">manning.utils.CircleTypeConverter</span></span>
-</pre></figure></code></pre>
-<p>这一行简单的内容将属性名circle和类型转换器关联起来。现在当OGNL想给Circle属性设置值时，它会自动使用我们定义的类型转换器。</p>
-<p><strong>2.全局类型转化</strong></p>
-<p>我们可以指定所有的Circle类型的属性都使用我们的转换器，这个过程和之前局部指定仅有一点不同：在定义全局类型转换器时，不使用动作名+-+conversion+属性文件扩展名的约定文件，而是使用xwork-conversion.properties，并且文件内容修改为如下：</p>
-<pre><code><figure class="highlight"><pre>manning<span class="variable">.utils</span><span class="variable">.Circle</span>=manning<span class="variable">.utils</span><span class="variable">.CircleTypeConverter</span>
-</pre></figure></code></pre>
-<p>此外，还需将xwork-conversion.properties文件放在类路径下，例如在WEB-INF/classess/中。</p>
 
     
   </div>

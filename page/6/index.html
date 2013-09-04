@@ -60,6 +60,219 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-03-09T05:32:58.000Z"><a href="/2013/03/09/action-of-struts-2/">Mar 9 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/03/09/action-of-struts-2/">Action of Struts 2</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>Struts2是一个面向动作的框架，Action是它的核心。</p>
+<h3>1.Struts2中Action的作用</h3>
+<p>封装业务单元 为数据转移提供场所 为结果选择路由</p>
+<h3>2.使用包(package)机制将Action分组</h3>
+<p>包是一种逻辑容器，想Java的包一样，它提供了一种基于功能或者领域的共性将action组件分组。包级别上定义的URL可用来映射到动作；此外它还具有继承的特性，你能够继承框架已经定义好的一些组件。 包声明只需设置它的四个属性：</p>
+<pre><code><figure class="highlight"><pre>属性          描述
+name(必须)    包的名字
+namespace    包内所有action的命名空间
+extends      被继承的父包
+abstract     如果为true,这个包只能用来定义可继承的组件，不能定义动作
+
+<span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"chapterThreeSecure"</span> <span class="attribute">namespace</span>=<span class="value">"/chapterThree/secure"</span> <span class="attribute">extends</span>=<span class="value">"struts-default"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"AdminPortfolio"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span>&gt;</span>/chapterThree/AdminPortfolio.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"AddImage"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span>&gt;</span>/chapterThree/ImageUploadForm.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"RemoveImage"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">result</span>&gt;</span>/chapterThree/ImageRemoved.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">package</span>&gt;</span>
+</pre></figure></code></pre>
+<p>上面的配置展示了包的用法。当一个请求(比如AddImage)到达时，框架会在/chapterThree/secure命名空间下查找AddImage的action方法，如果没有设置命名空间，请求动作就会进入默认命名空间查找。因为继承了struts-default包，而使用其中的默认命名空间。</p>
+<p><strong>struts-default包中的组件</strong></p>
+<p>只要继承struts-default包，就会自动使用它已经定义好的组件。大部分常用的拦截器在其中已经定义好了，这个包在struts2-core.jar的struts-default.xml中定义，它声明了大多数应用程序用到的拦截器栈：</p>
+<pre><code><figure class="highlight"><pre>  &lt;<span class="package"><span class="keyword">package</span> <span class="title">name</span>="<span class="title">struts</span>-<span class="title">default</span>" <span class="title">abstract</span>="<span class="title">true</span>"&gt;
+         ........
+
+        &lt;!-- <span class="title">A</span> <span class="title">complete</span> <span class="title">stack</span> <span class="title">with</span> <span class="title">all</span> <span class="title">the</span> <span class="title">common</span> <span class="title">interceptors</span> <span class="title">in</span> <span class="title">place</span>.
+             <span class="title">Generally</span>, <span class="title">this</span> <span class="title">stack</span> <span class="title">should</span> <span class="title">be</span> <span class="title">the</span> <span class="title">one</span> <span class="title">you</span> <span class="title">use</span>, <span class="title">though</span> <span class="title">it</span>
+             <span class="title">may</span> <span class="title">do</span> <span class="title">more</span> <span class="title">than</span> <span class="title">you</span> <span class="title">need</span>. <span class="title">Also</span>, <span class="title">the</span> <span class="title">ordering</span> <span class="title">can</span> <span class="title">be</span>
+             <span class="title">switched</span> <span class="title">around</span> (<span class="title">ex</span>: <span class="title">if</span> <span class="title">you</span> <span class="title">wish</span> <span class="title">to</span> <span class="title">have</span> <span class="title">your</span> <span class="title">servlet</span>-<span class="title">related</span>
+             <span class="title">objects</span> <span class="title">applied</span> <span class="title">before</span> <span class="title">prepare</span>() <span class="title">is</span> <span class="title">called</span>, <span class="title">you</span>'<span class="title">d</span> <span class="title">need</span> <span class="title">to</span> <span class="title">move</span>
+             <span class="title">servletConfig</span> <span class="title">interceptor</span> <span class="title">up</span>.
+
+             <span class="title">This</span> <span class="title">stack</span> <span class="title">also</span> <span class="title">excludes</span> <span class="title">from</span> <span class="title">the</span> <span class="title">normal</span> <span class="title">validation</span> <span class="title">and</span> <span class="title">workflow</span>
+             <span class="title">the</span> <span class="title">method</span> <span class="title">names</span> <span class="title">input</span>, <span class="title">back</span>, <span class="title">and</span> <span class="title">cancel</span>. <span class="title">These</span> <span class="title">typically</span> <span class="title">are</span>
+             <span class="title">associated</span> <span class="title">with</span> <span class="title">requests</span> <span class="title">that</span> <span class="title">should</span> <span class="title">not</span> <span class="title">be</span> <span class="title">validated</span>.
+             --&gt;
+        &lt;<span class="title">interceptor</span>-<span class="title">stack</span> <span class="title">name</span>="<span class="title">defaultStack</span>"&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">exception</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">alias</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">servletConfig</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">i18n</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">prepare</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">chain</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">debugging</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">scopedModelDriven</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">modelDriven</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">fileUpload</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">checkbox</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">multiselect</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">staticParams</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">actionMappingParams</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">params</span>"&gt;
+              &lt;<span class="title">param</span> <span class="title">name</span>="<span class="title">excludeParams</span>"&gt;<span class="title">dojo</span>\..*,^<span class="title">struts</span>\..*&lt;/<span class="title">param</span>&gt;
+            &lt;/<span class="title">interceptor</span>-<span class="title">ref</span>&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">conversionError</span>"/&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">validation</span>"&gt;
+                &lt;<span class="title">param</span> <span class="title">name</span>="<span class="title">excludeMethods</span>"&gt;<span class="title">input</span>,<span class="title">back</span>,<span class="title">cancel</span>,<span class="title">browse</span>&lt;/<span class="title">param</span>&gt;
+            &lt;/<span class="title">interceptor</span>-<span class="title">ref</span>&gt;
+            &lt;<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">workflow</span>"&gt;
+                &lt;<span class="title">param</span> <span class="title">name</span>="<span class="title">excludeMethods</span>"&gt;<span class="title">input</span>,<span class="title">back</span>,<span class="title">cancel</span>,<span class="title">browse</span>&lt;/<span class="title">param</span>&gt;
+            &lt;/<span class="title">interceptor</span>-<span class="title">ref</span>&gt;
+        &lt;/<span class="title">interceptor</span>-<span class="title">stack</span>&gt;
+
+        ......
+
+   &lt;/<span class="title">interceptors</span>&gt;
+
+    &lt;<span class="title">default</span>-<span class="title">interceptor</span>-<span class="title">ref</span> <span class="title">name</span>="<span class="title">defaultStack</span>"/&gt;
+
+    &lt;<span class="title">default</span>-<span class="title">class</span>-<span class="title">ref</span> <span class="title">class</span>="<span class="title">com</span>.<span class="title">opensymphony</span>.<span class="title">xwork2</span>.<span class="title">ActionSupport</span>" /&gt;
+&lt;/<span class="title">package</span>&gt;
+</pre></figure></code></pre>
+<p>注意那个叫做params的拦截器，从请求到动作的数据自动转移就是由它完成的。</p>
+<h3>3.实现动作(Action)</h3>
+<p>struts2中的action只需要实现一个返回控制字符串的execute()方法即可，不需要实现action接口，因此基本上任何一个类都可以成为一个动作(action).即使如此框架还是提供了一些接口和实现来让工作变得更简单，成本更小。</p>
+<p><strong>Action接口</strong><br>如果一个action实现了com.opensymphony.xwork2.Action接口，它就可以使用一下常量，而这些也正是框架中使用的默认值：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String ERROR=<span class="string">"error"</span>;
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String INPUT=<span class="string">"input"</span>;
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String LOGIN=<span class="string">"login"</span>;
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String NONE=<span class="string">"none"</span>;
+<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String SUCCESS=<span class="string">"success"</span>;
+</pre></figure></code></pre>
+<p><strong>ActionSupport类</strong><br>此类提供了数据验证、错误信息传输及错误信息国际化等功能。</p>
+<p><strong>Ⅰ.基本验证</strong></p>
+<p>ActionSupport类使用两个接口与默认拦截器栈的DefaultWorkflowInterceptor拦截器配合完成基本验证。</p>
+<pre><code><figure class="highlight"><pre>        <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+</pre></figure></code></pre>
+<p>当workflow拦截器被触发时，它会在action中查找并执行validate()方法，ActionSupport实现了该方法，不过在实际项目中我们一般要使用自己的业务验证逻辑重写此方法。</p>
+<pre><code><figure class="highlight"><pre><span class="annotation">@Override</span>
+<span class="keyword">public</span> <span class="keyword">void</span> validate() {
+    <span class="comment">// TODO Auto-generated method stub</span>
+
+    <span class="comment">//添加一个字段的数据错误</span>
+    addFieldError(<span class="string">"fieldName"</span>, <span class="string">"errorMessage"</span>);
+    <span class="comment">//使用国际化</span>
+    addFieldError(<span class="string">"name"</span>, getText(<span class="string">"properties_name"</span>));
+    <span class="comment">//添加一个action范围内的错误</span>
+    addActionError(<span class="string">"anErrorMessage"</span>);
+
+}
+</pre></figure></code></pre>
+<p>当执行完validate()方法后，workflow拦截器会检查是否有错误信息。如果有错误信息，它将改变请求的工作流，它会立即停止请求的处理，将用户带回到表单页面并显示相应的错误提示。</p>
+<p><strong>Ⅱ.使用资源包(国际化)</strong></p>
+<p>ActionSupport实现了两个接口，它们协作完成了国际化文本信息的功能。首先是实现com.opensymphony.xwork2.TextProvider接口，可以从资源属性文件中通过关键字获取文本的本地化信息。下面是regist_en.properties文件的内容：</p>
+<pre><code><figure class="highlight"><pre><span class="transposed_variable">user.</span>exists=This user already <span class="transposed_variable">exists.</span>
+<span class="transposed_variable">username.</span>required=Username is <span class="transposed_variable">required.</span>
+<span class="transposed_variable">password.</span>required=Password is <span class="transposed_variable">required.</span>
+<span class="transposed_variable">portfolioName.</span>required=Portfolio Name is <span class="transposed_variable">required.</span>
+</pre></figure></code></pre>
+<p>属性文件创建之后，在action中使用getText(&quot;property_name&quot;)方法即可引用资源属性文件中的本地化信息。</p>
+<p>其次，ActionSupport实现了com.opensymphony.xwork2.LocaleProvider接口，它只提供了一个方法getLocale(),可通过浏览器发送来的地域语言信息获取用户所在的地域，从而判断使用那一种资源属性文件来国际化。</p>
+<h3>4.action传递域对象数据</h3>
+<p>action把请求中的数据放在简单的JavaBean对象上，这种做法很好很强大，但是当JavaBean对象足够复杂之后(如具有很多属性)，这种做法就不够强大了。既然框架提供了数据转移的机制，我们何不直接使用域对象进行数据转移呢？是的，框架允许我们这么做。</p>
+<p>有两种实现方式可以做的这一点：</p>
+<p>使用JavaBean对象，让数据直接传输到这个对象上 使用模型驱动(ModelDriven)的action</p>
+<p><strong>Ⅰ.使用JavaBean方式</strong></p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> String execute(){
+    getPortfolioService()<span class="variable">.createAccount</span>( user ); 
+    <span class="keyword">return</span> SUCCESS;
+}
+
+<span class="keyword">private</span> User user; 
+
+<span class="keyword">public</span> User getUser() {
+    <span class="keyword">return</span> user;
+}
+
+<span class="keyword">public</span> <span class="keyword">void</span> setUser(User user) {
+    <span class="keyword">this</span><span class="variable">.user</span> = user;
+}
+
+<span class="keyword">public</span> <span class="keyword">void</span> validate(){
+
+    <span class="keyword">if</span> ( getUser()<span class="variable">.getPassword</span>()<span class="variable">.length</span>() == <span class="number">0</span> ){           
+        addFieldError( <span class="string">"user.password"</span>, getText(<span class="string">"password.required"</span>) );
+    }
+    <span class="keyword">if</span> ( getUser()<span class="variable">.getUsername</span>()<span class="variable">.length</span>() == <span class="number">0</span> ){           
+        addFieldError( <span class="string">"user.username"</span>, getText(<span class="string">"username.required"</span>) );
+    }
+            ....
+}
+</pre></figure></code></pre>
+<p>后台代码变的简单了，前台代码就变复杂点了，就是这样无奈。</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"user.name"</span> <span class="attribute">label</span>=<span class="value">"姓名"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p><strong>Ⅱ使用模型驱动(ModelDriven)</strong></p>
+<p>使用ModelDriven与使用JavaBean方法不同，它使用getModel()方法将域对象公开。它引入了新的接口和拦截器，但拦截器已经包含在默认拦截器栈中了，我们只需要实现getModel()方法即可。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ModelDrivenRegister</span> <span class="keyword">extends</span> <span class="title">ActionSupport</span> <span class="keyword">implements</span> <span class="title">ModelDriven</span> {</span>
+
+    <span class="keyword">public</span> String execute(){<span class="comment">//注意在execute方法中只能使用user本来的引用，而不能做任何将其</span>
+                                    <span class="comment">//改变引用的操作</span>
+        getPortfolioService().createAccount( user ); 
+        <span class="keyword">return</span> SUCCESS;
+    }
+
+    <span class="keyword">private</span> User user = <span class="keyword">new</span> User();<span class="comment">//注意使用模型驱动需要初始化模型对象</span>
+
+    <span class="keyword">public</span> Object getModel() {
+        <span class="keyword">return</span> user;
+    }
+
+    <span class="keyword">public</span> <span class="keyword">void</span> validate(){
+        PortfolioService ps = getPortfolioService();
+
+        <span class="keyword">if</span> ( user.getPassword().length() == <span class="number">0</span> ){            
+            addFieldError( <span class="string">"password"</span>, getText(<span class="string">"password.required"</span>) );
+        }
+        ......
+    }
+
+    <span class="keyword">public</span> PortfolioService getPortfolioService( )  {
+        <span class="keyword">return</span> <span class="keyword">new</span> PortfolioService();
+    }
+}
+</pre></figure></code></pre>
+<p>值得庆幸的是使用模型驱动的方式传递数据在视图层不需要做任何改变，这也许就是为什么一般选择使用模型驱动而不选择JavaBean方式的原因了。</p>
+<p><strong>Ⅲ.使用域对象传递数据的潜在危险</strong></p>
+<p>像上面那样使用域对象传递数据的做法很好，但是这样做的前提是要将域对象公开出去，无论是使用JavaBean方式还是模型驱动方式都是如此。但是无论如何将域对象整个的暴露给用户总不是一个很好的做法，它还存在一些潜在的威胁。比如说域对象中有一些敏感的数据你不想公开给外界；一个恶意的用户在请求中添加一个适当命名精心设计的查询语句，这样这个参数就会被自动写入到域对象的属性上。当然你可以进行适当的过滤，但是这样一来使用域对象的目的就变的无效了。这个问题现在也没有很好的解决方法，看的人自己想想，在实际的开发中记住这一点就行。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-03-09T05:22:36.000Z"><a href="/2013/03/09/hello-struts-2/">Mar 9 2013</a></time>
     
     
@@ -534,71 +747,6 @@ del d[key1]
 <p>简单说，删微博，只有中央政府才能做。地方政府为了适应这样的变化，只能通过三个方法，第一是建立现代信息发布机制，雇佣专业上被成为Spin Doctor的“微博发言人”；第二，被迫接受压力，道歉，并且进行一定程度的改革和透明化努力；第三，如果地方领导人没有深厚中南海关系，就得雇佣专业上被成为Lobbyist的中央代理人，说服中央微博舆论管理机构删贴。《新世纪周刊》揭露的一些所谓“非法删贴”现象，就是这些中央代理人的生意，这个产业，每年都是数亿人民币。</p>
 <p>微博不是公民社会的福音。信息发布分散化造就了微博成为国民言论自由训练场，但信息控制精密化、中央集中化造成了公民社会空间缩小。政治改革转型，大都伴随着地方分权（Devolution）的过程，即便是中国的经济改革，也是从安徽农村和沿海城市开始，公民社会的成长，往往是对这些分权造成权力空隙的利用。但今天的中国，微博覆盖了全部舆论场，而能被审查通过的市民运动，也就是类似名人发起的慈善活动、以及针对地方政府的邻避环保运动。这种不会积累公民社会组织能力、不会损伤中央权威并且一切在中央可控之下的活动，能推动中国社会的程度也非常有限。</p>
 <p>微博的中国，是信息过载、愤怒漫溢，但行动受限、也无法组织的三亿网民。他们是活火山，随时会爆发，但却会毫无章法。这造就了一个危险并且无法完全预测的中国社会未来。</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-02-04T04:59:56.000Z"><a href="/2013/02/04/aircrack-ng-nine-crack-mode/">Feb 4 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/02/04/aircrack-ng-nine-crack-mode/">aircrack-ng的九种攻击模式的介绍</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p>来源：<a href="http://jim19770812.blogspot.com/2012/05/aircrack-ng.html">链接</a></p>
-<p>因为blogspot被墙，这篇译文在国内的朋友想看到就比较麻烦了，所以特意转来。</p>
-<p>Aircrack-ng套装中，aireplay-ng模块提供了9种攻击模式，下面是对这9种攻击模式的介绍。</p>
-<h3>1.Attack 0: Deauthentication （解除认证）</h3>
-<p>该攻击会向指定AP发送结束认证包将一个或多个客户端与AP断开，断开客户端有如下的好处</p>
-<ul>
-<li>找到隐藏的ESSID，这是个未开始广播的的ESSID</li>
-<li>在强制客户端握手的时候捕获WPA/WPA2握手数据</li>
-<li>生成ARP请求（windows客户端有时候会在断开连接时清空自己的ARP缓存）</li>
-</ul>
-<h3>2.Attack 1: Fake authentication（伪装客户端连接）</h3>
-<p>伪装客户端连接允许你执行两类WEP认证（开放系统和共享密钥），这对在需要连接到一个没有任何客户端连接的AP时是非常有用的。需要注意的是伪装客户端连接不产生任何ARP包，也不能用来认证和关联WPA/WPA2 AP。</p>
-<h3>3.Attack 2: Interactive packet replay（交互发包）</h3>
-<p>这个攻击允许注入一个特殊的包，可以从两个来源获取包，一个是从无线网卡获取包，另一个是从一个pcap文件。很多开源工具都可以抓取Pcap格式的文件，一般的做法是用packetforge-ng命令创建。</p>
-<p>如果交互包发送成功，就意味着AP接受了交互包，并且生成一个新的inititialization vectory (初始向量，简称IV)。 为了实现这个功能，我们需要选择一个包，在这之前需要先弄清楚两个概念：</p>
-<p>无线网络的广播MAC地址是FF:FF:FF:FF:FF:FF，当AP收到包含FF:FF:FF:FF:FF:FF特征的ARP请求时会循环发包，需要注意的是，这个ARP请求包的To DS标志必须设置成1</p>
-<p>所以airreplay-ng过滤选项： -b：无线AP的MAC地址。<br>-d：广播的MAC地址，也就是FF:FF:FF:FF:FF:FF。<br>-t：1表示设置To Distribution System标志，0表示不设置To Distribution System标志。</p>
-<p>为了使得注入包看上去更像是个原生的包，我们需要了解下面几个选项：<br>-p 0841：设置祯控制字段，使得包看上去像是从客户端发到AP的一样，一定要把 &quot;To DS&quot;设置成1。<br>-c FF:FF:FF:FF:FF:FF：设置广播的MAC地址，这会让AP重新发送包并且得到一个新的IV。 </p>
-<h3>4.Attack 3: ARP request replay attack(ARP请求攻击)</h3>
-<p>通过ARP请求生成新的IV是常用的可靠的攻击手段。程序监听一个ARP包并转发回AP，反过来，因为AP重复收到了包，会一次又一次的重复转发相同的包，然而每个重复的ARP包都在AP有一个新的IV，就是这些新的IV能够让你获取WEP密码。</p>
-<p>ARP是address resolution protocol，TCP/IP协议使用ARP来把一个IP地址转换成一个物理地址，就像是以太网地址那样，一个主机希望获取一个物理地址就得向TCP/IP网络广播一个ARP请求，网络上的主机会回复一个物理地址。ARP是aircrack-ng提供的许多攻击的基础。</p>
-<h3>5.Attack 4: KoreK chopchop attack</h3>
-<p>该攻击如果成功的话会在不知道key的情况下解析WEP数据包。一般用于破解动态WEP，该攻击不能用于找回WEP密码，但是可以用来显示数据明文。然而一些AP可以抵御这类攻击，所以KoreK chopchop attack不是每次都能成功。 实际上AP返回的包长是60字节，如果不足42字节，aireplay会尝试猜测余下的缺失数据，而后会自动检查包头的校验和，KoreK chopchop attack需要至少一个WEP数据包。</p>
-<h3>6.Attack 5: Fragmentation attack (碎片攻击)</h3>
-<p>该攻击成功的话可以获取包含150字节的PRGA（pseudo random generation algorithm），也叫做伪随机码生成算法，该攻击只是用于获取PRGA而不能用来找回WEP密码，可以用packetforge-ng攻击使用这个PRGA生成用于各种注入攻击的数据包。至少需要从AP获得一个数据包。</p>
-<p>基本上，程序会从数据包中获取少量的密钥信息，并向AP尝试发送包含少量密钥信息的ARP and/or LLC包。如果包可以成功返回，那么程序会从中获取更多的密钥信息，这个过程会不断的重复，直到获取了足够的1500字节PRGA数据。注意PRGA有时候也会少于1500字节。</p>
-<h3>7.Attack 6: Cafe-latte attack</h3>
-<p>Cafe-latte attack攻击允许你从一个客户端获取WEP密码，简单的说，就是从客户端抓取ARP包。首先使用airodump-ng抓取ARP包，随后使用aricrack-ng来分析出WEP密码</p>
-<h3>8.Attack 7: Client-oriented fragmentation attack</h3>
-<p>也叫做Hirte attack，是一种在客户端用IP或者ARP包攻击的方式，它增强了Cafe Latte attack，允许无限制的使用客户端的任何ARP包。</p>
-<p>这个攻击需要一个来自客户端的ARP包或者IP包，我们需要生成一个ARP请求，该请求包的第33字位必须是客户端IP地址，并且目标MAC地址必须是全0，然而实际应用中，目标MAC地址可以是任意数字。</p>
-<p>在包中，第23位（ARP包）或者第21位（IP包）是客户端的IP地址，如果包长是68字节或者86字节，包的最后附加有广播MAC地址，不满足这些条件的话，就认为这个包就是个IP包。</p>
-<h3>9.Attack 9: Injection test （注入测试）</h3>
-<p>如果你的无线网卡可以成功注入并且能够确定到AP的响应时间，并且你有两块无线网卡的话，就可以使用Injection test攻击。它可以确定哪个特别的注入测试能成功执行。</p>
-<p>基本的injection test攻击提供附加的重要信息，首先它可以列出能响应广播所有AP，其次通过30次发包测试可以获得AP的通讯质量（以百分比的形式显示通讯质量），你可以任选AP的名字/MAC地址，你可以使用测试一个指定的AP还是测试一个隐藏的SSID。 如果实现呢？接下来将简单的描绘如何执行测试。 程序最初发送了广播请求，请求会询问AP“你是谁？”，然后收到请求的AP会返回一个关于自身的描述（并不是每个AP都会反馈这种类型的请求），只要程序可以收到AP的响应，那么这块无线网卡就可以成功注入。</p>
-<p>较详细的内容请查看官网介绍：<a href="http://www.aircrack-ng.org/doku.php?id=aireplay-ng。">http://www.aircrack-ng.org/doku.php?id=aireplay-ng。</a></p>
 
     
   </div>
