@@ -60,6 +60,150 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-03-10T05:48:55.000Z"><a href="/2013/03/10/struts-2-interceptor-1/">Mar 10 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/03/10/struts-2-interceptor-1/">Struts 2 拦截器(一)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>从开发人员日常工作的角度来看，动作组件可能是框架的核心和灵魂，然而在后台工作的默默无闻的拦截器却可以说是真正的英雄——拦截器负责完成了框架的大部分处理工作。</p>
+<h3>1.拦截请求的意义</h3>
+<h4>1.1 清理MVC</h4>
+<p>拦截器消除了动作组件中的横切任务。日志记录功能是典型的横切任务，它不是某一个动作所特有的，而是横向关联所有动作。作为软件工程师，我们会把这个任务提到更高的层面，让它处在任何需要日志记录的请求上(或者说之前)，达到将MVC关注点分离的目的。</p>
+<p>拦截器承担的另一些任务被称为预处理或者后加工。预处理任务的一个很好的示例就是常见的数据转移，它通过params拦截器实现。</p>
+<p>在Struts2中没有一个动作被单独调用，动作调用是一个分层的过程，总是包含一系列的拦截器在动作执行之前或者之后执行。框架不直接调用动作的execute()方法，而是创建一个叫做ActionInvocation的对象，它封装了动作的一系列被配置的动作执行之前之后触发的拦截器。下图展示了ActionInvocation类封装的完整的动作执行过程。</p>
+<p><img src="http://meiseku.com/moodpo/2013/03/3358556227.png" alt="ActionInvocation 流程.png" title="ActionInvocation 流程.png"></p>
+<p>拦截器的强大功能之一是改变调用工作流。有时候某个拦截器会决定动作不应该执行，此时，拦截器可以自己返回一个控制字符串，从而终止工作流。以workflow拦截器为例，这个拦截器做两件事情。首先，如果动作实现了Validateable接口，那么调用动作的validate()方法。其次，检查动作上是否出现了错误信息。如果出现了错误信息，它返回控制字符串并终止后续执行。</p>
+<h4>1.2 拦截器的好处</h4>
+<p>使用拦截器分层让软件更整洁，并增加了可读性和可测试性，也提高了灵活性。从这种灵活性中得到的两个主要益处是可重用和可配置。</p>
+<p>每一个人都想重用软件，想达到可重用很简单，只需将想重用的逻辑隔离到清晰分割的单元。把这些逻辑隔离到拦截器之后，我们可以把它们放在任何地方，应用到所有动作类上。例如我们通常通过继承defaultstack获得的代码重用。</p>
+<p>除代码重用之外，拦截器分层的能力还给我们带来了另外一些非常重要的好处。我们能够很容易的配置它们的顺序和数量。</p>
+<h3>2.拦截器的工作原理</h3>
+<h4>2.1 总指挥 ActionInvocation</h4>
+<p>ActionInvocation封装了与特定动作执行相关的所有处理细节，所以知道ActionInvocation做什么就等于知道Struts2如何处理请求。当框架收到一个请求时，它首先必须决定这个URL映射到哪个动作，这个动作的一个实例会被加入到一个新创建的ActionInvocation示例中。接着，框架咨询声明性架构(通过xml或者Java注解)，以发现哪些拦截器应该触发，指向这些拦截器的引用将被加入到ActionInvocation中。</p>
+<h4>2.2 如何触发拦截器</h4>
+<p>框架创建了ActionInvocation，并填充了需要的所有对象和信息，通过调用ActionInvocation公开的invoke()方法开始动作的执行，此时拦截器栈中的第一个拦截器开始调用过程。ActionInvation负责跟踪执行过程达到的状态，并把控制交给栈中合适的拦截器。ActionInvation通过调用拦截器的intercept()方法将控制转交给拦截器。后续拦截器继续执行，最终执行动作。这些都是通过递归调用ActionInvocation的invoke()方法实现。</p>
+<ol>
+<li>调用ActionInvocation对象的invoke()方法</li>
+<li>开始调用第一个拦截器</li>
+<li>调用拦截器的intercept()方法，并把ActionInvocation实例作为参数传递</li>
+<li>拦截器调用传递的参数即ActionInvocation实例的invoke()方法</li>
+<li>开始调用第二个拦截器
+......
+N. 栈中没有拦截器开始触发动作</li>
+</ol>
+<p>在此过程中，ActionInvocation在内部管理处理状态，它总是能知道现在处在栈的哪里。</p>
+<p>拦截器有一个三阶段的、有条件的执行周期，如下所述：</p>
+<ol>
+<li>做一些预处理</li>
+<li>通过调用invoke()方法将控制转移给后续的拦截器，最后直到动作；或者通过返回一个控制字符串终端执行</li>
+<li>做一些后加工</li>
+</ol>
+<h3>3.Struts2 内置的拦截器</h3>
+<p>Struts2框架自带了一系列功能强大的内置拦截器，它们提供了你想从Web框架得到的大部分功能。除了defaultStack这个拦截器栈，框架还自带了很多拦截器和已经预先配置好的拦截器栈。</p>
+<h4>3.1工具拦截器</h4>
+<p>这些拦截器提供了辅助开发、调优及解决问题的简单工具。</p>
+<h5>3.1.1 timer拦截器</h5>
+<p>这个简单的拦截器只记录执行花费的时间，在拦截器栈中的位置决定了它实际测量什么时间。</p>
+<h5>3.1.2 logger拦截器</h5>
+<p>这个拦截器提供了一个简单的日志记录机制，记录了在预处理事的进入声明以及在后加工时的退出声明。</p>
+<h4>3.2 数据转移拦截器</h4>
+<h5>3.2.1 params拦截器(defaultStack)</h5>
+<p>这个熟悉的拦截器将请求参数转移到通过ValueStack公开的属性(包括ModelDriven动作通过域模型对象提供的属性)上。params拦截器不知道这些数据最终会去哪里，它只是把数据转移到在ValueStack上发现的第一个匹配的属相上。</p>
+<p>动作总是在请求处理周期开始时被放到ValueStack上。ModelDriven动作则被modelDriven拦截器放在ValueStack上。</p>
+<h5>3.2.2 static-params拦截器(defaultStack)</h5>
+<p>这个拦截器也将参数转移到ValueStack公开的属性上，不同的是参数来源于声明性框架(XML)的动作元素中。</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"Upload"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.action.Upload"</span>&gt;</span>
+    <span class="comment">&lt;!-- 上传路径 --&gt;</span>
+    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"storePath"</span>&gt;</span>E:\temp\<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">result</span>&gt;</span>/Uploaded.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">result</span> <span class="attribute">name</span>=<span class="value">"input"</span>&gt;</span>/UploadForm.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+</pre></figure></code></pre>
+<p>注意一点，defaultStack中static-params拦截器在params拦截器之前触发，这意味着请求参数会覆盖XML中param元素的值。</p>
+<h5>3.2.3 autowiring拦截器</h5>
+<p>这个拦截器为使用Spring管理应用程序资源提供了一个集成点。复习Spring的时候再说吧。</p>
+<h5>3.2.4 servlet-config拦截器(defaultStack)</h5>
+<p>这个拦截器将来源于Servlet API的各种对象注入到动作中，动作只需实现必要的接口即可。以下的接口可以用来取得与Servlet环境相关的不同对象。</p>
+<pre><code><figure class="highlight"><pre>ServletContextAware设置ServletContext
+ServletRequestAware设置HttpServletRequest
+ServletResponseAware设置HttpServletResponse
+ParameterAware设置<span class="keyword">Map</span>类型的请求参数
+RequestAware设置<span class="keyword">Map</span>类型的请求属性
+SessionAware设置<span class="keyword">Map</span>类型的会话属性
+ApplicationAware设置<span class="keyword">Map</span>类型的应用程序领域属性
+PrincipalAware设置Principal对象(安全相关)
+</pre></figure></code></pre>
+<p>每一个接口包含一个方法——当前资源的设置方法。最佳实践建议避免使用Servlet API对象，因为他们会将动作代码绑定到Servlet API.</p>
+<h5>3.2.5 fileUpload拦截器(defaultStack)</h5>
+<p>fileUpload拦截器将文件和元数据从多重请求转换为常规的请求参数，以便能够将它们像普通参数一样设置到动作上。</p>
+<h4>3.3 工作流拦截器</h4>
+<p>工作流拦截器提供改变请求处理的工作流的机会，这里的工作流是指贯穿拦截器、动作、结果，最后又回到拦截器的处理路径。工作流拦截器检查处理的状态，有条件的干涉、改变正常路径。</p>
+<h5>3.3.1 workflow拦截器(defaultStack)</h5>
+<p>确实有一个拦截器就叫workflow。它与动作协作，提供数据验证以及验证错误发生时改变后续工作流的功能。workflow拦截器还引入了另一个重要的拦截器概念——使用params调整拦截器的执行。workflow拦截器可以使用以下几个参数：</p>
+<pre><code><figure class="highlight"><pre><span class="function"><span class="title">alwaysInvokeValidate</span><span class="params">(true或者false,默认是true，意味着<span class="function_name">validate</span>()方法会被调用)</span>
+<span class="title">inputResultName</span><span class="params">(验证失败时选择的结果的名字，默认值是<span class="variable">Action</span>.<span class="variable">INPUT</span>)</span>
+<span class="title">excludeMethods</span><span class="params">(workflow拦截器不应执行的方法名，这样可以略过一个特定入口方法的验证检查)</span>
+</pre></figure></code></pre>
+<p>这些内容在defaultStack中进行了配置，如下来源于struts-default.xml的代码片段：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
+    ......
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
+</pre></figure></code></pre>
+<p>这样配置将排除input,back,cancel,browse方法上的validate()验证。</p>
+<h5>3.3.2 validation拦截器(defaultStack)</h5>
+<p>validation拦截器是Struts2验证框架的一部分，提供了声明性的方式验证你的数据。不用编写验证代码，验证框架让你使用XML或者Java注解描述数据的验证规则。</p>
+<p>注意：validation拦截器在workflow拦截器之前触发。</p>
+<h5>3.3.3 prepare拦截器(defaultStack)</h5>
+<p>prepare拦截器提供了一种向动作追加额外工作流处理的通用入口点。当prepare拦截器执行时，它在动作上查找prepare()方法(首先查找是否实现了Preparable接口)，它允许执行任何类型的预处理。</p>
+<p>prepare拦截器也很灵活，例如它可以在一个动作上为不同的执行方法定义特别的预备方法。以下是预备方法的命名约定：</p>
+<pre><code><figure class="highlight"><pre>动作方法名    预处理方法<span class="number">1</span>                  预处理方法<span class="number">2</span> 
+<span class="function"><span class="title">input</span><span class="params">()</span>        <span class="title">prepareInput</span><span class="params">()</span>          <span class="title">prepareDoInput</span><span class="params">()</span> 
+<span class="title">update</span><span class="params">()</span>     <span class="title">prepareUpdate</span><span class="params">()</span>       <span class="title">prepareDoUpdate</span><span class="params">()</span>
+</pre></figure></code></pre>
+<h5>3.3.4 modelDriven(defaultStack)</h5>
+<p>modelDriven拦截器通过调用getModel()方法改变执行的工作流，并将模型对象放在ValueStack上从请求接受参数。在不使用这个拦截器的情况下，参数会被params拦截器直接转移到动作对象上。</p>
+<h4>3.4 其他拦截器</h4>
+<h5>3.4.1 exception拦截器(defaultStack)</h5>
+<p>exception拦截器在defaultStack中出现在第一位，也应该在任何你创建的自定义栈中出现在第一位。exception拦截器捕获异常，并根据类型将它们映射到用户自定义的错误页面。它的位置在栈的顶端，这样可以保证它能够捕获动作调用所有阶段可能生成的所有异常，而在后加工阶段又会最后一个触发，因此能够捕获所有的异常。当捕获异常时，exception拦截器会创建一个ExceptionHolder对象，并将其放在ValueStack的最顶端，ExceptionHolder是一个异常的包装器，它把跟踪栈和异常作为JavaBean属性公开出来，可以在错误页面中通过标签访问这些属性。</p>
+<h5>3.4.2 token拦截器和token-session拦截器</h5>
+<p>token和token-session拦截器可以作为避免表单重复提交系统的一部分。token拦截器用来向被拦截器检查的请求传入一个令牌，如果唯一的令牌再次来到拦截器，那么这个请求被视为重复的。</p>
+<h5>3.4.3 scoped-modelDriven拦截器(defaultStack)</h5>
+<p>这个拦截器为动作的模型对象提供跨请求的向导式的持久性，它增加了modelDriven拦截器的功能，允许你将模型对象存储到绘画作用域中。</p>
+<h5>3.4.4 execAndWait拦截器</h5>
+<p>当一个请求需要执行很长时间时，最好能给用户一些反馈，execAndWait拦截器可帮助用户避免急躁。</p>
+<h4>3.5 内置的拦截器栈</h4>
+<p>大部分可能会用到的其他内置拦截器栈都是defaultStack的简化版本，这些较小的栈是为了成为模块化的构建单元，用来构建更大的栈。</p>
+<p>一般情况下推荐使用defaultStack，在某些情况下，多余的拦截器并不会那么影响性能，况且混乱的组织拦截器可能会迅速增加调试的复杂度，因此还是使用内置的最容易的途径——defaultStack吧。</p>
+<blockquote>
+<p>Struts2不仅非常灵活，而且它也代表着更多的开箱即用。</p>
+</blockquote>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-03-09T05:32:58.000Z"><a href="/2013/03/09/action-of-struts-2/">Mar 9 2013</a></time>
     
     
@@ -700,53 +844,6 @@ del d[key1]
 <span class="keyword">if</span> key <span class="keyword">in</span> d:
     ......
 </pre></figure></code></pre>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-02-25T05:04:34.000Z"><a href="/2013/02/25/twitter-revolution-maintenance-of-stability-of-the-weibo/">Feb 25 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/02/25/twitter-revolution-maintenance-of-stability-of-the-weibo/">安替：革命的推特、维稳的微博</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p>来源：<a href="https://groups.google.com/forum/?fromgroups=#!topic/paste/XiVkV4msJG8">Google网上论坛</a></p>
-<p>2011年阿拉伯之春，社交媒体如推特（Twitter）和脸书（Facebook）在推翻突尼斯、埃及独裁政权上起到了重要作用，如果不是决定作用的话。所以全世界都把目光上转向了全球最大的非民主国家中国，和全球用户最多的社交媒体“微博”，大部分相关研究和报道，都在试图回答这样一个问题：微博对中国民主化进程的作用到底会是如何？</p>
-<p>简单地回答：只要中国政权不发生质变，微博不被新技术取代，它就一直在帮助中国政府把信息控制权集中到中央，对中国民主化的作用不但复杂，而且很可能会是负面。</p>
-<p>推特虽然诞生于2006年，但真正进入中国网友视界，是2009年2月的央视大火。很快大家发现，推特上每一条推的140字限制，简直就是在给中国人开后门：140个字母的英文大约20个单词，也就是一句话，而140个字的中文是完整一段话，不但可以完全涵盖新闻报道五元素，还可以当成BBS来简单讨论事情。根据统计，中文在推特上的信息有效性是英文的3.6倍。很快，推特和中国的第一个高度克隆产品“饭否”，被中国网友当成新闻工具。例如，当年7月发生新疆骚乱时，推特用户郭怡广（@kaiserkuo）和我联手第一个把消息在新华社之前用英文在推特上发了出去。</p>
-<p>也因为新疆骚乱，饭否被关（之前6月推特已经被“中华防火墙”GFW封锁）。8月，新浪推出“微博”，除了克隆推特基本功能之外，还创新地增加了评论区、自动显示图片，后来还把新浪博客的名人策略移植到了微博上，有了所谓的大V用户。当时负责微博的新浪副总裁陈彤本身就是管理四通利方BBS起家，经营新浪新闻门户和新浪博客风生水起，他把BBS、门户、博客的所有中国用户喜欢的特点都一股脑放在了微博上。</p>
-<p>对推特更大的打击是2011年2月-6月的茉莉花镇压，全国上百人因为推特上所谓的2月20日茉莉花街头运动被拘，特别是艾未未事件，对整个推特中文圈产生了“寒蝉效应”，很多和体制有关的用户心生退意，舍弃推特，全心投入微博。同时，推特本身的安全升级和GFW不断高耸，让中国用户上推难度大幅度增加。</p>
-<p>一边各种天时地利人和，一边各种打压和麻烦，很快全民上微博，结果就是今天，单新浪微博就号称3亿用户，而依然被封的推特，中文用户估计只有30万人以上，后者只有前者的千分之一。这三亿用户的微博，也的确成为中国民众言论自由实践的训练平台，揭黑不断，官不聊生。</p>
-<p>不过，任何人由此对微博在中国作用产生了乐观估计，认为最终会推动中国民主化进程，那就错了。因为虽然原始克隆自推特，微博和推特却因结构上的不同，对社会政治的作用，有了天差地别。</p>
-<p>推特、脸书、Youtube这些社会媒体，之所以能推动阿拉伯革命，关键在于两个因素：分散（De-centralized）信息产生机制和服务器独立于政权之外。Web 2.0的用户产生内容（UGC）这样的分散信息产生机制，让每一个埃及网友都成为记者和新闻官，而这些服务器一直放在信息自由的美国西岸，导致埃及总统穆巴拉克没办法控制这些网友的关系和信息。国家地理边界，因为这些Web 2.0服务，在虚拟空间拉开了一个大豁口，而这些服务器在海外的Web2.0服务，就成为一个“信息自由租界”，本国公民可以在此虚拟聚合、讨论和组织，政权之手鞭长莫及。</p>
-<p>微博却是不折不扣另外的东西。它虽然有分散信息产生机制，每个微博用户的确也像一个记者和新闻官，但微博服务器却是位于北京，被中国中央政府牢牢控制，不但对信息管理有牲杀大权，而且甚至有计算机接口可以直接操作服务器。</p>
-<p>互联网世界的权力斗争，本质上是服务器控制权之争。控制了3亿微博用户的服务器，就是控制了中国所有微博用户的所有信息和关系。这等于假设把维基解密的服务器放在白宫办公室里面，那样阿桑奇再厉害，也没办法对美国政府有任何造次。用网络分析、数据挖掘（Datamining）、地理标记这些计算机技术，中国中央政府不但能根据彼此互动情况准确画出全国异议人士的关系网，而且能通过关键字监控和语义分析，提前预测可能会发生的公民行动，乃至用户的意识形态倾向，通知各地公安机构，及早进行网格化布控，把对政权的威胁消灭在摇篮里。服务器放在言论自由法治国家的推特，是革命的工具，但服务器放在不民主国家的微博，却是《1984》的第一次实践。</p>
-<p>但这不是微博故事的全部。微博服务器，是被“中国中央政府”控制，所以，互联网进入中国后第一次，地方政府官员完全没办法删除批评自身的帖子，必须有求与中央。在中国，有事发生，删贴是常规，不删贴才是政治异动。2012年2月王立军叛逃时，重庆市当然希望删除微博上所有关于王立军甚至薄熙来的传闻，而采用“休假式治疗”的官方解释。但此刻政治斗争已经产生，负责舆论和互联网管理的宣传官员乐于围观，在之后两个月内，微博成了击毁薄熙来重庆派系的言论市场，流言四起，成了薄熙来王国覆灭的重大推力。</p>
-<p>不仅是地方政府，连一些不听话的部委也被中央微博监管机构抛弃。2011年7月温州动车事故发生后，五天之内没有任何删除命令，新浪微博用户对此事的讨论超过了1000万条，动员了几乎全部媒体对铁道部展开彻底批评，一直到温家宝去现场视察，禁令才到。这显然对前部长刘志军的处理有关，铁道部这样的独立王国，如果要打散，舆论的支持是必须的政治安排。</p>
-<p>和薄熙来与刘志军相比，“带表哥”、“房哥”、“房姐”那样的地方官员，自然更没资格获得中央微博舆论管理机构的奥援，在亿万网友的攻击下，如待宰羔羊。微博，正如十年多前的央视《焦点访谈》，成了中央治理地方、镇压派系的最佳舆论工具，简单说，微博就是央视2.0，而网友进入了一个几乎可以自由批评地方官员的时代。</p>
-<p>如果说1994年朱荣基税制改革，是实践陈云的主张“中央的政治权威，要有中央的经济权威作基础”的话，那么2009年后的微博管理，是“中央的政治权威，要有中央的信息控制权威作基础”，从此，只有中央政府，才能有效影响全国舆论，中国的舆论控制，比2009年之前更加“中央集中化（Centralized）”，从某种意义上说，微博是共产党政权控制地方的高级维稳工具。</p>
-<p>简单说，删微博，只有中央政府才能做。地方政府为了适应这样的变化，只能通过三个方法，第一是建立现代信息发布机制，雇佣专业上被成为Spin Doctor的“微博发言人”；第二，被迫接受压力，道歉，并且进行一定程度的改革和透明化努力；第三，如果地方领导人没有深厚中南海关系，就得雇佣专业上被成为Lobbyist的中央代理人，说服中央微博舆论管理机构删贴。《新世纪周刊》揭露的一些所谓“非法删贴”现象，就是这些中央代理人的生意，这个产业，每年都是数亿人民币。</p>
-<p>微博不是公民社会的福音。信息发布分散化造就了微博成为国民言论自由训练场，但信息控制精密化、中央集中化造成了公民社会空间缩小。政治改革转型，大都伴随着地方分权（Devolution）的过程，即便是中国的经济改革，也是从安徽农村和沿海城市开始，公民社会的成长，往往是对这些分权造成权力空隙的利用。但今天的中国，微博覆盖了全部舆论场，而能被审查通过的市民运动，也就是类似名人发起的慈善活动、以及针对地方政府的邻避环保运动。这种不会积累公民社会组织能力、不会损伤中央权威并且一切在中央可控之下的活动，能推动中国社会的程度也非常有限。</p>
-<p>微博的中国，是信息过载、愤怒漫溢，但行动受限、也无法组织的三亿网民。他们是活火山，随时会爆发，但却会毫无章法。这造就了一个危险并且无法完全预测的中国社会未来。</p>
 
     
   </div>

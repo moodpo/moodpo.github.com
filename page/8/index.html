@@ -60,6 +60,44 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2012-08-14T02:51:28.000Z"><a href="/2012/08/14/apache-axis2-deploy-websphere/">Aug 14 2012</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2012/08/14/apache-axis2-deploy-websphere/">Apache Axis2在WAS上的部署</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>在WebSphere Application Server上部署Axis2需要修改几个配置，否则，Axis2服务可以访问，但大多数功能是无法使用的。</p>
+<p>由于在WebSphere Application Server 7.0 中，加入了对JAX-WS的支持，它是基于一个Axis2的修改版本的，当WAS启动时，它的类加载器将会加载这些类。于是当真正部署Axis2 1.6时就会发生冲突，怎么解决这种冲突呢，很简单：</p>
+<ol>
+<li><p>在部署axis2.war之前，修改war包中的<code>axis2.xml</code>文件。找到<code>EnableChildFirstClassLoading</code>参数,将其修改为<code>true</code>(默认为<code>false</code>)。这个参数只支持axis2的1.5.5以上版本。</p>
+</li>
+<li><p>在部署完axis2.war之后，修改应用模块的类加载方式为父类最后：在WebSphere的管理员控制台，找到企业级应用的配置页面，点击Manage Modules，定位到包含Axis2的模块，将<code>Class loader order</code>项修改为 <code>Classes loaded with local class loader first (parent last)</code></p>
+</li>
+</ol>
+<p>经过以上配置之后，重启axis2应用即可。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2012-07-29T02:50:57.000Z"><a href="/2012/07/29/three-oclock-in-the-afternoon/">Jul 29 2012</a></time>
     
     
@@ -358,41 +396,6 @@ VAProfileVC1Advanced : VAEntrypointVLD
 <blockquote>
 <p>“我认识的人越多，我越喜欢狗。”</p>
 </blockquote>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2010-06-13T08:10:19.000Z"><a href="/2010/06/13/internet-really-is-not-a-good-thing/">Jun 13 2010</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2010/06/13/internet-really-is-not-a-good-thing/">上网真不是一件好事</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p>不写东西就会感到时光在虚度，一天过去了，却不知道自己都干了什么，没有总结，没有回忆，没有思考，也就没有经过的感觉。</p>
-<p>一天的培训完毕，回到宿舍里，吃了饭，便一下潜入无边无际的比特海里，那里有太多的稀奇之物，好奇心使我沉浸其中，难以自拔，然而那是永远也无法挖掘完，永远也无法“一眼望穿”的。然而时间却浪费在这挖掘的途中了，挖掘出的东西，不好的简单的抛弃，好的却也只是存放起来，放在一个角落，然后很快的遗忘，越美好的东西越是废品，因为它失去了它的实用价值，只能退而选其次，成为令人观赏玩弄的“花瓶”。</p>
-<p>世界如此大，人海茫茫，每天要发生那么多事情，制造那么多新闻。互联网的时代，信息如此发达，人们通过互联网的触角，获得远在天边，近在眼前的事情，试图一眼望尽整个世界。人们浏览着新闻大多都是一眼望过，只是在内存中缓存一段时间，很少写入大脑硬盘中，于是很快遗忘了。可是时间却过去了，时间却过去了。</p>
-<p>没有思考，无暇思考，真是一个“伟大”的遗憾啊，上网完全剥夺了我思考的时间，它只是给予我思考的基础，只是打造了无数的地基，却从来没有开始建造，从来没有开工，那这一切同废墟又有何不同？</p>
-<p>想来我也有三年的上网史了，这是从有了电脑，并且联网的时间算起的，在学校的时候天天泡在网上，吃饭都懒的去，睡觉也懒的睡，真的是废寝忘食了。回想学到的东西却都是空空如也的——空白的回忆，多么可悲的结果。没有思考，看到的东西和事物永远都是无价值的，它们是琐碎的物体，就像夏天琐碎的云朵，漂在空中，那么纯白，也那么善变，却总难免被风吹散的结果，而现实中那风就是时间。</p>
-<p>回家的时候我总是在父母在没有怎么上过网的朋友面前炫耀网络有多好，可是现在我再也不会这么说了，上网真的不是一件好事。这也许只是对于我这一类人来说吧。</p>
 
     
   </div>
