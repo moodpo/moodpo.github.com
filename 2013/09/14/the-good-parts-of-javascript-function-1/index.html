@@ -1,0 +1,278 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>JavaScript 规范编程笔记：函数（一） | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="JavaScript 规范编程笔记：函数（一）"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-43415414-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-09-14T07:27:13.000Z"><a href="/2013/09/14/the-good-parts-of-javascript-function-1/">Sep 14 2013</a></time>
+    
+    
+  
+    <h1 class="title">JavaScript 规范编程笔记：函数（一）</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <blockquote>
+<p>一般来说，所谓编程就是将一组需求分解成一组函数与数据结构的技能。</p>
+</blockquote>
+<p>JavaScript中最好的特性就是它对函数的实现，它几乎无所不能。函数包含子组语句，它们是JavaScript的基础模块单元，用于代码复用、信息隐藏和组合调用。函数指定对象的行为。</p>
+<h3>1. 函数对象</h3>
+<p>在JavaScrpit中函数也是对象。对象字面量产生的对象连接到Object.prototype上，而函数对象连接到Function.prototype上（该原型对象本身连接到Object.prototype）。每个函数在创建时附有两个附加的隐藏属性：函数的上下文和实现函数行为的代码（JavaScript创建一个函数对象时，会给该对象设置一个“调用”属性）。</p>
+<p>每个函数对象在创建时也随带有一个prototype属性。它的值是一个拥有constructor属性且值即为该函数的对象。</p>
+<p>因为函数是对象，所以它们可以像任何其他的值一样被使用。函数可以存放在变量、对象和数组中，函数可以被当作参数传递给其他函数，函数也可以再返回函数。而且，因为函数是对象，所以函数可以拥有方法。</p>
+<h3>2. 函数字面量</h3>
+<pre><code><figure class="highlight"><pre><span class="comment">// 创建一个名为 add 的变量，并用来把两个数字相加的函数赋值给它</span>
+<span class="keyword">var</span> add = <span class="function"><span class="keyword">function</span> <span class="params">(a, b)</span>{</span>
+    <span class="keyword">return</span> a + b;    
+};
+</pre></figure></code></pre>
+<p>函数字面量可以出现在任何允许表达式出现的地方。函数也可以被定义在其他函数中。一个内部函数自然可以访问自己的参数和变量，同时它也能方便的访问它被嵌套在其中的那个函数的参数与变量。通过函数字面量创建的函数对象包含一个连到外部上下文的连接。这被称为<strong>闭包</strong>。</p>
+<h3>3. 调用</h3>
+<p>在JavaScript中一共有四种调用模式：方法调用模式、函数调用模式、构造器调用模式和apply调用模式。调用函数时，除了声明时定义的形式参数，每个函数接收两个附加的参数：this和arguments。参数this在面向对象变成中非常重要，它的值取决于调用的模式。调用运算符是跟在任何产生一个函数值的表达式之后的一对圆括号。圆括号中包含了参数（如果有的话），当实际参数的个数过多时，超出的参数值将被忽略，如果实际参数值过少，缺失的值将会被替代为undefined。</p>
+<p><strong>*方法调用模式</strong></p>
+<p>当一个函数被保存为对象的一个属性时，我们称它为一个方法。当一个方法被调用时，this被绑定到该对象。</p>
+<pre><code><figure class="highlight"><pre><span class="comment">// 常见 myObject,它有一个value属性和一个increment方法</span>
+<span class="comment">// increment方法接受一个可选的参数。如果参数不是数字，那么默认使用数字1。</span>
+<span class="keyword">var</span> myObject = {
+    <span class="keyword">value</span>: <span class="number">0</span>,
+    increment: function(inc){
+        <span class="keyword">this</span>.<span class="keyword">value</span> += <span class="keyword">typeof</span> inc === <span class="string">'number'</span> ? inc : <span class="number">1</span>;
+    }
+};
+
+myObject.increment();
+document.writeln(myObject.<span class="keyword">value</span>); <span class="comment">// 1</span>
+
+myObject.increment(<span class="number">2</span>);
+document.writeln(myObject.<span class="keyword">value</span>); <span class="comment">// 3</span>
+</pre></figure></code></pre>
+<p>this到对象的绑定发生在调用的时候，这个“超级”迟绑定使得函数可以对this高度复用。通过this可取得它们所属对象的上下文的方法称为<strong>公共方法</strong>。</p>
+<a name="more"></a>
+
+<p><strong>函数调用模式</strong></p>
+<p>当一个函数并非一个对象的属性时，那么它被当作一个函数来调用：</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">var</span> sum = add(<span class="number">3</span>, <span class="number">4</span>);   <span class="comment">// sum 为 7</span>
+</pre></figure></code></pre>
+<p>当函数以此模式调用时，this被绑定到全局对象。这是一个设计错误，这个错误的后果是方法不能利用内部函数来帮助它工作。解决方法是：如果该方法定义一个变量并给它赋值为this，那么内部函数就可以通过哪个变量访问到this。按照约定，我给这个变量命名为that：</p>
+<pre><code><figure class="highlight"><pre>// 给myObject增加一个double方法。
+myObject<span class="preprocessor">.double</span> = function(){
+    var that = this<span class="comment">; // this指向全局变量的解决方法</span>
+
+    var helper = function(){
+        that<span class="preprocessor">.value</span> = <span class="keyword">add</span>(that<span class="preprocessor">.value</span>, that<span class="preprocessor">.value</span>)<span class="comment">;</span>
+    }<span class="comment">;</span>
+
+    helper()<span class="comment">; // 以函数的形式调用helper。</span>
+}<span class="comment">;</span>
+
+// 以方法的形式调用double。
+myObject<span class="preprocessor">.double</span>()<span class="comment">;</span>
+document<span class="preprocessor">.writeln</span>(myObject<span class="preprocessor">.value</span>)<span class="comment">; // 6</span>
+</pre></figure></code></pre>
+<p><strong>构造器调用模式</strong></p>
+<p>尽管原型继承有着强大的表现力，但它并不被广泛理解。JavaScript本身对其原型的本质也缺乏信心，所以它提供了一套和基于类的语言类似的对象构建语法。</p>
+<p>如果在一个函数前面带上new来调用，那么将创建一个隐藏连接到该函数的prototype成员的新对象，同时this将会被绑定到那个新对象上。</p>
+<pre><code><figure class="highlight"><pre><span class="comment">// 创建一个名为Quo的构造器函数，它构造一个带有status属性的对象。</span>
+var Quo = function(string){
+    <span class="keyword">this</span><span class="variable">.status</span> = string;
+};
+
+<span class="comment">// 给Quo的所有实例提供一个名为get_status的公共方法。</span>
+Quo<span class="variable">.prototype</span><span class="variable">.get_status</span> = function(){
+    <span class="keyword">return</span> <span class="keyword">this</span><span class="variable">.status</span>;
+};
+
+<span class="comment">// 构造一个Quo实例</span>
+var myQuo = new Quo(<span class="string">"confused"</span>);
+
+document<span class="variable">.writeln</span>(myQuo<span class="variable">.get_status</span>()); <span class="comment">// 令人困惑</span>
+</pre></figure></code></pre>
+<p>结合new前缀调用的函数被称为<strong>构造器函数</strong>。按照约定，它们保存在以大写格式命名的变量里。如果调用构造器函数时没有在前面加上new，可能会发生非常糟糕的事情，既没有编译时警告，也没有运行时警告，因此大写约定非常重要。不推荐使用这种形式的构造器函数。</p>
+<p><strong>Apply 调用模式</strong></p>
+<p>因为JavaScript是一门函数式的面向对象编程语言，所以函数可以拥有方法。apply方法让我们创建一个参数数组并用其去调用函数。它允许我们选择this的值。apply方法接收两个参数，第一个将被绑定给this的值，第二个就是一个参数数组。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">var</span> <span class="keyword">array</span> = [<span class="number">3</span>, <span class="number">4</span>];
+<span class="keyword">var</span> sum = add.apply(<span class="keyword">null</span>, <span class="keyword">array</span>); <span class="comment">// 7</span>
+
+<span class="keyword">var</span> statusObject = {
+    status: <span class="string">'A-OK'</span>
+};
+
+<span class="comment">// get_status 没有参数，statusObject指定了将被绑定给this的值</span>
+<span class="keyword">var</span> status = Quo.prototype.get_status.apply(statusObject);
+document.writeln(status); <span class="comment">// A-OK</span>
+</pre></figure></code></pre>
+<h3>4. 参数</h3>
+<p>当函数被调用时，会得到一个“免费”奉送的参数，那就是 arguments 数组。通过它函数可以访问所有它被调用时传递给它的参数列表，包括那些没有被分配给函数声明时定义的形式参数的多余参数。这使得编写一个无须指定参数个数的函数成为可能：</p>
+<pre><code><figure class="highlight"><pre><span class="comment">// 构造一个将很多个值想加的函数</span>
+var <span class="keyword">sum</span> = function(){
+    var i, <span class="keyword">sum</span> = <span class="number">0</span>;
+    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; arguments.length; i += <span class="number">1</span>){
+        <span class="keyword">sum</span> += arguments[i];
+    }    
+    <span class="keyword">return</span> <span class="keyword">sum</span>;
+};
+
+document.writeln(<span class="keyword">sum</span>(<span class="number">4</span>, <span class="number">8</span>, <span class="number">15</span>, <span class="number">16</span>, <span class="number">23</span>, <span class="number">42</span>));  <span class="comment">// 108</span>
+</pre></figure></code></pre>
+<p>因为语言的一个设计错误，arguments并不是一个真正的数组，arguments拥有一个length属性，但它缺少所有数组方法。</p>
+<h3>5. 返回</h3>
+<p>return 语句可用来使函数提前返回。当return被执行时，函数立即返回而不再执行余下的语句。一个函数总是会返回一个值。如果没有指定返回值，则返回undefined。</p>
+<h3>6. 异常</h3>
+<p>JavaScrpit提供了一套异常处理机制。throw语句中断函数的执行，它应该抛出一个exception对象，该对象包含可识别异常类型的name属性和一个描述性的message属性。你也可以添加其他的属性。</p>
+<pre><code><figure class="highlight"><pre><span class="title">var</span> add_throw = function(a,b){
+    <span class="keyword">if</span>(<span class="typedef">typeof a !== 'number' || typeof b !== 'number')<span class="container">{
+        <span class="title">throw</span> {
+            <span class="title">name</span>: '<span class="type">TypeError</span>',
+            <span class="title">message</span>: '<span class="title">add</span> <span class="title">needs</span> <span class="title">numbers'</span>
+        }</span>;</span>
+    }
+    return a + b;
+};
+</pre></figure></code></pre>
+<p>该exception对象将被传递到一个try语句的catch从句：</p>
+<pre><code><figure class="highlight"><pre>var try_it = function()<span class="tuple">{
+    <span class="keyword">try</span> <span class="tuple">{
+        <span class="function_name">add_throw</span>('sever');
+    }</span> <span class="keyword">catch</span> (e) <span class="tuple">{
+        document.<span class="function_name">writeln</span>(e.name + ': ' + e.message);
+    }</span>
+};
+
+try_<span class="function_name">it</span>();
+</pre></figure></code></pre>
+<p>一个try语句只会有一个将捕获所有异常的catch代码块。如果你的处理手段取决于异常的类型，那么异常处理器必须检查异常对象的name属性以确定异常的类型。</p>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/My-Work/">My Work</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/function/">function</a>, <a href="/tags/javascript/">javascript</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="JavaScript 规范编程笔记：函数（一）">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>
