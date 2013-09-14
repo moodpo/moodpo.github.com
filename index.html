@@ -96,6 +96,79 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-09-06T14:52:23.000Z"><a href="/2013/09/06/the-good-parts-of-javascript-object/">Sep 6 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/09/06/the-good-parts-of-javascript-object/">JavaScript 规范编程笔记：对象</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p><img src="http://meiseku.com/moodpo/2013/09/20130904.jpg" alt="对象"></p>
+<blockquote>
+<p>没有对象我可以试着 new 一个</p>
+<p>在其中我可以重载甚至覆盖任何一种方法</p>
+<p>但是我却无法重载对你的思念</p>
+<p>也许命中注定 </p>
+<p>你在我的世界里永远的烙上了静态的属性</p>
+<p>而我不慎调用了爱你这个方法</p>
+<p>当我义无返顾的把自己作为参数传进这个方法时</p>
+<p>我才发现爱上你是一个死循环</p>
+</blockquote>
+<p>JavaScript的简单类型包括数字、字符串、布尔值（true和false）、null值和undefined值，其他所有的值都是对象。在JavaScript中，数组是对象，函数是对象，正则表达式是对象，当然，对象自然也是对象。对象是属性的容器，其中每个属性都拥有名字和值。属性的名字可以是包括空字符串在内的任意字符串。属性值可以是除undefined值之外的任何值。</p>
+<p>JavaScript包括一个原型链特性，允许对象继承另一个对象的属性。</p>
+<h3>1. 对象字面量</h3>
+<p>对象字面量提供了一种非常方便的创建新对象值得表示法。一个对象字面量就是包裹在一对花括号中的零或多个“名/值”对。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">var</span> empty_<span class="class"><span class="keyword">object</span> = {</span>};
+
+<span class="keyword">var</span> stooge = {
+    <span class="string">"first-name"</span>: <span class="string">"Jerome"</span>,
+    <span class="string">"last-name"</span>: <span class="string">"Howard"</span>    
+};
+</pre></figure></code></pre>
+<p>对象是可嵌套的。</p>
+<pre><code><figure class="highlight"><pre>var flight = {
+    <span class="method">airline:</span> <span class="comment">"Oceanic"</span>,
+    <span class="method">number:</span> <span class="number">815</span>,
+    <span class="method">departure:</span> {
+        <span class="class">IATA</span>: <span class="comment">"SYD"</span>,
+        <span class="method">time:</span> <span class="comment">"2004-09-22"</span>,
+        <span class="method">city:</span> <span class="comment">"Sydney"</span>
+    },
+    <span class="method">arrival:</span> {
+        <span class="class">IATA</span>: <span class="comment">"LAX"</span>,
+        <span class="method">time:</span> <span class="comment">"2004-09-23"</span>,
+        <span class="method">city:</span> <span class="comment">"Los Angeles"</span>
+    }
+};
+</pre></figure></code></pre>
+<h3>2. 检索</h3>
+<p>要检索对象中包含的值，可以采用在<code>[]</code>后缀中括住一个字符串表达式的方式。如果字符串表达式是一个常数，也可以使用<code>.</code>表示法代替。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+        <div class="alignleft">
+          <a href="/2013/09/06/the-good-parts-of-javascript-object/#more" class="more-link">Read More</a>
+        </div>
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-09-04T12:14:21.000Z"><a href="/2013/09/04/the-feeling-of-amnesia/">Sep 4 2013</a></time>
     
     
@@ -252,56 +325,6 @@
   </div>
   <footer class="end-sep">
     
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-08-24T12:16:12.000Z"><a href="/2013/08/24/ren-jian-bu-chai/">Aug 24 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/08/24/ren-jian-bu-chai/">人艰不拆</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p><img src="http://meiseku.com/moodpo/2013/08/20130803.jpg" alt="人艰不拆"></p>
-<blockquote>
-<p>人生已经如此艰难有些事就不要拆穿了。</p>
-</blockquote>
-<p>Kai shi shi yu dao Douzi , Douzi shi ge mei nv, dan than wo big san sui</p>
-<p>Ha , zhe ye shi hou lai cai zhi dao de</p>
-<p>Bu guan zen yang wo xi huan Douzi , I mei xiang guo yao fang qi , zhi xiang rang myself tuo xie</p>
-<p>Douzi said u fang qi ba wo bu guai u</p>
-<p>I said no , because I love u , u are your , I am mine , u are mine , I am u ma ?</p>
-<p>Douzi said qi shi I want love u</p>
-<p>I said na jiu xing dong a , I love u too</p>
-<p>Douzi shi ge hen sha de sha gua</p>
-<p>Bie ren dou ba her mai le que hai zai wei bie ren shu money de na zhong</p>
-<p>Like my sister , maybe</p>
-<p>Zhen because that I cai na me want bao hu her</p>
-<p>Douzi smell qi lai hen beautful</p>
-<p>Eye shen hen chun qing</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-        <div class="alignleft">
-          <a href="/2013/08/24/ren-jian-bu-chai/#more" class="more-link">Read More</a>
-        </div>
       
       
     

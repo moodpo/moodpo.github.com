@@ -60,6 +60,56 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-08-24T12:16:12.000Z"><a href="/2013/08/24/ren-jian-bu-chai/">Aug 24 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/08/24/ren-jian-bu-chai/">人艰不拆</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p><img src="http://meiseku.com/moodpo/2013/08/20130803.jpg" alt="人艰不拆"></p>
+<blockquote>
+<p>人生已经如此艰难有些事就不要拆穿了。</p>
+</blockquote>
+<p>Kai shi shi yu dao Douzi , Douzi shi ge mei nv, dan than wo big san sui</p>
+<p>Ha , zhe ye shi hou lai cai zhi dao de</p>
+<p>Bu guan zen yang wo xi huan Douzi , I mei xiang guo yao fang qi , zhi xiang rang myself tuo xie</p>
+<p>Douzi said u fang qi ba wo bu guai u</p>
+<p>I said no , because I love u , u are your , I am mine , u are mine , I am u ma ?</p>
+<p>Douzi said qi shi I want love u</p>
+<p>I said na jiu xing dong a , I love u too</p>
+<p>Douzi shi ge hen sha de sha gua</p>
+<p>Bie ren dou ba her mai le que hai zai wei bie ren shu money de na zhong</p>
+<p>Like my sister , maybe</p>
+<p>Zhen because that I cai na me want bao hu her</p>
+<p>Douzi smell qi lai hen beautful</p>
+<p>Eye shen hen chun qing</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+        <div class="alignleft">
+          <a href="/2013/08/24/ren-jian-bu-chai/#more" class="more-link">Read More</a>
+        </div>
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-08-14T02:57:31.000Z"><a href="/2013/08/14/sorry-i-lov-you/">Aug 14 2013</a></time>
     
     
@@ -341,97 +391,6 @@ console<span class="preprocessor">.log</span>(ticker2<span class="preprocessor">
 <p>季节不停的更迭，我的人生从一个阶段进入另一个阶段，而我还是不知道自己的未来。但我从未放弃努力放弃抗争，也许如大酒神所说，即使我们终究默默无名，但我们的一生终将是抗争的一生。这也许就是最好的未来。</p>
 <p>前几天李辉同学还问我程序的问题，我就想起约定的西藏青海之行。不知道到时候我能否完成约定，也实现自己的梦想，这种不确定，带来的是无尽的惆怅，计划总不如变化。晚上的时候在优酷看到一个视频，男主因一条描述云南大理风光的微博而只身前往了大理，并在那里巧遇爱情，甚至到最后也留了下来。对此我只能说这只是个故事，只发生在电影里的故事。现实中是很少有人放弃大城市的生活而到美丽而遥远的村落居住的。</p>
 <p>大学的时候，我也许是我们班逃课最多的人吧。逃课去香山，去婚纱摄影基地，去凤凰公园，去凤栖湾，去天外村，甚至去龙氏山；而当看那个视频的时候，我也在问自己“我多久没看过风景了？”。是啊，我已多久没有看过风景了？来北京不知不觉已两年，活动范围一直在五公里内，呵呵。</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-05-28T08:13:44.000Z"><a href="/2013/05/28/how-install-apache-24-and-php-54/">May 28 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/05/28/how-install-apache-24-and-php-54/">Window 7 安装 Apache 2.4 和 PHP 5.4 过程</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p>现在使用UI向导安装AMP(Apache,MySQL和PHP)已经变得非常容易，比如XAMPP，WAMP。但是使用这些集成的包安装你只能获取很少的知识，对于其配置却一无所知，安装完之后也无法按照自己的方式去修改。因此我推荐手动去安装配置它们。</p>
-<h2>一、下载地址</h2>
-<ul>
-<li>Apache 5.4 —— <a href="http://www.apachelounge.com/download/win32/binaries/httpd-2.4.4-win32.zip">httpd-2.4.4-win32.zip</a></li>
-<li>PHP 5.4 ——  <a href="http://windows.php.net/downloads/releases/php-5.4.15-Win32-VC9-x86.zip">php-5.4.15-Win32-VC9-x86.zip</a></li>
-</ul>
-<p>注意，VC9线程安全版本中已经包含了PHP和Apache connector DLL，因此无需下载此DLL。</p>
-<h2>二、配置</h2>
-<h3>1. Apache</h3>
-<p>使用任意编辑器打开 apache2.4/conf/httpd.conf 文件开始配置。</p>
-<h4>1.1 设置 Apache 位置</h4>
-<pre><code><figure class="highlight"><pre><span class="title">ServerRoot</span> <span class="string">"D:/Program Files/apache2.4"</span>
-</pre></figure></code></pre>
-<h4>1.2 启用使用的模块</h4>
-<p>我只去掉了 mod_rewrite 模块的注释。</p>
-<h4>1.3 在模块内容下增加以下内容</h4>
-<pre><code><figure class="highlight"><pre>LoadModule php5_module "D:/Program Files/PHP5.4/php5apache2_4.dll"
-Add<span class="operator"><span class="keyword">Handler</span> application/x-httpd-php .php
-PHPIniDir <span class="string">"D:/Program Files/PHP5.4"</span>
-</pre></figure></code></pre>
-<h4>1.4 修改服务器管理员邮件地址</h4>
-<p>ServerAdmin info@yoursite.com</p>
-<h4>1.5 修改文档根目录</h4>
-<pre><code><figure class="highlight"><pre>DocumentRoot "E:/www"
-<span class="tag">&lt;<span class="title">Directory</span> "<span class="attribute">E:</span>/<span class="attribute">www</span>"&gt;</span>
-</pre></figure></code></pre>
-<h4>1.6 找到一下内容替换实际的路径</h4>
-<pre><code><figure class="highlight"><pre>ScriptAlias /cgi-bin/ "D:/Program Files/apache2.4/cgi-bin/"
-<span class="tag">&lt;<span class="title">Directory</span> "<span class="attribute">D:</span>/<span class="attribute">Program</span> <span class="attribute">Files</span>/<span class="attribute">apache2.4</span>/<span class="attribute">cgi-bin</span>"&gt;</span>
-</pre></figure></code></pre>
-<h4>1.7 如果你想启用 <code>.htaccess</code> 请修改 <code>&lt;Directory “D:/www”&gt;</code> 下内容</h4>
-<pre><code><figure class="highlight"><pre><span class="title">AllowOverride</span> All
-</pre></figure></code></pre>
-<h4>1.8 添加 index.php 到 index 目录中</h4>
-<pre><code><figure class="highlight"><pre>DirectoryIndex <span class="keyword">index</span>.html <span class="keyword">index</span>.php
-</pre></figure></code></pre>
-<h3>1. PHP</h3>
-<h4>1.1 重命名 php.ini-development 为 php.ini</h4>
-<h4>1.2 修改扩展路径</h4>
-<pre><code><figure class="highlight"><pre><span class="setting">extension_dir = <span class="value"><span class="string">"D:/Program Files/PHP5.4/ext"</span></span></span>
-</pre></figure></code></pre>
-<h4>1.3 取消以下行的注释</h4>
-<pre><code><figure class="highlight"><pre><span class="setting">extension=<span class="value">php_curl.dll</span></span>
-<span class="setting">extension=<span class="value">php_mysql.dll</span></span>
-<span class="setting">extension=<span class="value">php_mysqli.dll</span></span>
-<span class="setting">extension=<span class="value">php_pdo_mysql.dll</span></span>
-<span class="setting">extension=<span class="value">php_soap.dll</span></span>
-</pre></figure></code></pre>
-<h4>1.4 如果你使用 PHP 的邮件功能请修改下面内容</h4>
-<pre><code><figure class="highlight"><pre><span class="setting">SMTP = <span class="value">smtp.yoursite.com</span></span>
-<span class="setting">smtp_port = <span class="value"><span class="number">25</span></span></span>
-<span class="setting">sendmail_from = <span class="value">youremail@sender.com</span></span>
-</pre></figure></code></pre>
-<h4>1.5 最后设置下时区</h4>
-<pre><code><figure class="highlight"><pre><span class="filename">date.timezone = PRC
-</pre></figure></code></pre>
-<h2>三、安装</h2>
-<p>需要将 Apache 2.4 的服务安装到系统服务中，使用以下命令(需要管理员权限)：</p>
-<pre><code><figure class="highlight"><pre>cd <span class="constant">D</span><span class="symbol">:/Program</span> <span class="constant">Files</span>/apache2.<span class="number">4</span>/bin
-httpd -k install
-</pre></figure></code></pre>
-<p>编写一个 index.php 文件，内容为 <code>&lt;?php phpinfo() ?&gt;</code>， 启动apache服务，访问以下 <a href="http://localhost/"><a href="http://localhost/">http://localhost/</a></a> 吧</p>
 
     
   </div>

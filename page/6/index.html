@@ -60,6 +60,146 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-03-11T05:54:01.000Z"><a href="/2013/03/11/struts-2-interceptor-2/">Mar 11 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/03/11/struts-2-interceptor-2/">Struts 2 拦截器(二)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p><img src="http://meiseku.com/moodpo/2013/03/2759728019.jpg" alt="拦截器.jpg" title="拦截器.jpg"></p>
+<h3>1.声明拦截器</h3>
+<p>XML是声明拦截器的唯一选择，注解机制现在还不支持声明拦截器。</p>
+<h4>1.1 声明独立的拦截器和拦截器栈</h4>
+<p>通常，拦截器声明包含声明可用的拦截器并把它们与应该触发的动作关联起来。像所有框架组件的声明一样，拦截器的声明必须在package元素内部。以下是struts-default.xml文件中struts-default包的各个拦截器的声明：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"struts-default"</span> <span class="attribute">abstract</span>=<span class="value">"true"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptors</span>&gt;</span>
+         ......
+        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"execAndWait"</span> <span class="attribute">class</span>=<span class="value">"org.apache.struts2.interceptor.ExecuteAndWaitInterceptor"</span>/&gt;</span>
+        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"exception"</span> <span class="attribute">class</span>=<span class="value">"com.opensymphony.xwork2.interceptor.ExceptionMappingInterceptor"</span>/&gt;</span>
+        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"fileUpload"</span> <span class="attribute">class</span>=<span class="value">"org.apache.struts2.interceptor.FileUploadInterceptor"</span>/&gt;</span>
+         ......
+
+        <span class="tag">&lt;<span class="title">interceptor-stack</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"exception"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"alias"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"servletConfig"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"i18n"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"prepare"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"chain"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"debugging"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"scopedModelDriven"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"modelDriven"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"fileUpload"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"checkbox"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"multiselect"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"staticParams"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"actionMappingParams"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"params"</span>&gt;</span>
+                    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeParams"</span>&gt;</span>dojo\..*,</span><span class="keyword">^struts</span><span class="xml">\..*<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+                <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"conversionError"</span>/&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"validation"</span>&gt;</span>
+                    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+                <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
+                    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+                <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+            <span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
+
+            <span class="tag">&lt;<span class="title">default-interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>/&gt;</span>
+    <span class="tag">&lt;/<span class="title">interceptors</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">package</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>interceptors元素包含这个包内所有的interceptor和interceptor-stack的声明。每个interceptor元素声明了一个可以在包内使用的拦截器。这些声明实际上没有创建一个拦截器或者把这个拦截器与任何动作关联，它们只是把一个名字映射到一个类。struts-default包声明了几个栈，其中中最重要的是defaultStack。</p>
+<p>interceptor-stack元素的内容是一系列interceptor-ref元素，这些引用必须都指向interceptor元素创建的某个逻辑名，interceptor-ref元素也可以传入参数来配置引用创建的拦截器实例。</p>
+<p>最后，一个包可以定义一组默认的拦截器，default-interceptor-ref定义的拦截器组会与这个包内没有显示声明自己的拦截器的所有动作关联，它只指向一个逻辑名，这里是defaultStack。</p>
+<p><strong>XML文档结构</strong></p>
+<p>声明使用的XML文档必须遵守特定的顺序规则，这可以通过DTD查看：</p>
+<pre><code><figure class="highlight"><pre>&lt;!ELEMENT struts ((<span class="keyword">package</span>|<span class="keyword">include</span>|bean|constant)*, unknown-handler-stack?)&gt;
+&lt;!ELEMENT <span class="package"><span class="keyword">package</span> (<span class="title">result</span>-<span class="title">types</span>?, <span class="title">interceptors</span>?, <span class="title">default</span>-<span class="title">interceptor</span>-<span class="title">ref</span>?, <span class="title">default</span>-<span class="title">action</span>-<span class="title">ref</span>?, <span class="title">default</span>-<span class="title">class</span>-<span class="title">ref</span>?, <span class="title">global</span>-<span class="title">results</span>?, <span class="title">global</span>-<span class="title">exception</span>-<span class="title">mappings</span>?, <span class="title">action</span>*)&gt;
+</pre></figure></code></pre>
+<p>上述语句指出，struts-default.xml文件以struts元素开始，这个元素能够包含4种不同的元素类型的0个或者多个实例。与struts的元素不同，package元素的内容必须遵照特定的顺序。另外，所有包含在一个package元素中的元素，出action元素外，都只能出现一次。interceptors元素必须只出现一次或者一次也不出现，并且不需出现在result-types元素之后，并且在default-interceptor-ref元素之前。</p>
+<h4>1.2 将拦截器映射到动作组件</h4>
+<p>可以使用interceptor-ref元素完成拦截器和动作的关联，以下代码片段显示了如何将一系列拦截器和一个特定的动作关联起来：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"MyAction"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.MyAction"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"timer"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"logger"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+    <span class="comment">&lt;!-- 需要再次声明使用defaultStack --&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">result</span>&gt;</span>/success.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+</pre></figure></code></pre>
+<p>首先，这个动作命名了拦截器，但没有提及在struts-default包中声明的defaultStack。正因如此，这个动作必须在一个扩展了struts-default的包中。其次，虽然没有定义任何interceptor-ref的动作会继承默认的拦截器，但是只要动作声明了自己的拦截器，它就失去了自己的默认值，并且为了使用defaultStack就必须显式指出。</p>
+<h4>1.3 设置、覆盖拦截器参数</h4>
+<p>很多拦截器可以被参数化。如果一个拦截器接受参数，那么interceptor-ref元素是向它们传入参数的地方。比如之前所说的workflow拦截器被参数化以忽略对动作的某些方法名的访问：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+</pre></figure></code></pre>
+<p>如果我们想重用包含了defaultStack的拦截器栈，但是我们想改变excludeMethods参数的值要怎么办呢？很简单，代码如下：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"MyAction"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.MyAction"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"workflow.excludeMethods"</span>&gt;</span>dosomething<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">result</span>&gt;</span>/success.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+</pre></figure></code></pre>
+<h3>2.构建自定义拦截器</h3>
+<p>除了安排栈的顺序和在调试中学习解决顺序问题需要多加留意外，编写拦截器其实很容易。</p>
+<h4>2.1 实现Interceptor接口</h4>
+<p>在编写一个拦截器时需要实现com.opensymphony.xwork2.interceptor.Interceptor接口。</p>
+<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Interceptor</span> <span class="keyword">extends</span> <span class="title">Serializable</span> {</span>
+    <span class="keyword">public</span> <span class="keyword">void</span> destroy();
+    <span class="keyword">public</span> <span class="keyword">void</span> init();
+    <span class="keyword">public</span> String intercept(ActionInvocation actionInvocation) <span class="keyword">throws</span> Exception;
+}
+</pre></figure></code></pre>
+<p>可以看到，这个简单的接口只定义了3个方法，前两个方法是典型的生命周期方法，真正的业务逻辑发生在intercept()方法中。</p>
+<h4>2.2 声明拦截器并构建新的默认栈</h4>
+<p>在定义完拦截器类后，需要将这个拦截器应用在动作上，所以可以构建一个自定栈，它的大致写法如下：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"demo4Secure"</span> <span class="attribute">namespace</span>=<span class="value">"/secure"</span> <span class="attribute">extends</span>=<span class="value">"struts-default"</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">interceptors</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"yourInterceptor"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.utils.YourInterceptor"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor</span>&gt;</span>
+
+        <span class="tag">&lt;<span class="title">interceptor-stack</span> <span class="attribute">name</span>=<span class="value">"myStack"</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"yourInterceptor"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">interceptors</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">default-interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"myStack"</span>&gt;</span><span class="tag">&lt;/<span class="title">default-interceptor-ref</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"yourAction"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.action.YourAction"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">result</span>&gt;</span>/success.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
+
+<span class="tag">&lt;/<span class="title">package</span>&gt;</span>
+</pre></figure></code></pre>
+<p>首先，我们必须使用一个interceptors元素来包含所有的interceptor和interceptor-stack的声明。我们必须使用一个interceptor元素将Java类映射到一个逻辑名(yourInterceptor)。其次，我们构建了一个新栈，这个栈使用defaultStack并且把新拦截器追加到它的上面(当然根据业务的不同，也可以放在下面)。最后，我们把myStack声明为这个包的默认拦截器栈。以上这样做的好处是拦截器与动作代码完全分离，并且实现了可重用。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-03-10T05:48:55.000Z"><a href="/2013/03/10/struts-2-interceptor-1/">Mar 10 2013</a></time>
     
     
@@ -683,167 +823,6 @@ f.<span class="keyword">close</span>()
 <span class="comment">#参数：实际值/期望值</span>
 </pre></figure></code></pre>
 <p>类似于java中的throw</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-03-03T05:12:32.000Z"><a href="/2013/03/03/byte-of-python-notes-1/">Mar 3 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/03/03/byte-of-python-notes-1/">简明 Python 教程笔记(上)</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p>利用周末时间终于看完了《简明Python教程》，在线地址在<a href="http://woodpecker.org.cn/abyteofpython_cn/chinese/">这里</a>，说来真是惭愧，本来想过年放假时看完的，想不到竟然托到了现在。废话不多说，还是在这里记录下看书时做的笔记吧。</p>
-<h3>1. 控制流</h3>
-<p>在Python中有三种控制流语句——if、for和while。</p>
-<h4>1.1 if语句</h4>
-<pre><code><figure class="highlight"><pre><span class="type">number</span> = <span class="number">23</span>
-guess = int(raw_input('Enter an <span class="type">integer</span> : '))
-
-<span class="keyword">if</span> guess == <span class="type">number</span>:
-    print 'Congratulations, you guessed <span class="keyword">it</span>.' 
-    print <span class="string">"(but you do not win any prizes!)"</span> 
-elif guess &lt; <span class="type">number</span>:
-    print 'No, <span class="keyword">it</span> <span class="keyword">is</span> a little higher than <span class="keyword">that</span>' 
-<span class="keyword">else</span>:
-    print 'No, <span class="keyword">it</span> <span class="keyword">is</span> a little lower than <span class="keyword">that</span>' 
-
-print 'Done'
-</pre></figure></code></pre>
-<h4>1.2 while语句</h4>
-<pre><code><figure class="highlight"><pre><span class="type">number</span> = <span class="number">23</span>
-<span class="property">running</span> = True
-
-<span class="keyword">while</span> <span class="property">running</span>:
-    guess = int(raw_input('Enter an <span class="type">integer</span> : '))
-
-    <span class="keyword">if</span> guess == <span class="type">number</span>:
-        print 'Congratulations, you guessed <span class="keyword">it</span>.' 
-        <span class="property">running</span> = False 
-    elif guess &lt; <span class="type">number</span>:
-        print 'No, <span class="keyword">it</span> <span class="keyword">is</span> a little higher than <span class="keyword">that</span>' 
-    <span class="keyword">else</span>:
-        print 'No, <span class="keyword">it</span> <span class="keyword">is</span> a little lower than <span class="keyword">that</span>' 
-<span class="keyword">else</span>:
-    print 'The <span class="keyword">while</span> loop <span class="keyword">is</span> <span class="keyword">over</span>.' 
-
-print 'Done'
-</pre></figure></code></pre>
-<h4>1.3 for语句</h4>
-<pre><code><figure class="highlight"><pre><span class="keyword">for</span> i <span class="keyword">in</span> <span class="keyword">range</span>(<span class="number">1</span>, <span class="number">5</span>):
-    print i
-<span class="keyword">else</span>:
-    print <span class="attribute">'The</span> <span class="keyword">for</span> <span class="keyword">loop</span> <span class="keyword">is</span> over'
-</pre></figure></code></pre>
-<p>除此之外，还有<code>break</code>和<code>continue</code>语句，与java语言相同。</p>
-<h3>2. 函数</h3>
-<h4>2.1 函数定义</h4>
-<pre><code><figure class="highlight"><pre><span class="function"><span class="keyword">def</span> <span class="title">sayHello</span><span class="params">()</span>:</span>
-    <span class="keyword">print</span> <span class="string">'Hello World!'</span> <span class="comment"># 函数体</span>
-
-sayHello() <span class="comment"># 调用函数</span>
-</pre></figure></code></pre>
-<h4>2.2 文档字符串</h4>
-<pre><code><figure class="highlight"><pre><span class="function"><span class="keyword">def</span> <span class="title">printMax</span><span class="params">(x, y)</span>:</span>
-    <span class="string">'''Prints the maximum of two numbers.
-
-    The two values must be integers.'''</span>
-
-    ...... <span class="comment"># 函数体</span>
-</pre></figure></code></pre>
-<p>文档字符串的惯例是一个多行字符串，它的首行以大写字母开始，句号结尾。第二行是空行，从第三行开始是详细的描述。DocStrings也适用于模块和类。可使用<strong>doc</strong>（注意双下划线）调用。</p>
-<pre><code><figure class="highlight"><pre><span class="title">print</span> printMax.__doc__
-</pre></figure></code></pre>
-<h3>3. 模块</h3>
-<h4>3.1 模块的<strong>name</strong></h4>
-<p>在程序本身被使用的时候运行主块，而在它被别的模块输入的时候不运行主块，以通过模块的<strong>name</strong>属性完成。</p>
-<pre><code><figure class="highlight"><pre><span class="keyword">if</span> __name__ == '__main__':
-    print 'This program <span class="keyword">is</span> being <span class="command">run</span> <span class="keyword">by</span> itself'
-<span class="keyword">else</span>:
-    print 'I am being imported <span class="keyword">from</span> another module'
-</pre></figure></code></pre>
-<p>测试结果：</p>
-<pre><code><figure class="highlight"><pre><span class="variable">$ </span>python using_name.py
-<span class="constant">This</span> program is being run by itself
-
-<span class="variable">$ </span>python
-&gt;&gt;&gt; import using_name
-<span class="constant">I</span> am being imported from another <span class="class"><span class="keyword">module</span>
-&gt;&gt;&gt;</span>
-</pre></figure></code></pre>
-<h4>3.2 dir()函数</h4>
-<p>dir函数用来列出模块定义的属性和方法。</p>
-<pre><code><figure class="highlight"><pre>$ python
-&gt;&gt;&gt; <span class="import"><span class="keyword">import</span> sys</span>
-&gt;&gt;&gt; dir(sys) # get list <span class="keyword">of</span> attributes for sys <span class="module"><span class="keyword">module</span>
-</pre></figure></code></pre>
-<h4>3.3 其他内容</h4>
-<p>sys.argv变量是一个字符串的&quot;列表&quot;，它包含了 命令行参数 的列表，即使用命令行传递给你的程序的参数。</p>
-<p>sys.path包含输入模块的目录名列表。</p>
-<p>help()函数将打印 &quot;文档字符串&quot;内容。</p>
-<p>raw_input(&#39;Enter an integer:&#39;) 用于接收用户的输入。</p>
-<h3>4. 数据结构--列表、元组和字典</h3>
-<h4>4.1 列表</h4>
-<pre><code><figure class="highlight"><pre><span class="title">shoplist</span> = ['apple',<span class="string"> 'mango'</span>,<span class="string"> 'carrot'</span>,<span class="string"> 'banana'</span>] # 定义
-<span class="title">len</span>(shoplist)  # 内置的返回列表大小的函数
-
-<span class="title">for</span> item <span class="keyword">in</span> shoplist: # 循环打印列表元素内容
-    print item
-
-<span class="title">shoplist</span>.append('rice')
-
-<span class="title">shoplist</span>.sort()
-
-<span class="title">olditem</span> = shoplist[<span class="number">0</span>]
-
-<span class="title">del</span> shoplist[<span class="number">0</span>] # 删除列表中的元素
-</pre></figure></code></pre>
-<h4>4.2 元组</h4>
-<p>元组同字符串一样，是不可变的，无法修改的。</p>
-<pre><code><figure class="highlight"><pre>zoo = (<span class="attribute">'wolf</span>', <span class="attribute">'elephant</span>', <span class="attribute">'penguin</span>') # 定义元组
-new_zoo = (<span class="attribute">'monkey</span>', <span class="attribute">'dolphin</span>', zoo)
-new_zoo[<span class="number">2</span>][<span class="number">2</span>]
-</pre></figure></code></pre>
-<p>只有一个元素的元组这样写，必须加逗号</p>
-<pre><code><figure class="highlight"><pre><span class="setting">singleton = <span class="value">(<span class="number">2</span>,)</span></span>
-</pre></figure></code></pre>
-<p>元组最通常的用法是用在打印语句中</p>
-<pre><code><figure class="highlight"><pre>age = <span class="number">22</span>
-<span class="property">name</span> = 'Swaroop'
-print '%s <span class="keyword">is</span> %d years old' % (<span class="property">name</span>, age)
-print 'Why <span class="keyword">is</span> %s playing <span class="keyword">with</span> <span class="keyword">that</span> python?' % <span class="property">name</span>
-</pre></figure></code></pre>
-<h4>4.3 字典</h4>
-<p>字典类似&quot;键值对&quot;。</p>
-<pre><code><figure class="highlight"><pre>d = {key1 : value1, key2 : value2 } <span class="preprocessor"># 定义</span>
-d[key1]
-del d[key1]
-
-<span class="keyword">for</span> key,<span class="keyword">value</span> <span class="keyword">in</span> d:
-    print <span class="string">'%s is $s'</span>%(key,<span class="keyword">value</span>)
-
-<span class="keyword">if</span> key <span class="keyword">in</span> d:
-    ......
-</pre></figure></code></pre>
 
     
   </div>

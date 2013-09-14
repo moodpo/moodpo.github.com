@@ -60,6 +60,88 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-03-14T08:00:03.000Z"><a href="/2013/03/14/struts-2-tags-3/">Mar 14 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/03/14/struts-2-tags-3/">Struts 2 标签（三）</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>前两节我们复习了Struts2的数据标签、流程管理标签以及其他标签，本节将学习Struts2的UI组件标签。每一个UI组件都是一个功能单元，用户通过UI组件与应用程序交互、向应用程序输入数据。每一个Struts 2 UI组件的核心都是一个HTML表单控件。但是不要误解，这些组件不仅仅是一个输出HTML输入元素的标签，它们是高层组件，其中的HTML元素只是在浏览器中的表现。UI组件构建在一个分层的、迷你的MVC架构上，这个架构把某个组件的HTML标签的输出分离到了底层的FreeMarker模板中，开发人员可以通过修改这些底层的模板来改变这些组件。</p>
+<h3>1.为什么需要UI组件标签</h3>
+<p>新一波的前端界面复杂化的浪潮已然到来，随着时间的流逝，由AJAX和其他富客户端技术支持的动态的前端界面慢慢变成了普通的需求。一个新的web应用程序框架如果不能从框架上考虑管理前端界面日益增加的复杂度，那么它必将走向失败。Struts2 UI组件很好的实现了这个要求。</p>
+<p><strong>不仅仅是表单元素</strong></p>
+<p>每一个常用的HTML表单元素都有一个对应的Struts 2 UI组件，除了这个一对一的关系，更复杂的UI组件将一对HTML元素包装成一个单元来创建一个新的表单组件。你可以把呈现对应的HTML元素当作是UI组件的基本功能，但最终你会发现，UI组件不仅仅是底层HTML元素的总和。下面是UI组件能够做的一些事情。</p>
+<ul>
+<li>生成HTML标记</li>
+<li>绑定HTML表单字段和Java端属性</li>
+<li>与框架提供的类型转换关联起来</li>
+<li>与框架提供的验证关联起来</li>
+<li>与框架提供的国际化功能关联起来</li>
+</ul>
+<p><strong>1.生成HTML标记</strong></p>
+<p>每一个UI组件标签确实生成了一组HTML标记，这些标记定义了对应的HTML元素，并且经常包含一些其他的布局标记，这是组件标签最简单的一个方面。下面是一个简单的示例。：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:textfield</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">label</span>=<span class="value">"Username"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>上述标签将会在页面输出如下HTML代码：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">td</span> <span class="attribute">class</span>=<span class="value">"tdLabel"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">label</span> <span class="attribute">for</span>=<span class="value">"Register_username"</span> <span class="attribute">class</span>=<span class="value">"label"</span>&gt;</span>Username:<span class="tag">&lt;/<span class="title">label</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">td</span>&gt;</span>
+<span class="tag">&lt;<span class="title">td</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"text"</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">value</span>=<span class="value">""</span> <span class="attribute">id</span>=<span class="value">"Register_username"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">td</span>&gt;</span>
+</pre></figure></code></pre>
+<p>首先不要被表格标记迷惑，这些是XHTML主题生成的，主题也追加了一些CSS控制用的类属性。如果你喜欢，它甚至能够为这些样式生成一个简单的默认样式表。id属性由包含它的表单的name属性与输入字段的name属性拼接而成。</p>
+<p><strong>2.将表单字段绑定到ValueStack的属性</strong></p>
+<p>创建HTML元素只是开始。一旦HTML元素生成后，UI组件会将这些生成的元素与Struts2框架提供的丰富的功能连接起来。首先，UI组件会把表单字段绑定到ValueStack的属性，这为数据转移奠定了基础。当你查看这些UI组件标签生成的表单时，它在两个方向上与后台的Java属性关联。首先，ValueStack上的数据能够流向表单来预填充表单。其次，当表单提交时，来源于表单字段的数据会流向框架并自动被转移到ValueStack上。UI组件通过将name属性指定为OGNL表达式将自己同时绑定到ValueStack上的传出和传入属性，以实现表单的预先填充和表单提交时的自动数据转移。</p>
+<p><strong>3.与类型转换、数据验证以及国际化集成</strong></p>
+<p>对于类型转换和数据验证，在问题发生时UI组件能够自动处理错误消息。类型转换或者数据验证出现问题时会导致请求将用户带回数据表单页面。这时UI组件会自动检测与自己相关的错误信息是否存在，并显示相应的错误信息，当然你也可以自定义和国际化这些错误信息。</p>
+<p>UI组件也能够接入国际化机制为UI组件提供本地化的标签名字。这个特性需要使用所有UI组件都有的key属性，只需设置这个属性，UI组件就能够从框架的ResourceBundle中取得本地化的标签，并能智能的推算出name属性和value属性来完成组件的数据绑定。</p>
+<h3>2. 标签、模板和主题</h3>
+<p>现在我们来学习UI组件标签独一无二的架构。UI组件的迷你MVC架构最大的好处是可以重用自定义的内容。</p>
+<p><img src="http://meiseku.com/moodpo/2013/03/2197838678.png" alt="UI组件架构.png" title="UI组件架构.png"></p>
+<p>UI组件构建在分层的架构上。组件API被公开为页面中的JSP标签，它会被作为JSP标签处理。本地标签仅仅是框架对应的UI组件API的包装，如JSP类型的Struts 2 textfield标签就是对org.apache.struts2.components.TextField组件类的包装。如图，本地标签很快将控制转交给对应的组件API做实际处理。UI组件层处理标签的逻辑并准备数据，之后组件将呈现的任务交给底层的FreeMarker模板。</p>
+<p>以这种方式将标签API输出的标记与实现逻辑的Java类分层，这样我们就有了迷你MVC架构。像所有的MVC架构一样，最主要的好处就是能够很容易的修改标签的视图而不需要修改嵌入在标签组件类中的业务逻辑。</p>
+<h4>2.1 标签</h4>
+<p>标签非常简单，Struts2标签API是一个高层的API，也就是说，标签的功能和使用定义在给定的视图层技术细节之外，框架提供了标签API在JSP、Velocity、FreeMarker等视图层技术中的实现。不管你使用哪种技术，本地标签都将处理过程委托给UI组件框架，框架管理标签的逻辑和数据模型，数据可能来源于ActionContext或者ValueStack，也可能来源于标签的属性或参数。那些呈现UI组件的HTML标记的模板可以访问这些数据。框架使用FreeMarker模板呈现UI组件。</p>
+<h4>2.2 模板</h4>
+<p>每一个标签都有一个与之对应的FreeMarker模板来呈现它的标记。FreeMarker模板看起来很像普通的文本文件，在这些普通的文本内部有一些特殊的FreeMarker指令，它们可以动态地取得数据并能呈现结果输出。对于UI组件标签，模板获得标签逻辑收集的数据模型，将这些数据和模板中的静态部分混合起来创建最终呈现在HTML页面中的标记。</p>
+<h4>2.3 主题</h4>
+<p>底层模板为给定标签生成标记是很容易理解的，然而，实际上情况更复杂。实际上，每个标签都准备了几个版本的底层模板。每一个版本属于一个主题。一个主题是一组模板，每一个模板至少属于一个标签，这些模板以某种一致的方式或者习惯呈现这些标签。</p>
+<p>有几种方法可以指定使用的主题，默认情况下，所有的标签都使用xhtml主题呈现。可以在整个应用的范围内改变默认主题，也可以在每个页面或者每个标签指定不同的主题。</p>
+<p>Struts 2 自带了4个主题来呈现UI组件，它们如下：</p>
+<ul>
+<li>simple:呈现基本的HTML元素</li>
+<li>xhtml:使用表格提供的布局呈现UI组件</li>
+<li>css_xhtml:使用纯CSS提供的布局呈现UI组件</li>
+<li>ajax:扩展xhtml主题并且提供丰富的ajax组件。</li>
+</ul>
+<p><strong>改变主题</strong></p>
+<p>所有框架的默认属性都定义在default.properties文件中，这个文件在Struts 2核心的JAR文件的org.apache.struts2包内。覆盖框架的默认属性，只需创建自己的属性文件，命名为struts.properties，并把它放在类路径中。要改变默认主题，只需添加如下内容，UI组件就会使用css_xhtml来呈现。</p>
+<pre><code><figure class="highlight"><pre>struts<span class="variable">.ui</span><span class="variable">.theme</span>=css_xhtml
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-03-14T05:59:55.000Z"><a href="/2013/03/14/struts-2-tags-2/">Mar 14 2013</a></time>
     
     
@@ -1480,146 +1562,6 @@ nonExistingProperty on the ValueStack = <span class="tag">&lt;<span class="title
 <p>在使用OGNL表达式定位到目标属性之后，可以通过使用正确的值调用属性的set方法把数据移动到这个属性上。这是类型转换就开始工作了。我们需要把字符串转换为OGNL指向的age属性的Java类型。OGNL会咨询它可用的类型转换器的集合一确定是否他们中某个可以处理这个特定的转换。</p>
 <p><strong>2.数据流出</strong></p>
 <p>与数据进入相反，在动作完成自身的业务、调用业务逻辑、做数据操作后，某个最终结果会触发，它会向用户呈现一个新的应用程序试图。在这个过程中，数据对象会一直保留在ValueStack上。当结果开始自己的呈现过程时，它也通过标签中的OGNL表达式语言访问ValueStack，从其中取得数据。</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-03-11T05:54:01.000Z"><a href="/2013/03/11/struts-2-interceptor-2/">Mar 11 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/03/11/struts-2-interceptor-2/">Struts 2 拦截器(二)</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p><img src="http://meiseku.com/moodpo/2013/03/2759728019.jpg" alt="拦截器.jpg" title="拦截器.jpg"></p>
-<h3>1.声明拦截器</h3>
-<p>XML是声明拦截器的唯一选择，注解机制现在还不支持声明拦截器。</p>
-<h4>1.1 声明独立的拦截器和拦截器栈</h4>
-<p>通常，拦截器声明包含声明可用的拦截器并把它们与应该触发的动作关联起来。像所有框架组件的声明一样，拦截器的声明必须在package元素内部。以下是struts-default.xml文件中struts-default包的各个拦截器的声明：</p>
-<pre><code><figure class="highlight"><pre><span class="xml"><span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"struts-default"</span> <span class="attribute">abstract</span>=<span class="value">"true"</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">interceptors</span>&gt;</span>
-         ......
-        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"execAndWait"</span> <span class="attribute">class</span>=<span class="value">"org.apache.struts2.interceptor.ExecuteAndWaitInterceptor"</span>/&gt;</span>
-        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"exception"</span> <span class="attribute">class</span>=<span class="value">"com.opensymphony.xwork2.interceptor.ExceptionMappingInterceptor"</span>/&gt;</span>
-        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"fileUpload"</span> <span class="attribute">class</span>=<span class="value">"org.apache.struts2.interceptor.FileUploadInterceptor"</span>/&gt;</span>
-         ......
-
-        <span class="tag">&lt;<span class="title">interceptor-stack</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"exception"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"alias"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"servletConfig"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"i18n"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"prepare"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"chain"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"debugging"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"scopedModelDriven"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"modelDriven"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"fileUpload"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"checkbox"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"multiselect"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"staticParams"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"actionMappingParams"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"params"</span>&gt;</span>
-                    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeParams"</span>&gt;</span>dojo\..*,</span><span class="keyword">^struts</span><span class="xml">\..*<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
-                <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"conversionError"</span>/&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"validation"</span>&gt;</span>
-                    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
-                <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-                <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
-                    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
-                <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-            <span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
-
-            <span class="tag">&lt;<span class="title">default-interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>/&gt;</span>
-    <span class="tag">&lt;/<span class="title">interceptors</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">package</span>&gt;</span></span>
-</pre></figure></code></pre>
-<p>interceptors元素包含这个包内所有的interceptor和interceptor-stack的声明。每个interceptor元素声明了一个可以在包内使用的拦截器。这些声明实际上没有创建一个拦截器或者把这个拦截器与任何动作关联，它们只是把一个名字映射到一个类。struts-default包声明了几个栈，其中中最重要的是defaultStack。</p>
-<p>interceptor-stack元素的内容是一系列interceptor-ref元素，这些引用必须都指向interceptor元素创建的某个逻辑名，interceptor-ref元素也可以传入参数来配置引用创建的拦截器实例。</p>
-<p>最后，一个包可以定义一组默认的拦截器，default-interceptor-ref定义的拦截器组会与这个包内没有显示声明自己的拦截器的所有动作关联，它只指向一个逻辑名，这里是defaultStack。</p>
-<p><strong>XML文档结构</strong></p>
-<p>声明使用的XML文档必须遵守特定的顺序规则，这可以通过DTD查看：</p>
-<pre><code><figure class="highlight"><pre>&lt;!ELEMENT struts ((<span class="keyword">package</span>|<span class="keyword">include</span>|bean|constant)*, unknown-handler-stack?)&gt;
-&lt;!ELEMENT <span class="package"><span class="keyword">package</span> (<span class="title">result</span>-<span class="title">types</span>?, <span class="title">interceptors</span>?, <span class="title">default</span>-<span class="title">interceptor</span>-<span class="title">ref</span>?, <span class="title">default</span>-<span class="title">action</span>-<span class="title">ref</span>?, <span class="title">default</span>-<span class="title">class</span>-<span class="title">ref</span>?, <span class="title">global</span>-<span class="title">results</span>?, <span class="title">global</span>-<span class="title">exception</span>-<span class="title">mappings</span>?, <span class="title">action</span>*)&gt;
-</pre></figure></code></pre>
-<p>上述语句指出，struts-default.xml文件以struts元素开始，这个元素能够包含4种不同的元素类型的0个或者多个实例。与struts的元素不同，package元素的内容必须遵照特定的顺序。另外，所有包含在一个package元素中的元素，出action元素外，都只能出现一次。interceptors元素必须只出现一次或者一次也不出现，并且不需出现在result-types元素之后，并且在default-interceptor-ref元素之前。</p>
-<h4>1.2 将拦截器映射到动作组件</h4>
-<p>可以使用interceptor-ref元素完成拦截器和动作的关联，以下代码片段显示了如何将一系列拦截器和一个特定的动作关联起来：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"MyAction"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.MyAction"</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"timer"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"logger"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-    <span class="comment">&lt;!-- 需要再次声明使用defaultStack --&gt;</span>
-    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">result</span>&gt;</span>/success.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">action</span>&gt;</span>
-</pre></figure></code></pre>
-<p>首先，这个动作命名了拦截器，但没有提及在struts-default包中声明的defaultStack。正因如此，这个动作必须在一个扩展了struts-default的包中。其次，虽然没有定义任何interceptor-ref的动作会继承默认的拦截器，但是只要动作声明了自己的拦截器，它就失去了自己的默认值，并且为了使用defaultStack就必须显式指出。</p>
-<h4>1.3 设置、覆盖拦截器参数</h4>
-<p>很多拦截器可以被参数化。如果一个拦截器接受参数，那么interceptor-ref元素是向它们传入参数的地方。比如之前所说的workflow拦截器被参数化以忽略对动作的某些方法名的访问：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"excludeMethods"</span>&gt;</span>input,back,cancel,browse<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-</pre></figure></code></pre>
-<p>如果我们想重用包含了defaultStack的拦截器栈，但是我们想改变excludeMethods参数的值要怎么办呢？很简单，代码如下：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"MyAction"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.MyAction"</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span>
-        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"workflow.excludeMethods"</span>&gt;</span>dosomething<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
-    <span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">result</span>&gt;</span>/success.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">action</span>&gt;</span>
-</pre></figure></code></pre>
-<h3>2.构建自定义拦截器</h3>
-<p>除了安排栈的顺序和在调试中学习解决顺序问题需要多加留意外，编写拦截器其实很容易。</p>
-<h4>2.1 实现Interceptor接口</h4>
-<p>在编写一个拦截器时需要实现com.opensymphony.xwork2.interceptor.Interceptor接口。</p>
-<pre><code><figure class="highlight"><pre><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Interceptor</span> <span class="keyword">extends</span> <span class="title">Serializable</span> {</span>
-    <span class="keyword">public</span> <span class="keyword">void</span> destroy();
-    <span class="keyword">public</span> <span class="keyword">void</span> init();
-    <span class="keyword">public</span> String intercept(ActionInvocation actionInvocation) <span class="keyword">throws</span> Exception;
-}
-</pre></figure></code></pre>
-<p>可以看到，这个简单的接口只定义了3个方法，前两个方法是典型的生命周期方法，真正的业务逻辑发生在intercept()方法中。</p>
-<h4>2.2 声明拦截器并构建新的默认栈</h4>
-<p>在定义完拦截器类后，需要将这个拦截器应用在动作上，所以可以构建一个自定栈，它的大致写法如下：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">package</span> <span class="attribute">name</span>=<span class="value">"demo4Secure"</span> <span class="attribute">namespace</span>=<span class="value">"/secure"</span> <span class="attribute">extends</span>=<span class="value">"struts-default"</span>&gt;</span>
-
-    <span class="tag">&lt;<span class="title">interceptors</span>&gt;</span>
-        <span class="tag">&lt;<span class="title">interceptor</span> <span class="attribute">name</span>=<span class="value">"yourInterceptor"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.utils.YourInterceptor"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor</span>&gt;</span>
-
-        <span class="tag">&lt;<span class="title">interceptor-stack</span> <span class="attribute">name</span>=<span class="value">"myStack"</span>&gt;</span>
-            <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"yourInterceptor"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-            <span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"defaultStack"</span>&gt;</span><span class="tag">&lt;/<span class="title">interceptor-ref</span>&gt;</span>
-        <span class="tag">&lt;/<span class="title">interceptor-stack</span>&gt;</span>
-    <span class="tag">&lt;/<span class="title">interceptors</span>&gt;</span>
-
-    <span class="tag">&lt;<span class="title">default-interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"myStack"</span>&gt;</span><span class="tag">&lt;/<span class="title">default-interceptor-ref</span>&gt;</span>
-
-    <span class="tag">&lt;<span class="title">action</span> <span class="attribute">name</span>=<span class="value">"yourAction"</span> <span class="attribute">class</span>=<span class="value">"com.moodpo.review.action.YourAction"</span>&gt;</span>
-        <span class="tag">&lt;<span class="title">result</span>&gt;</span>/success.jsp<span class="tag">&lt;/<span class="title">result</span>&gt;</span>
-    <span class="tag">&lt;/<span class="title">action</span>&gt;</span>
-
-<span class="tag">&lt;/<span class="title">package</span>&gt;</span>
-</pre></figure></code></pre>
-<p>首先，我们必须使用一个interceptors元素来包含所有的interceptor和interceptor-stack的声明。我们必须使用一个interceptor元素将Java类映射到一个逻辑名(yourInterceptor)。其次，我们构建了一个新栈，这个栈使用defaultStack并且把新拦截器追加到它的上面(当然根据业务的不同，也可以放在下面)。最后，我们把myStack声明为这个包的默认拦截器栈。以上这样做的好处是拦截器与动作代码完全分离，并且实现了可重用。</p>
 
     
   </div>
