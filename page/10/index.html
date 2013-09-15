@@ -60,6 +60,40 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2010-05-06T08:22:01.000Z"><a href="/2010/05/06/about-ubuntu-and-win7-uuid/">May 6 2010</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2010/05/06/about-ubuntu-and-win7-uuid/">关于ubuntu和win7 uuid</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>今天重装win7之后，grub菜单没了，这是意料之中的事,不过用livecd把菜单弄回来后，进入选择菜单后出现开机画面后就停在那了，不能进ubuntu,然后我又试了下win7也进不去了，根据提示信息是 说<code>can&#39;t find dev</code>了，找不到设备了，我想了一下，重装win7之后都是什么发生了变化，无非就是硬盘分区了，而且也就只是重装win7的那个分区，影响到别的分区的可能性不大，于是我就到网上找ubuntu的硬盘分区管理方法，才知道uuid的事。 </p>
+<p>我在ubuntu上为了方便把所有的分区设置成了自动挂载，包括重装系统的这个分区， 用livecd进了系统，用命令 </p>
+<pre><code><figure class="highlight"><pre>su<span class="operator"><span class="keyword">do</span> ls -l /dev/disk/<span class="keyword">by</span>-uuid
+</pre></figure></code></pre>
+<p>查看现在实际的各个分区的uuid 然后在打开<code>/etc/fstab</code>文件看里面的内容是否对应，果然win7所在的uuid不一样了，把它改回来后，然后在把<code>grub.cfg</code>也改了一下，重启之后就全好了，其实如果不设置自动挂载的话，这事就不会发生了，不过话又说回来了，因为一个分区无法自动挂载就进不去系统，ubuntu还是很脆弱的，还有待改进，呵。</p>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2010-04-03T08:24:42.000Z"><a href="/2010/04/03/city-makes-life-worse/">Apr 3 2010</a></time>
     
     

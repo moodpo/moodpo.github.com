@@ -60,6 +60,426 @@
   <header>
     
       <div class="icon"></div>
+      <time datetime="2013-03-18T06:24:53.000Z"><a href="/2013/03/18/struts-2-validation-1/">Mar 18 2013</a></time>
+    
+    
+  
+    <h1 class="title"><a href="/2013/03/18/struts-2-validation-1/">Struts 2 的验证框架(一)</a></h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p>之前我们已经学习了如何通过Validateable接口的validate()方法实现动作本地的验证方式。虽然这种方式工作得很好，但是它的某些限制最终会变得难以负担。因此，在本节中我们将引入Struts 2框架的另一个高级机制——验证框架。数据验证框架提供了一个比Validateable接口更通用、更可维护的验证解决方案。验证框架中更强大的一点是Validator（验证器），它是一种可重用的组件，其中实现了特定类型的验证逻辑。</p>
+<h3>1.熟悉数据验证框架</h3>
+<p>数据验证框架早已成为了Web应用程序框架的一部分，但是Struts 2将它在优化、模块化、整洁继承方面带到了一个权限的水平。</p>
+<h4>1.1 验证框架的架构</h4>
+<p>下图展示了验证框架的主要组件：</p>
+<p><img src="http://meiseku.com/moodpo/2013/03/1475721437.png" alt="Struts 2 验证框架.png"></p>
+<p>如上图所示，在验证框架中有3个主要的组件：域数据、验证元数据和验证器。在验证工作中每一个组件都扮演了至关重要的角色，我们将一一解释这些内容。</p>
+<p><strong>1.域数据</strong></p>
+<p>首先，必须有一些验证数据，这些数据以属性的方式驻留在Struts 2的动作中，数据来自对象或者模型驱动对象。</p>
+<p><strong>2.验证元数据</strong></p>
+<p>验证器和数据属性之间有一个中间组件，这个中间组件就是元数据，这些数据将每一个数据属性与属性运行时数据的合法性验证关联起来。一个属性可以关联多个验证器，也可以不关联任何验证器。元数据层可以使用XML文件或者Java注解将数据属性映射到验证器。</p>
+<p><strong>3.验证器</strong></p>
+<p>所有这些数据的验证实际上都有验证器完成。验证器是一个包含了执行某种细粒度的验证行动的逻辑的可重用组件。</p>
+<h4>1.2 Struts 2 工作流中的验证框架</h4>
+<p>现在看看所有的这些验证工作是如何完成的。验证框架实际上与基本数据验证共享了大部分功能，它使用ValidationAware接口存储错误信息。如果需要，workflow拦截器会将用户带回到input页面。实际上，唯一改变的是验证本身，但是这是一个重大的变化。</p>
+<p>不管基本的验证示例还是验证框架都在Struts 2自带的defaultStack环境下工作。下面代码片段是跟当前话题相关的defaultStack部分，来自struts-default.xml文件：</p>
+<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"params"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"conversionError"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"validation"</span>/&gt;</span>
+<span class="tag">&lt;<span class="title">interceptor-ref</span> <span class="attribute">name</span>=<span class="value">"workflow"</span>/&gt;</span>
+</pre></figure></code></pre>
+<p>我们需要注意validation拦截器，workflow拦截器调用validate()方法来实施基本验证还没有参与。当validation拦截器触发时，它会通过前一节提到的元数据实施所有已经定义的验证。一下是验证框架的工作流程，数据验证框架在数据转移、类型转换之后，workflow拦截器之前运行：</p>
+<p><img src="http://meiseku.com/moodpo/2013/03/1923682797.png" alt="验证框架的工作流程.png"></p>
+<p>从图中可以看出整个流程有两个数据验证机制，一种是validation拦截器即数据验证框架的验证，一种是workflow调用validate()方法的验证。我们将会有两种选择，如果能够预测到一个验证逻辑将来还会被重用，那么使用一个自定义验证器来实现会更有意义。然而，如果验证逻辑确实是一个生僻的需求，并且很可能只适用于一次的情况，那么把它放在validate()方法中会更有意义。</p>
+<h3>2.将动作关联到验证框架</h3>
+<h4>2.1 使用ActionClass-validations.xml声明验证元数据</h4>
+<p>现在，我们呢使用XML文件声明需要验证的元数据，文件名以：动作类名+-+validations.xml为规范，以下是Register-validation.xml:</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="doctype">&lt;!DOCTYPE validators PUBLIC "-//OpenSymphony Group//XWork Validator </span><span class="number">1.0</span><span class="xml"></span><span class="number">.2</span><span class="xml">//
+    EN" "http://www.opensymphony.com/xwork/xwork-validator-</span><span class="number">1.0</span><span class="xml"></span><span class="number">.2</span><span class="xml">.dtd"&gt;
+<span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"password"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>You must enter a value for password.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"username"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">8</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">5</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>While </span><span class="variable">${username}</span><span class="xml"> is a nice name, a valid username must
+                be between </span><span class="variable">${minLength}</span><span class="xml"> and </span><span class="variable">${maxLength}</span><span class="xml"> characters long.
+        <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"portfolioName"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span> <span class="attribute">key</span>=<span class="value">"portfolioName.required"</span>/&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"email"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>You must enter a value for email.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"email"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span> <span class="attribute">key</span>=<span class="value">"email.invalid"</span>/&gt;</span>
+        <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">field</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">validator</span> <span class="attribute">type</span>=<span class="value">"expression"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"expression"</span>&gt;</span>username != password<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">message</span>&gt;</span>Username and password can't be the same.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p><strong>1.字段验证器</strong></p>
+<p>字段验证器是用来操作一个独立字段的验证器。这里的字段(field)与数据属性意思相同，字段验证器中的“字段”的含义是它们来源于请求的HTML表单的字段。</p>
+<p>例如第一个字段password字段，一旦为数据声明了一个field元素，我们只需在field元素内部放入field-validator元素来声明哪些验证器用来验证此数据。对于password，我们只声明了一个requiredstring验证器。message元素包含验证失败时显示的消息的文本。一个field元素可以声明任意多个验证器。</p>
+<p><strong>2.非字段验证器</strong></p>
+<p>你也可以声明验证逻辑不是适用在某个特定字段的验证器，这些验证器适用于整个动作，通常包含对多个字段值的检查。例如：expression验证器就是如此。这个验证器使用OGNL比较其他两个字段是否相等，如果不相等表达式返回true，验证通过，否则，验证失败最终用户会返回输入页面并显示message元素中的内容。</p>
+<p><strong>3.消息元素的选择</strong></p>
+<p>message元素用来指定验证错误的情况下用户应该看到的消息，我们可以使用OGNL动态的组织消息。例如username字段的声明那样。XML中OGNL使用$作为转义字符，而不是OGNL通常使用的%符号。</p>
+<p>message元素的另一个选择是将这些消息抽出到外部的资源文件中以实现验证错误的提示信息的国际化，portfolioName字段的验证方式是一个很好的示例，message 的 key 属性指向的正式国际化文件中的引用。如下：</p>
+<pre><code><figure class="highlight"><pre><span class="transposed_variable">user.</span>exists=This user $<span class="cell">{username}</span> already <span class="transposed_variable">exists.</span>
+<span class="transposed_variable">portfolioName.</span>required=You must enter a name <span class="keyword">for</span> your initial <span class="transposed_variable">portfolio.</span>
+<span class="transposed_variable">email.</span>invalid=Your email address was not a valid email <span class="transposed_variable">address.</span>
+</pre></figure></code></pre>
+<h4>2.2 内建的验证器</h4>
+<p>框架自带了一系列功能强大的验证器以满足常见的验证需求，以下列出了全部的内建验证器：</p>
+<table class="table table-bordered table-striped table-condensed">
+  <tr>
+    <td>
+      数据验证器
+    </td>
+
+    <td>
+      参数
+    </td>
+
+    <td>
+      功能
+    </td>
+
+    <td>
+      类型
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      required
+    </td>
+
+    <td>
+      没有
+    </td>
+
+    <td>
+      检验值非空
+    </td>
+
+    <td style="width:50px;">
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      requiredstring
+    </td>
+
+    <td>
+      trim(默认为true)
+    </td>
+
+    <td>
+      验证值非空，并且不是空字符串
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      stringlength
+    </td>
+
+    <td>
+      trim(默认值为true)、minLenth、maxLength
+    </td>
+
+    <td>
+      验证字符床的长度在参数指定的范围内。不指定的参数不做检查。
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      int
+    </td>
+
+    <td>
+      min、max
+    </td>
+
+    <td>
+      验证这个证书值在参数指定的最小值和最大值之间
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      double
+    </td>
+
+    <td>
+      minInclusive、maxInclusive、minExclusive、maxExclusive
+    </td>
+
+    <td>
+      验证浮点值在参数指定的范围内
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      date
+    </td>
+
+    <td>
+      min、max
+    </td>
+
+    <td>
+      验证日期值在指定的最小值和最大值之间。日期格式MM/DD/YYYY
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      email
+    </td>
+
+    <td>
+      没有
+    </td>
+
+    <td>
+      验证电子邮件地址格式
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      url
+    </td>
+
+    <td>
+      没有
+    </td>
+
+    <td>
+      验证URL格式
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      fieldexpression
+    </td>
+
+    <td>
+      expression(必须)
+    </td>
+
+    <td>
+      根据当前ValueStack解析OGNL表达式。表达式必须返回true或者false以决定验证是否成功
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      expression
+    </td>
+
+    <td>
+      expression(必须)
+    </td>
+
+    <td>
+      与fieldexpression相同，但用在动作级别
+    </td>
+
+    <td>
+      动作
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      visitor
+    </td>
+
+    <td>
+      context、appendPrefix
+    </td>
+
+    <td>
+      将域对象属性的验证转交给域对象本地的验证声明
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      regx
+    </td>
+
+    <td>
+      expression(必须)、caseSensitive、trim
+    </td>
+
+    <td>
+      验证String遵循给定的正则表达式
+    </td>
+
+    <td>
+      字段
+    </td>
+  </tr>
+</table>
+
+<p>这些数据验证器中的大部分功能都很简单，唯一需要深入讨论的是visitor验证器，这个验证器允许你为每一个域模型(ModelDriven)类定义验证元素据。</p>
+<h3>3.编写自定义验证器</h3>
+<p>编写自定义验证器与编写任何其他的Struts 2组件都不同，下面我们将通过编写一个检查密码完整性的自定义验证器。</p>
+<h4>3.1 检查密码强度的自定义验证器</h4>
+<p>所有验证器必须实现Validator接口或者FieldValidator接口，前者将实现非字段验证器，后者将实现字段验证器。通常情况下我们会扩展对应的ValidatorSupport或者FieldValidatorSupport这两个类。</p>
+<p>我们设计的密码验证器将做一下3项检查：</p>
+<ul>
+<li>密码必须包含一个大写字母或者小写字母；</li>
+<li>密码必须包含0～9的一个数字；</li>
+<li>密码必须至少包含一套特殊字符中的一个字符。</li>
+</ul>
+<p>特殊字符有一个默认值，但可以通过一个参数配置，这与之前使用的stringlength参数很类似。以下是自定义验证器类代码：</p>
+<pre><code><figure class="highlight"><pre>public <span class="class"><span class="keyword">class</span> <span class="title">PasswordIntegrityValidator</span> <span class="keyword">extends</span> <span class="title">FieldValidatorSupport</span> {</span>
+    static Pattern digitPattern = Pattern.compile( <span class="string">"[0-9]"</span>);
+    static Pattern letterPattern = Pattern.compile( <span class="string">"[a-zA-Z]"</span>);
+    static Pattern specialCharsDefaultPattern = Pattern.compile( <span class="string">"!@#$"</span>);
+
+    public void validate(Object <span class="keyword">object</span>) <span class="keyword">throws</span> ValidationException {
+        String fieldName = getFieldName();
+        String fieldValue = (String) getFieldValue(fieldName, <span class="class"><span class="keyword">object</span> );</span>
+        fieldValue = fieldValue.trim();
+        Matcher digitMatcher = digitPattern.matcher(fieldValue);
+        Matcher letterMatcher = letterPattern.matcher(fieldValue);
+        Matcher specialCharacterMatcher;
+        <span class="keyword">if</span> ( getSpecialCharacters() != <span class="keyword">null</span> ){
+            Pattern specialPattern = Pattern.compile(<span class="string">"["</span> + getSpecialCharacters() + <span class="string">"]"</span> );
+            specialCharacterMatcher = specialPattern.matcher( fieldValue );
+        } <span class="keyword">else</span>{
+            specialCharacterMatcher = specialCharsDefaultPattern.matcher( fieldValue );
+        }
+        <span class="keyword">if</span> ( !digitMatcher.find() ) {
+            addFieldError( fieldName, <span class="class"><span class="keyword">object</span> );</span>
+        }<span class="keyword">else</span> <span class="keyword">if</span> ( !letterMatcher.find() ) {
+            addFieldError( fieldName, <span class="class"><span class="keyword">object</span> );</span>
+        }<span class="keyword">else</span> <span class="keyword">if</span> ( !specialCharacterMatcher.find() ) {
+            addFieldError( fieldName, <span class="class"><span class="keyword">object</span> );</span>
+        }
+    }
+    <span class="keyword">private</span> String specialCharacters;
+    <span class="comment">//省略get和set方法</span>
+}
+</pre></figure></code></pre>
+<p>作为一个开发人员，只需要关注验证逻辑的细节，这个逻辑放在validate()方法中，这个方法是Validator接口定义的入口方法并且在扩展类的抽象支持类中没有实现。此外，还需要创建JavaBean属性，这些属性应该与所有公开给用户的参数匹配。以下代码片段展示了一个参数如何从XML文件传递到这个属性：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"passwordintegrity"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"specialCharacters"</span>&gt;</span>$!@#?<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password must contain one letter, one number, and one
+        of the following "</span><span class="variable">${specialCharacters}</span><span class="xml">".
+    <span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span></span>
+</pre></figure></code></pre>
+<p>我们通过两个辅助方法 getFieldName()和getFieldValue()获取字段的值，这里注意，validate()方法接收了需要被验证的对象，由于我们在动作级别通过Register-validation.xml文件定义了验证，所以传入validate()方法的对象是动作本身。获取字段值后，我们进行了各种检查，最终将错误信息添加到存储的错误消息集中，当然还是使用从支持类继承的辅助方法。这就是全部内容了。</p>
+<h4>3.2 使用自定义数据验证器</h4>
+<p>我们在应用程序的类路径下的validators.xml文件中声明自定义的验证器，也就是src文件夹下，一下是这个文件的所有代码：</p>
+<pre><code><figure class="highlight"><pre><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="doctype">&lt;!DOCTYPE validators PUBLIC
+        "-//OpenSymphony Group//XWork Validator Config 1.0//EN"
+        "http://www.opensymphony.com/xwork/xwork-validator-config-1.0.dtd"&gt;</span>
+
+<span class="tag">&lt;<span class="title">validators</span>&gt;</span>
+   <span class="tag">&lt;<span class="title">validator</span> <span class="attribute">name</span>=<span class="value">"passwordintegrity"</span> <span class="attribute">class</span>=<span class="value">"manning.utils.PasswordIntegrityValidator"</span>/&gt;</span>
+<span class="tag">&lt;/<span class="title">validators</span>&gt;</span>
+</pre></figure></code></pre>
+<p>然后在Register-validation.xml文件中把这个验证器添加到password字段对应的验证器中，以下是代码片段：</p>
+<pre><code><figure class="highlight"><pre><span class="xml"><span class="tag">&lt;<span class="title">field</span> <span class="attribute">name</span>=<span class="value">"password"</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"requiredstring"</span>&gt;</span>
+     <span class="tag">&lt;<span class="title">message</span> &gt;</span>Password is required.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"stringlength"</span>&gt;</span>
+     <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"maxLength"</span>&gt;</span></span><span class="number">10</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+     <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"minLength"</span>&gt;</span></span><span class="number">6</span><span class="xml"><span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+     <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password should be </span><span class="number">6</span><span class="xml">-</span><span class="number">10</span><span class="xml"> characters.<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">field-validator</span> <span class="attribute">type</span>=<span class="value">"passwordintegrity"</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">param</span> <span class="attribute">name</span>=<span class="value">"specialCharacters"</span>&gt;</span>$!@#?<span class="tag">&lt;/<span class="title">param</span>&gt;</span>
+      <span class="tag">&lt;<span class="title">message</span>&gt;</span>Your password must contain one letter, one number, and one of the following "</span><span class="variable">${specialCharacters}</span><span class="xml">".<span class="tag">&lt;/<span class="title">message</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">field-validator</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">field</span>&gt;</span></span>
+</pre></figure></code></pre>
+
+    
+  </div>
+  <footer class="end-sep">
+    
+      
+      
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+
+  <article class="post">
+  <header>
+    
+      <div class="icon"></div>
       <time datetime="2013-03-14T10:38:00.000Z"><a href="/2013/03/14/struts-2-tags-4/">Mar 14 2013</a></time>
     
     
@@ -2475,86 +2895,6 @@ public void setMyUsers ( Map myUsers ) {
 <pre><code><figure class="highlight"><pre>manning<span class="variable">.utils</span><span class="variable">.Circle</span>=manning<span class="variable">.utils</span><span class="variable">.CircleTypeConverter</span>
 </pre></figure></code></pre>
 <p>此外，还需将xwork-conversion.properties文件放在类路径下，例如在WEB-INF/classess/中。</p>
-
-    
-  </div>
-  <footer class="end-sep">
-    
-      
-      
-    
-    <div class="clearfix"></div>
-  </footer>
-</article>
-
-
-
-  <article class="post">
-  <header>
-    
-      <div class="icon"></div>
-      <time datetime="2013-03-13T02:59:50.000Z"><a href="/2013/03/13/struts-2-tags-1/">Mar 13 2013</a></time>
-    
-    
-  
-    <h1 class="title"><a href="/2013/03/13/struts-2-tags-1/">Struts 2 标签（一）</a></h1>
-  
-
-  </header>
-  
-  <div class="entry">
-    
-      <p>在讲解Struts2标签库之前，本节将首先关注数据通过Struts2标签API离开框架的环境下的OGNL表达式语言。我们会浏览OGNL表达式的语法，并研究它可以取出数据的位置，尤其要深入研究ValueStack和ActionContext。</p>
-<h3>1.入门</h3>
-<p>当一个请求到达框架时，Struts2首先要做的事情是创建存储请求的所有重要数据的对象。应用程序的特定领域数据(使用标签最常访问的数据)会存储在ValueStack中，而另一些更基础的数据也必须存储起来，所有的这些数据连通ValueStack都存储在一个叫做ActionContext的对象中。</p>
-<h4>1.1 ActionContext和OGNL</h4>
-<p>实际上，OGNL表达式可以根据任何一系列对象求值，而ValueStack只是这些对象中的一个，默认的那个。OGNL可用来求值的更宽泛的一系列对象叫做ActionContext。ActionContex包含了框架的请求处理过程可以访问的所有数据，包含内容从应用程序数据到会话作用域或者应用程序作用域的映射。默认情况下OGNL解析会选择ValueStack，但你可以指定其他的对象的名字，例如会话作用域。</p>
-<p>下图展示了ActionContext和它包含的对象，可以把OGNL解析指向其中的任何对象：</p>
-<p><img src="http://meiseku.com/moodpo/2013/03/3539674110.png" alt="ActionContex包含的对象.png" title="ActionContex包含的对象.png"></p>
-<ul>
-<li>parameters:当前请求中请求参数的映射</li>
-<li>request:请求作用域的属性的映射</li>
-<li>session:会话作用域的属性的映射</li>
-<li>application:应用程序作用域的属性的映射</li>
-<li>attr:按照page、request、session、application作用域的顺序，返回第一个出现的属性</li>
-<li>ValueStack:包含当前请求的应用程序特定领域的所有数据</li>
-</ul>
-<p>每一个OGNL表达式的解析都需要一个根对象，有了它才能开始引用的解析。现在让我们看看如何选择ActionContext中的对象让OGNL基于此对象解析。</p>
-<p><strong>为OGNL选择根对象</strong></p>
-<p>OGNL表达式可以以一个特殊的语法开始，从上下中命名一个解析表达式所根据的对象：</p>
-<pre><code><figure class="highlight"><pre><span class="id">#session</span><span class="attr_selector">['user']</span>
-</pre></figure></code></pre>
-<p>OGNL表达式通过表达式语言的#操作符主动命名ActionContext中的会话映射。#操作符告诉OGNL表达式使用位于上下文中的命名对象作为初始对象解析表达式的剩余部分。</p>
-<h4>1.2 虚拟对象ValueStack</h4>
-<p>当Struts2接收到一个请求时，它立即创佳一个ActionContext、一个ValueStack和一个动作对象。作为应用程序数据的承载者，动作被马上放在ValueStack中，以便框架可以通过OGNL访问它的属性。</p>
-<p>ValueStack只有一个微妙的地方，当OGNL表达式根据ValueStack解析时，它装作一个对象。这个虚拟对象包含放在上面的所有对象的所有属性。如果相同的属性出现多次，栈下面对象的属性会被栈上层的同名属性覆盖。</p>
-<p><img src="http://meiseku.com/moodpo/2013/03/1296015878.png" alt="ValueStack是OGNL表达式默认解析对象.png" title="ValueStack是OGNL表达式默认解析对象.png"></p>
-<p>如上图所示，一个给定属性的引用的解析指向栈中最高位置出现的属性。以name为例，ValueStack总会返回对象栈中出现在最顶层的name属性。在上述的情况下，动作对象有一个name属性，但由于上层模型对象也有一个name属性，所以动作对象中的name属性永远不能被访问到。</p>
-<h3>2. Struts2标签概要</h3>
-<p>Struts2标签API通过使用条件呈现以继承ValueStack上应用程序的域模型数据，提供了动态创建健壮的网页功能。这些标签可分为4类：数据标签、流程控制标签、UI标签和其他标签。现在我们先不看UI标签，先研究另外3种标签。</p>
-<h4>2.1 Struts 2标签API语法</h4>
-<p>Struts2标签定义在比任何具体的视图层技术更高的层。使用这些标签与调用API一样简单，标签API指定了标签公开的属性和参数。标签API的接口已经全部在(JSP、Velocity和FreeMarker)中实现。</p>
-<p><strong>1.JSP语法</strong></p>
-<p>Struts2标签的JSP版本与其他JSP标签一样。异侠是property标签的简单语法：</p>
-<pre><code><figure class="highlight"><pre><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"name"</span>/&gt;</span>
-</pre></figure></code></pre>
-<p>其他唯一需要说明的是，在使用Struts 2标签之前，在页面的开始部分必须声明包含property标签库的声明：</p>
-<pre><code><figure class="highlight"><pre>&lt;<span class="variable">%@</span> page contentType=<span class="string">"text/html; charset=UTF-8"</span> <span class="variable">%&gt;</span>
-&lt;<span class="variable">%@</span> taglib prefix=<span class="string">"s"</span> uri=<span class="string">"/struts-tags"</span> <span class="variable">%&gt;</span>
-</pre></figure></code></pre>
-<h4>2.2 使用OGNL设置标签属性</h4>
-<p>向标签的属性设置值时，这个属性期望一个字符串字面值，还是一个指向ValueStack上有具体类型的值的OGNL表达式呢？下面我们就讲解这个问题。</p>
-<p>在JSP页面中，所有的内容都是字符串，我们应该很熟悉使用某种转义字符序列来强制这些属性作为表达式解析而不是字符串字面值解析，例如EL表达式的写法${expression}的写法。但是这样会导致标签的边界难于阅读，导出都是EL表达式。为了让OGNL在标签中使用更加直观、可读性更强，Struts2会假定每一个属性都期望得到什么类型的数据，尤其在处理标签的属性时，会区分谁的类型是String，谁的类型不是String。</p>
-<p><strong>1.字符串和字符串类型的属性</strong></p>
-<p>如果一个属性的类型是String，那么在真实的JSP页面中，写入属性的值会被作为字符串字面值解析。如果一个属性不是String类型，那么属性中写入的值会被当作OGNL表达式解析。</p>
-<p>例如下面两个标签，value的值会默认作为OGNL表达式解析，而default的值则会作为字符串解析。</p>
-<pre><code><figure class="highlight"><pre>nonExistingProperty on the ValueStack = <span class="xml"><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"nonExistingProperty"</span> /&gt;</span>
-nonExistingProperty on the ValueStack = <span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"nonExistingProperty"</span> <span class="attribute">default</span>=<span class="value">"doesNotExist"</span> /&gt;</span></span>
-</pre></figure></code></pre>
-<p><strong>2.强制使用OGNL解析</strong></p>
-<p>但是，假如前面的例子，我们想使用一个来源于ValueStack的String属性作为标签的default属性值。这时候就需要强制使用OGNL解析的方式了，写法如下，有些像EL表达式，但不同的是使用%:</p>
-<pre><code><figure class="highlight"><pre>nonExistingProperty on the ValueStack =<span class="xml"><span class="tag">&lt;<span class="title">s:property</span> <span class="attribute">value</span>=<span class="value">"nonExistingProperty"</span> <span class="attribute">default</span>=<span class="value">"%{myDefaultString}"</span> /&gt;</span></span>
-</pre></figure></code></pre>
 
     
   </div>
