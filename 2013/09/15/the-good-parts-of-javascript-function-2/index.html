@@ -228,11 +228,12 @@ document.writeln(<span class="string">'&amp;lt;&amp;quot;&amp;gt;'</span>.deenti
         }
     };
 };
+
+<span class="keyword">var</span> seqer = serial_maker();
+seqer.set_prefix(<span class="string">'Q'</span>);
+seqer.set_seq(<span class="number">1000</span>);
+<span class="keyword">var</span> unique = seqer.gensym();
 </pre></figure></code></pre>
-<p>var seqer = serial_maker();
-seqer.set_prefix(&#39;Q&#39;);
-seqer.set_seq(1000);
-var unique = seqer.gensym();</p>
 
     
   </div>
