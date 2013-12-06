@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  
+  <title>广州之行 | Moodpo Blog</title>
+  <meta name="author" content="yangxiaoxie">
+  
+  <meta name="description" content="moodpo">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta property="og:title" content="广州之行"/>
+  <meta property="og:site_name" content="Moodpo Blog"/>
+
+  <link rel="alternate" href="/atom.xml" title="Moodpo Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+  
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-43415414-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+</head>
+
+
+<body>
+  <div class="wrapper">
+    <header id="header"><div class="title">
+  <h1><a href="/">Moodpo Blog</a></h1>
+  <p><a href="/">记录生活点滴，感悟程序人生</a></p>
+</div>
+<nav class="nav">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+    <div class="content"><article class="post">
+  <header>
+    
+      <div class="icon"></div>
+      <time datetime="2013-12-06T04:22:21.000Z"><a href="/2013/12/06/guangzhou-trip/">Dec 6 2013</a></time>
+    
+    
+  
+    <h1 class="title">广州之行</h1>
+  
+
+  </header>
+  
+  <div class="entry">
+    
+      <p><img src="http://meiseku.com/moodpo/2013/12/20131201.jpg" alt="广州小蛮腰"></p>
+<p>从广州回来已经快一个月了，我才想起要总结一下的。</p>
+<p>是的，很需要总结一下。不必说我们团队一起度过的无眠的夜晚，也不比说广州的现场环境的千奇百怪的复杂，单单只说上线晚上我紧急发布的补丁个数，就与别的省份的情况不可同日而语了。当然，我只去过广州，别的省份没有切身的体会，但从各种道听途说的消息来判断，也可见一斑。</p>
+<p>十月八号到达广州，而月底是我们的上线时间，一开始我们不说信心满满，至少心里有底，因为我们在公司这边已经进行了三轮测试，虽然还存在Bug，但都不是什么严重问题。然而，事情并不是我想象的那样简单。首先的就是数据迁移这座大山挡在了我们面前——广东的数据在所有省份中是最多的，也是最为复杂的。经过千辛万苦，ESA的数据迁移过来了，然而LDAP的数据却成了难题，尤其是authorizations那个节点下的授权关系数据，UDI迁移工具跑了一个晚上，到第二天一不小心由于网络断开，一晚上的时间就白搭上了。就这样一次次的虐心，一次次失败。测试部的人因为没有测试环境只能在那尴尬的闲着，而我们开发的同样如此，那段时间真是让人“难忘”。于是第一周，我们的进度几乎为零。然而万幸的是最后终于在LDAP上添加了vlv索引，并修改UDI同步工具，总算把第一个测试环境的数据整了出来。</p>
+<p>本以为测试的数据整出来我们可以轻松一把，没想到他们的WAS打包的那么不靠谱。测试的人测完了第一轮，晚上，我检查测试环境的更新情况时却发现之前给的补丁包并没有打上去。于是，第一轮的测试以“白测”而告终。不得已，我直接接手了他们的测试环境，什么事情还是自己来才放心。这得多亏了我以前对于WAS以及Linux的学习和了解，这下终于派上了用场，在输入命令轻敲回车的瞬间，心中充满了惬意。渐渐的，测试环境终于在我手中变的非常顺滑，各种问题可以很快定位原因并解决。</p>
+<p>第二轮测试的时候，时间已飞快的来到了月底。测试紧张的进行，Bug数很多，但是测出的Bug质量却不高，很多重复的，很多边缘但并不严重的。看着那些Bug单，然后回想主线代码的杂乱无章，各种功能代码的交叉提交，心中无限忐忑。前路总是艰难，迷茫，既然走在了这条路上，我们唯有勇往直前，脚踏实地的走下去。改Bug，上传代码，打补丁包，更新，测试，回归，一步一个脚印。有句话叫你为什么要爬那座山，因为山在那里！而我那时最想说的是，为什么要熬夜去改Bug，因为问题在那里！</p>
+<p>上线前几天，经过几次的上线演练，我们信心倍增，特别是我，对于UDI工具的使用，Radis的配置，已经达到了得心应手的程度。而亚坤他们的升级脚本，ESA数据以及刷数据工具，都已成熟起来，没有什么问题了。把几次演练的过程，汇聚起来，我写了份升级手册，在十一月四号晚上终于迎来了上线的时间。晚上九点，我们开始了升级。执行数据库脚本，同步ESA数据，运行UDI迁移工具，执行刷数据脚本...这些如期的顺利执行完后，开始测试。当晚即测出多个问题，有的甚至非常严重几乎要导致回退的地步，比如casp导致的单点登录失败，iam因工单窗口无反应而无法进行操作授权等，上线当晚即提交了7个补丁，不得不感叹计划不如变化快。在不知不觉中，天亮了，当最后看到领导发出的邮件了，那个不算很大的红色的上线成功四个字时，即使熬夜心中悠然</p>
+
+    
+  </div>
+  <footer>
+    
+      
+  
+  <div class="categories">
+    <a href="/categories/My-Life/">My Life</a>
+  </div>
+
+      
+  
+  <div class="tags">
+    <a href="/tags/guangzhou/">guangzhou</a>, <a href="/tags/work/">work</a>
+  </div>
+
+    
+    <div class="clearfix"></div>
+  </footer>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">Comments</h1>
+  <div class="ds-thread" data-title="广州之行">
+  </div>
+</section>
+</div>
+  </div>
+  <div class="widget-wrapper">
+    <aside id="sidebar">
+  
+  
+</aside>
+<div class="clearfix"></div>
+  </div>
+  <footer id="footer"><div class="copyright">
+  
+  &copy; 2013 <a href="/">yangxiaoxie</a>
+  
+</div>
+<div class="theme-copyright">
+  Theme by <a href="https://github.com/orderedlist" target="_blank">orderedlist</a>
+   | 
+  Redesign by <a href="http://heroicyang.com/" target="_blank">Heroic Yang</a>
+</div>
+<div class="clearfix"></div></footer>
+  <script src="/js/scale.fix.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'moodpo' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox();
+  })(jQuery);
+</script>
+
+</body>
+</html>
